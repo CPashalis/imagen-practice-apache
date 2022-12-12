@@ -1,0 +1,10 @@
+.slick-dots {
+    position: absolute;
+    width: 100%;
+    bottom: 10px;
+    left: 0;
+}
+
+.slick-dotted.slick-slider {
+    margin-bottom: 0;
+}

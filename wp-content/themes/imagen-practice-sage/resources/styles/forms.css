@@ -1,0 +1,12 @@
+/* wpforms */
+.wpforms-submit {
+  color: white !important;
+  border: 0 !important;
+  border-radius: 0.125rem !important;
+  text-transform: uppercase !important;
+  font-size: 12px !important;
+  text-align: center !important;
+  font-weight: 500 !important;
+  min-width: 160px;
+  height: 40px;
+}

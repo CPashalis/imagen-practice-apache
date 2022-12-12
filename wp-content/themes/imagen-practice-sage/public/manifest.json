@@ -1,0 +1,7 @@
+{
+  "app.js": "js/app.js",
+  "editor.js": "js/editor.js",
+  "images/.gitkeep": "images/.gitkeep",
+  "app.js.map": "js/app.js.map",
+  "editor.js.map": "js/editor.js.map"
+}

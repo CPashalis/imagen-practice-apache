@@ -1,0 +1,52 @@
+version: '3'
+services:
+  # Database
+  db:
+    container_name: imagen-practice-database-development
+    image: mariadb:10.6
+    volumes:
+      - db_data:/var/lib/mariadb
+    restart: always
+    ports:
+      - 8116:3306
+    env_file:
+      - ./envs/development/db.env
+    networks:
+      - imagen-bayshore-apache-network
+  # phpmyadmin
+  phpmyadmin:
+    container_name: imagen-bayshore-apache-phpmyadmin
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - '8117:80'
+    env_file:
+      - ./envs/development/db.env
+    networks:
+      - imagen-bayshore-apache-network
+  # Wordpress
+  wordpress:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: imagen-bayshore-apache-development
+    depends_on:
+      - db
+    ports:
+      - '8111:80'
+    restart: always
+    volumes: 
+      - ./wp-content:/var/www/html/wp-content
+    env_file:
+      - ./envs/development/.env
+    environment:
+      environment: development
+    networks:
+      - imagen-bayshore-apache-network
+networks:
+  imagen-bayshore-apache-network:
+    external: true
+volumes:
+  db_data:

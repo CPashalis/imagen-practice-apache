@@ -1,0 +1,7 @@
+
+# BEGIN SatisPress
+# The directives (lines) between "BEGIN SatisPress" and "END SatisPress" are
+# dynamically generated, and should only be modified via WordPress filters.
+# Any changes to the directives between these markers will be overwritten.
+deny from all
+# END SatisPress

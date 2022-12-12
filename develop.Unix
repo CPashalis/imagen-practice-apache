@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+# Decide which docker-compose file to use
+COMPOSE_FILE=${environment:-development}
+
+COMPOSE="docker-compose -f docker-compose.yml"
+
+if [ $# -gt 0 ]; then
+  # If "composer" is used, pass-thru to "composer"
+  # inside a new container
+  if [ "$1" == "composer" ]; then
+      shift 1
+      $COMPOSE run --rm $TTY \
+          -w /var/www/html \
+          app \
+          composer "$@"
+
+  # If "wp" is used, pass-thru to "wp-cli"
+  elif [ "$1" == "wp" ]; then
+      shift 1
+      $COMPOSE run --rm $TTY \
+          -w /var/www/html \
+          app \
+          wp --allow-root "$@"
+
+  # if "init" is used, make the src directory and
+  # install latest version of Bedrock. Afterwards
+  # install a Sage theme into Bedrock's theme folder
+  # with the name specified as the argument after "init".
+  # By default the dev-master version of Sage will
+  # be used.
+  elif [ "$1" == "init" ]; then
+    shift 1
+    mkdir -p src
+    cp -a envs/$COMPOSE_FILE/.env wp-content/.env
+
+    $COMPOSE build --no-cache
+
+    $COMPOSE run --rm $TTY \
+        -w /var/www/html/wp-content/themes/imagen-practice-sage \
+        wordpress \
+        composer install
+    if [ ! -d "wp-content/themes/$1" ]; then
+      $COMPOSE run --rm $TTY \
+          -w /var/www/html/wp-content/themes \
+          wordpress \
+          composer create-project roots/sage $1 dev-master
+    fi
+  # Else, pass-thru args to docker-compose
+  elif [ "$1" == "up" ]; then
+    $COMPOSE up --no-recreate -d
+    #cp -a envs/$COMPOSE_FILE/.env wp-content/.env
+    cd wp-content/themes/imagen-practice-sage
+    yarn
+    yarn dev
+  else
+    $COMPOSE "$@"
+  fi
+else
+  $COMPOSE ps
+fi
