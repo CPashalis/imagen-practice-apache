@@ -2,28 +2,22 @@ module.exports = {
   "entry": {
     "app": {
       "import": [
-        "@roots/bud-client/lib/hmr/index.cjs?name=bud&bud.overlay=true&bud.indicator=true&path=/__bud/hmr",
-        "@roots/bud-client/lib/proxy-click-interceptor.cjs",
-        "react-refresh/runtime",
         "@scripts/app",
         "@styles/app"
       ]
     },
     "editor": {
       "import": [
-        "@roots/bud-client/lib/hmr/index.cjs?name=bud&bud.overlay=true&bud.indicator=true&path=/__bud/hmr",
-        "@roots/bud-client/lib/proxy-click-interceptor.cjs",
-        "react-refresh/runtime",
         "@scripts/editor",
         "@styles/editor"
       ]
     }
   },
-  "bail": false,
+  "bail": true,
   "cache": {
-    "name": "bud.development",
+    "name": "bud.production",
     "type": "filesystem",
-    "version": "1mvnmilaiccg02ow5anpiuxhvwi_",
+    "version": "sqcruhspiilt9iyfhtqphlfbc4m_",
     "cacheDirectory": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/.budfiles/cache/webpack",
     "managedPaths": [
       "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules"
@@ -41,7 +35,6 @@ module.exports = {
     }
   },
   "context": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage",
-  "devtool": "cheap-module-source-map",
   "experiments": {
     "buildHttp": {
       "allowedUris": [
@@ -60,7 +53,7 @@ module.exports = {
   "infrastructureLogging": {
     "level": "none"
   },
-  "mode": "development",
+  "mode": "production",
   "module": {
     "rules": [
       {
@@ -81,14 +74,17 @@ module.exports = {
             ],
             "use": [
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/style-loader/dist/cjs.js"
+                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/mini-css-extract-plugin/dist/loader.js",
+                "options": {
+                  "publicPath": "/wp-content/themes/imagen-practice-sage/public/"
+                }
               },
               {
                 "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/css-loader/dist/cjs.js",
                 "options": {
                   "importLoaders": 1,
                   "modules": false,
-                  "sourceMap": true
+                  "sourceMap": false
                 }
               },
               {
@@ -122,7 +118,10 @@ module.exports = {
             ],
             "use": [
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/style-loader/dist/cjs.js"
+                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/mini-css-extract-plugin/dist/loader.js",
+                "options": {
+                  "publicPath": "/wp-content/themes/imagen-practice-sage/public/"
+                }
               },
               {
                 "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/css-loader/dist/cjs.js",
@@ -131,7 +130,7 @@ module.exports = {
                   "importLoaders": 1,
                   "localIdentName": "[name]__[local]___[hash:base64:5]",
                   "modules": true,
-                  "sourceMap": true
+                  "sourceMap": false
                 }
               },
               {
@@ -179,7 +178,7 @@ module.exports = {
             ],
             "type": "asset",
             "generator": {
-              "filename": "fonts/[name][ext]"
+              "filename": "fonts/[name].[contenthash:6][ext]"
             }
           },
           {
@@ -203,7 +202,7 @@ module.exports = {
             ],
             "type": "asset/resource",
             "generator": {
-              "filename": "images/[name][ext]"
+              "filename": "images/[name].[contenthash:6][ext]"
             }
           },
           {
@@ -239,9 +238,6 @@ module.exports = {
                     ],
                     [
                       "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/@babel/plugin-syntax-dynamic-import/lib/index.js"
-                    ],
-                    [
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/react-refresh/babel.js"
                     ]
                   ],
                   "env": {
@@ -272,7 +268,7 @@ module.exports = {
             ],
             "type": "asset/resource",
             "generator": {
-              "filename": "images/[name][ext]"
+              "filename": "images/[name].[contenthash:6][ext]"
             }
           },
           {
@@ -293,7 +289,7 @@ module.exports = {
             ],
             "type": "asset/resource",
             "generator": {
-              "filename": "images/[name][ext]"
+              "filename": "images/[name].[contenthash:6][ext]"
             }
           },
           {
@@ -332,18 +328,72 @@ module.exports = {
   "name": "bud",
   "node": false,
   "output": {
-    "assetModuleFilename": "[name][ext]",
+    "assetModuleFilename": "[name].[contenthash:6][ext]",
     "chunkFilename": "js/dynamic/[id].js",
-    "filename": "js/[name].js",
+    "filename": "js/[name].[contenthash:6].js",
     "path": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/public",
-    "publicPath": "/"
+    "publicPath": "/wp-content/themes/imagen-practice-sage/public/"
   },
   "optimization": {
-    "emitOnErrors": true,
-    "minimize": false,
+    "emitOnErrors": false,
+    "minimize": true,
     "minimizer": [
-      "..."
-    ]
+      "...",
+      {
+        "options": {
+          "test": {},
+          "parallel": true,
+          "minimizer": {
+            "options": {
+              "preset": [
+                "default",
+                {
+                  "discardComments": {
+                    "removeAll": true
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "options": {
+          "test": {},
+          "extractComments": false,
+          "parallel": true,
+          "include": {},
+          "exclude": {},
+          "minimizer": {
+            "options": {
+              "compress": false,
+              "mangle": {
+                "safari10": true
+              },
+              "output": {
+                "comments": false,
+                "ascii_only": true,
+                "preamble": "/**\n  * Minified by @roots/bud\n  */"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "runtimeChunk": "single",
+    "splitChunks": {
+      "chunks": "all",
+      "automaticNameDelimiter": "/",
+      "minSize": 0,
+      "cacheGroups": {
+        "vendor": {
+          "idHint": "vendor",
+          "filename": "js/bundle/vendor/[name].js",
+          "test": {},
+          "priority": -20
+        }
+      }
+    }
   },
   "parallelism": 150,
   "performance": {
@@ -362,13 +412,24 @@ module.exports = {
       }
     },
     {
-      "options": {}
+      "dangerouslyAllowCleanPatternsOutsideProject": false,
+      "dry": false,
+      "verbose": false,
+      "cleanStaleWebpackAssets": true,
+      "protectWebpackAssets": true,
+      "cleanAfterEveryBuildPatterns": [],
+      "cleanOnceBeforeBuildPatterns": [
+        "**/*"
+      ],
+      "currentAssets": [],
+      "initialClean": false,
+      "outputPath": ""
     },
     {
       "patterns": [
         {
           "from": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources/images",
-          "to": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/public/images/[path][name][ext]",
+          "to": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/public/images/[path][name].[contenthash:6][ext]",
           "context": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources",
           "noErrorOnMissing": true,
           "toType": "template"
@@ -391,6 +452,29 @@ module.exports = {
         "useLegacyEmit": false,
         "writeToFileEmit": true
       }
+    },
+    {
+      "_sortedModulesCache": {},
+      "options": {
+        "filename": "css/[name].[contenthash:6].css",
+        "ignoreOrder": false,
+        "runtime": true,
+        "chunkFilename": "css/[name].[contenthash:6].css"
+      },
+      "runtimeOptions": {
+        "linkType": "text/css"
+      }
+    },
+    {
+      "options": {
+        "enabled": true,
+        "verbose": false,
+        "extensions": {},
+        "ignore": [],
+        "remove": {}
+      },
+      "enabled": true,
+      "verbose": false
     },
     {
       "options": {
@@ -426,13 +510,6 @@ module.exports = {
       "file": "entrypoints.json",
       "entrypointsName": "entrypoints.json",
       "wordpressName": "wordpress.json"
-    },
-    {
-      "options": {
-        "overlay": false,
-        "exclude": {},
-        "include": {}
-      }
     },
     {
       "resourceRegExp": {}

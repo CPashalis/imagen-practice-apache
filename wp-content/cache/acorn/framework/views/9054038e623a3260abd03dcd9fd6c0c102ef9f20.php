@@ -24,7 +24,8 @@
           <img class="lg:hidden h-8 w-auto sm:h-10" src="<?php echo e($mlogo['url']); ?>" alt="<?php echo e(the_field('practice_name', 'option')); ?>">
 
           <?php ($logo = get_field('primary_nav_logo', 'option')); ?>
-          <img class="hidden lg:inline-block h-8 w-auto sm:h-10" src="<?php echo e($logo['url']); ?>" alt="<?php echo e(the_field('practice_name', 'option')); ?>">
+          <?php ($logoHeight = get_field('primary_nav_logo_height', 'option')); ?>
+          <img style="height:<?php echo e($logoHeight); ?>px" class="hidden lg:inline-block w-auto" src="<?php echo e($logo['url']); ?>" alt="<?php echo e(the_field('practice_name', 'option')); ?>">
         </a>
       </div>
       <div class="-mr-2 -my-2 lg:hidden flex">

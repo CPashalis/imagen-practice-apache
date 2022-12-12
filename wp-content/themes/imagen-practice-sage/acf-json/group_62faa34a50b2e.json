@@ -154,27 +154,11 @@
             ]
         },
         {
-            "key": "field_6387d481f4c44",
-            "label": "Schedule Form Outbound Link",
-            "name": "schedule_form_outbound_link",
-            "type": "url",
-            "instructions": "Use this when you want to use an outbound link instead of a form.",
-            "required": 0,
-            "conditional_logic": 0,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "default_value": "",
-            "placeholder": ""
-        },
-        {
             "key": "field_6318f09a4af76",
             "label": "Schedule Form ID",
             "name": "schedule_form_id",
             "type": "text",
-            "instructions": "Use this when you want to use a form.",
+            "instructions": "",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -304,7 +288,7 @@
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
-                "width": "",
+                "width": "50",
                 "class": "",
                 "id": ""
             },
@@ -318,6 +302,27 @@
             "max_height": "",
             "max_size": "",
             "mime_types": ""
+        },
+        {
+            "key": "field_639781415a885",
+            "label": "Primary Nav Logo Height",
+            "name": "primary_nav_logo_height",
+            "type": "number",
+            "instructions": "Default set to 44px",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": 44,
+            "placeholder": "",
+            "prepend": "",
+            "append": "",
+            "min": "",
+            "max": "",
+            "step": ""
         },
         {
             "key": "field_63321232ad84c",
@@ -766,5 +771,5 @@
     "hide_on_screen": "",
     "active": true,
     "description": "",
-    "modified": 1669846217
+    "modified": 1670873699
 }

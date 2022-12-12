@@ -31,8 +31,8 @@ if [ $# -gt 0 ]; then
   # be used.
   elif [ "$1" == "init" ]; then
     shift 1
-    mkdir -p src
-    cp -a envs/$COMPOSE_FILE/.env wp-content/.env
+    #mkdir -p src
+    #cp -a envs/$COMPOSE_FILE/.env wp-content/.env
 
     $COMPOSE build --no-cache
 

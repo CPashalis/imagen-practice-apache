@@ -23,7 +23,8 @@
           <img class="lg:hidden h-8 w-auto sm:h-10" src="{{$mlogo['url']}}" alt="{{the_field('practice_name', 'option')}}">
 
           @php($logo = get_field('primary_nav_logo', 'option'))
-          <img class="hidden lg:inline-block h-8 w-auto sm:h-10" src="{{$logo['url']}}" alt="{{the_field('practice_name', 'option')}}">
+          @php($logoHeight = get_field('primary_nav_logo_height', 'option'))
+          <img style="height:{{$logoHeight}}px" class="hidden lg:inline-block w-auto" src="{{$logo['url']}}" alt="{{the_field('practice_name', 'option')}}">
         </a>
       </div>
       <div class="-mr-2 -my-2 lg:hidden flex">
