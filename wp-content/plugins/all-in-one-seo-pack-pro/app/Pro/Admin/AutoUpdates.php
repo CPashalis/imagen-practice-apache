@@ -54,12 +54,16 @@ class AutoUpdates {
 	 *
 	 * @since 4.0.12
 	 *
-	 * @param  bool  $update Flag to update the plugin or not.
-	 * @param  array $item   Update data about a specific plugin.
-	 * @return bool          The new update state.
+	 * @param  bool   $update Flag to update the plugin or not.
+	 * @param  object $item   Update data about a specific plugin.
+	 * @return bool           The new update state.
 	 */
 	public function automaticUpdates( $update, $item ) {
-		$item       = (array) $item;
+		$item = (array) $item;
+		if ( empty( $item['plugin'] ) ) {
+			return $update;
+		}
+
 		$pluginInfo = get_site_transient( 'update_plugins' );
 		$response   = ! empty( $pluginInfo->response ) ? $pluginInfo->response : [];
 		$noUpdate   = ! empty( $pluginInfo->no_update ) ? $pluginInfo->no_update : [];

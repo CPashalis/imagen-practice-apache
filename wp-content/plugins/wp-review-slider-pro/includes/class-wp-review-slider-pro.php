@@ -56,6 +56,15 @@ class WP_Review_Pro {
 	 * @var      string    $version    The current version of the plugin.
 	 */
 	protected $version;
+	
+	/**
+	 * The token of the plugin.
+	 *
+	 * @since    11.6.0
+	 * @access   protected
+	 * @var      string    $_token   The token of the plugin.
+	 */
+	protected $_token;	//must declare this now in php 8.2
 
 	/**
 	 * Define the core functionality of the plugin.
@@ -69,7 +78,7 @@ class WP_Review_Pro {
 	public function __construct() {
 
 		$this->_token = 'wp-review-slider-pro';
-		$this->version = '11.5.0';
+		$this->version = '11.6.1';
 		//using this for development
 		//$this->version = time();
 
@@ -119,6 +128,82 @@ class WP_Review_Pro {
 
 			global $wpdb;
 			$table_name = $wpdb->prefix . 'wpfb_getapps_forms';
+			
+			//moving Facebook
+			$oldfacebook = get_option('wprevpro_options');
+			//Array([fb_app_code] => c2648ce3b0cc913[fb_last_name_option] => full[fb_recommendation_to_star] => 1)
+			$oldfbcronpages = get_option('wpfb_cron_pages');
+			//{"0":"508742735920299","1":"1627980693992867","2":"777685579067930","3":"102152479925798"}
+						
+			//need array of facebook page names and ids of reviews in the database.
+			$reviews_table_name = $wpdb->prefix . 'wpfb_reviews';
+			$tempquery = "SELECT DISTINCT pageid,pagename,type FROM ".$reviews_table_name." WHERE pageid IS NOT NULL AND type='Facebook'";
+			$fbtyperowsarray = $wpdb->get_results($tempquery);
+			
+			if(is_array($oldfacebook) && count($oldfacebook)>0){
+				//set new fb_app_code to new value.
+				update_option( 'wprevpro_fb_secret_code', $oldfacebook['fb_app_code'] );
+				
+				//check if we need to create any for the auto cron pages.
+				if(isset($fbcronpagesarray)){
+					$fbcronpagesarray = json_decode($fbcronpagesarray, true);
+				} else {
+					$fbcronpagesarray = array();
+				}
+				//looping here to see if we need to add a form to get_apps.
+				foreach ($fbtyperowsarray as $fbpage) {
+					if($fbpage->pageid!='' && $fbpage->pagename!=''){
+					  $title = $fbpage->pagename;
+					  $reviewlistpageid = $fbpage->pageid;
+					  $timenow = time();
+					  $tempcron = '';
+						if (strpos($oldfbcronpages, $reviewlistpageid) !== false) {
+						  // haystack contains needle
+						  $tempcron = '24';
+						}
+					  $last_name = $oldfacebook['fb_last_name_option'];
+					  $rectostar = $oldfacebook['fb_recommendation_to_star'];
+					  $data = array( 
+						'title' => "$title",
+						'reviewlistpageid' => "$reviewlistpageid",
+						'page_id' => "$reviewlistpageid",
+						'site_type' => "Facebook",
+						'created_time_stamp' => "$timenow",
+						'url' => "",
+						'cron' => "$tempcron",
+						'blocks' => "20",
+						'last_name' => "$last_name",
+						'profile_img' => "no",
+						'categories' => "",
+						'posts' => "",
+						'rectostar' => "$rectostar",
+						'sortoption' => ""
+						);
+					//print_r($data);
+					$format = array( 
+							'%s',
+							'%s',
+							'%s',
+							'%s',
+							'%s',
+							'%s',
+							'%s',
+							'%s',
+							'%s',
+							'%s',
+							'%s',
+							'%s',
+						); 
+					$table_name = $wpdb->prefix . 'wpfb_getapps_forms';
+					$insertrow = $wpdb->insert( $table_name, $data, $format );
+					}
+				}
+			}
+			//delete old fb options.
+			delete_option('wpfb_cron_pages');
+			delete_option('wprevpro_options');
+			//=====end facebook
+			
 			
 			//moving VRBO
 			$oldvrbobarray = get_option('wprevpro_vrbo_settings');
@@ -602,9 +687,9 @@ class WP_Review_Pro {
 				facebook_icon_link varchar(3) DEFAULT '' NOT NULL,
 				google_snippet_add varchar(3) DEFAULT '' NOT NULL,
 				google_snippet_type varchar(50) DEFAULT '' NOT NULL,
-				google_snippet_name varchar(50) DEFAULT '' NOT NULL,
-				google_snippet_desc varchar(300) DEFAULT '' NOT NULL,
-				google_snippet_business_image varchar(400) DEFAULT '' NOT NULL,
+				google_snippet_name varchar(500) DEFAULT '' NOT NULL,
+				google_snippet_desc varchar(1000) DEFAULT '' NOT NULL,
+				google_snippet_business_image varchar(500) DEFAULT '' NOT NULL,
 				google_snippet_more text DEFAULT '' NOT NULL,
 				cache_settings varchar(5) DEFAULT '' NOT NULL,
 				review_same_height varchar(3) DEFAULT '' NOT NULL,
@@ -721,6 +806,7 @@ class WP_Review_Pro {
 				last_name varchar(7) DEFAULT '' NOT NULL,
 				sortoption varchar(10) DEFAULT '' NOT NULL,
 				profile_img varchar(7) DEFAULT '' NOT NULL,
+				rectostar varchar(3) DEFAULT '' NOT NULL,
 				categories text NOT NULL,
 				posts text NOT NULL,
 				UNIQUE KEY id (id),
@@ -977,7 +1063,7 @@ class WP_Review_Pro {
 		$this->loader->add_action('admin_init', $plugin_admin, 'wppro_woo_settings_init');
 		
 		// register our wprevpro_settings_init to the admin_init action hook, add setting inputs
-		$this->loader->add_action('admin_init', $plugin_admin, 'wprevpro_settings_init');
+		//$this->loader->add_action('admin_init', $plugin_admin, 'wprevpro_settings_init');
 		
 		// register our wprevpro_yelp_settings_init to the admin_init action hook, add setting inputs
 		//$this->loader->add_action('admin_init', $plugin_admin, 'wprevpro_yelp_settings_init');
@@ -1001,7 +1087,7 @@ class WP_Review_Pro {
 		$this->loader->add_action( 'wp_ajax_wpfb_get_results', $plugin_admin_hooks, 'wpfb_process_ajax' );
 		
 		//add ajax for saving fb cron page user option
-		$this->loader->add_action( 'wp_ajax_wpfbcron_update_useropt', $plugin_admin_hooks, 'wpfb_process_ajax_cron_page' );
+		//$this->loader->add_action( 'wp_ajax_wpfbcron_update_useropt', $plugin_admin_hooks, 'wpfb_process_ajax_cron_page' );
 		
 		//add ajax for adding google reviews to table
 		$this->loader->add_action( 'wp_ajax_wpfbr_google_reviews', $plugin_admin_hooks, 'wpfbr_ajax_google_reviews' ); 

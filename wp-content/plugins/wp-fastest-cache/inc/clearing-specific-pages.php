@@ -27,7 +27,7 @@
 			wp_send_json_success();
 		}
 
-		public function check_url(){
+		public static function check_url(){
 			$home_url = parse_url(get_option("home"), PHP_URL_HOST);
 			$specific_url = parse_url($_POST["url"], PHP_URL_HOST);
 
@@ -38,7 +38,7 @@
 			return false;
 		}
 
-		public function check_wild_card(){
+		public static function check_wild_card(){
 			if(preg_match("/[^\/]\(\.\*\)/", $_POST["url"])){
 				return false;
 			}

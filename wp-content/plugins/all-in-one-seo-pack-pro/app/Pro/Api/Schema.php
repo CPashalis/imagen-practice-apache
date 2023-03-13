@@ -151,9 +151,9 @@ class Schema {
 	 */
 	public static function getValidatorOutput( $request ) {
 		$postId       = $request['postId'];
-		$graphs       = $request['graphs'];
 		$customGraphs = $request['customGraphs'];
-		$default      = (object) $request['default'];
+		$graphs       = json_decode( wp_json_encode( $request['graphs'] ) );
+		$default      = json_decode( wp_json_encode( $request['default'] ) );
 		if ( empty( $postId ) ) {
 			return new \WP_REST_Response( [
 				'success' => false,

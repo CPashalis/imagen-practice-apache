@@ -13,6 +13,10 @@
  * @package Converter for Media
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 ?>
 <div class="webpcPage__widget">
 	<form method="post" action="" class="webpcContent">
@@ -21,10 +25,12 @@
 		<input type="hidden" name="<?php echo esc_attr( $nonce_input_name ); ?>"
 			value="<?php echo esc_attr( $nonce_input_value ); ?>">
 		<?php foreach ( $form_options as $index => $option ) : ?>
-			<div class="webpcPage__widgetRow webpcPage__widgetRow--option">
+			<div class="webpcPage__widgetRow webpcPage__widgetRow--option <?php echo ( ! $option['label'] ) ? 'webpcPage__widgetRow--noBorder' : ''; ?>">
 				<ul class="webpcPage__widgetColumns">
 					<li class="webpcPage__widgetColumn">
-						<h4><?php echo esc_html( $option['label'] ); ?></h4>
+						<?php if ( $option['label'] ) : ?>
+							<h4><?php echo esc_html( $option['label'] ); ?></h4>
+						<?php endif; ?>
 						<?php include dirname( __DIR__ ) . '/fields/' . $option['type'] . '.php'; ?>
 					</li>
 					<?php if ( $option['notice_lines'] ) : ?>

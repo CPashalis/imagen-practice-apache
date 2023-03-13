@@ -207,7 +207,7 @@
                 <div class="xl:col-span-10 xl:col-start-2 col-span-12 my-6">
                     @if(get_sub_field('template') == 1)
                         @if($peWText)
-                            <h2 class="text-xl text-primary mb-6 font-medium text-center text-white"><?php echo $peTitle ?></h2>
+                            <h2 class="text-xl mb-6 font-medium text-center text-white"><?php echo $peTitle ?></h2>
                             @if($peDesc)
                             <div class="formatted text-center">{!! $peDesc !!}</div>
                             @endif

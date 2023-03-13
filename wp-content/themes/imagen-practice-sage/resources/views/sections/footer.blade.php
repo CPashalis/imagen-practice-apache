@@ -82,7 +82,7 @@
           <div class="grid grid-cols-12 gap-5">
             <div class="col-span-12 md:col-span-9 md:text-left text-center">
               <div class="text-white text-xs footer-copyright">
-              © Copyright <?php echo date("Y");  the_field('footer_copyright', 'option')?>
+              © Copyright THIS PUSH WORKED <?php echo date("Y");  the_field('footer_copyright', 'option')?>
               <p class="text-xs">Patient Education content is provided by our partner, Spear Education. Copyright © <?php echo date("Y");?> Spear Education.</p>
             </div>
             </div>

@@ -19,7 +19,7 @@
 	//$plugin_admin_hooks->updateallavgtotalstable();
  //========================
      // check user capabilities
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('manage_options') && $this->wprev_canuserseepage('badges')==false) {
         return;
     }
 	
@@ -31,7 +31,7 @@
 	$currentbadge->title ="";
 	$currentbadge->badge_type ="";
 	$currentbadge->badge_bname =__('Your Business Name', 'wp-review-slider-pro');
-	$currentbadge->badge_orgin ="";
+	$currentbadge->badge_orgin ="custom";
 	$currentbadge->rpage ="";
 	$currentbadge->style ="1";
 	$currentbadge->created_time_stamp ="";
@@ -230,6 +230,8 @@
 		$templatemiscarray['liconurl']=sanitize_text_field($_POST['wprevpro_badge_misc_liconurl']);
 		$templatemiscarray['liconurllink']=sanitize_text_field($_POST['wprevpro_badge_misc_liconurllink']);
 		$templatemiscarray['liconurllink_target']=sanitize_text_field($_POST['wprevpro_badge_misc_liconurllink_target']);
+		$templatemiscarray['liconwidth']=sanitize_text_field($_POST['wprevpro_badge_misc_liconwidth']);
+		$templatemiscarray['liconheight']=sanitize_text_field($_POST['wprevpro_badge_misc_liconheight']);
 		
 		$templatemiscarray['bwidth']=sanitize_text_field($_POST['wprevpro_badge_misc_width']);
 		$templatemiscarray['bwidtht']=sanitize_text_field($_POST['wprevpro_badge_misc_widtht']);
@@ -269,6 +271,7 @@
 		$templatemiscarray['ratingsavg']=sanitize_text_field($_POST['wprevpro_badge_misc_cratingavg']);
 		$templatemiscarray['ratingstot']=sanitize_text_field($_POST['wprevpro_badge_misc_cratingtotal']);
 		$templatemiscarray['roundavg']=sanitize_text_field($_POST['wprevpro_badge_misc_roundavg']);
+		$templatemiscarray['outof']=sanitize_text_field($_POST['wprevpro_badge_misc_outof']);
 
 		$templatemiscarray['liconurllink_attr']=sanitize_text_field($_POST['wprevpro_badge_misc_liconurllink_attr']);
 
@@ -420,15 +423,15 @@ if ( wrsp_fs()->can_use_premium_code() ) {
 	<a href="<?php echo $url_temprecal;?>" id="wprevpro_exporttemplates" class="button dashicons-before dashicons-admin-tools"><?php _e('Force Recalculate', 'wp-review-slider-pro'); ?></a>
 	</br></br>
 	<b>Current Values:</b>
-	<table class="wp-list-table bluerowbackground striped posts">
-	<tr><th>Type</th><th>Source</th><th>Page Name</th><th>Page ID</th><th style="width: 80px;">Source</br>Total</th><th style="width: 80px;">Source</br>Avg</th><th style="width: 80px;">Review List</br>Total</th><th style="width: 80px;">Review List</br>Avg</th><th>Num1</th><th>Num2</th><th>Num3</th><th>Num4</th><th>Num5</th></tr>
+	<table id="badgedatatable" class="wp-list-table bluerowbackground striped posts">
+	<tr><th>Source</th><th>Page Name</th><th>Page ID</th><th style="width: 80px;">Source</br>Total</th><th style="width: 80px;">Source</br>Avg</th><th style="width: 80px;">Review List</br>Total</th><th style="width: 80px;">Review List</br>Avg</th><th>Num1</th><th>Num2</th><th>Num3</th><th>Num4</th><th>Num5</th></tr>
 	
 <?php
 $table_name_data = $wpdb->prefix . 'wpfb_total_averages';
-$currentdatas= $wpdb->get_results("SELECT * FROM $table_name_data order by btp_type ASC");
+$currentdatas= $wpdb->get_results("SELECT * FROM $table_name_data WHERE btp_type='page' order by btp_type ASC");
 foreach ( $currentdatas as $currentdata ) 
 	{
-		echo '<tr><td>'.$currentdata->btp_type.'</td><td>'.$currentdata->pagetype.'</td><td>'.$currentdata->btp_name.'</td><td>'.$currentdata->btp_id.'</td><td class="centercelltable">'.$currentdata->total.'</td><td class="centercelltable">'.$currentdata->avg.'</td><td class="centercelltable">'.$currentdata->total_indb.'</td><td class="centercelltable">'.$currentdata->avg_indb.'</td><td class="centercelltable">'.$currentdata->numr1.'</td><td class="centercelltable">'.$currentdata->numr2.'</td><td class="centercelltable">'.$currentdata->numr3.'</td><td class="centercelltable">'.$currentdata->numr4.'</td><td class="centercelltable">'.$currentdata->numr5.'</td></tr>';
+		echo '<tr id="'.$currentdata->btp_id.'"><td class="pagetype">'.$currentdata->pagetype.'</td><td class="btp_name">'.$currentdata->btp_name.'</td><td class="btp_id">'.$currentdata->btp_id.'</td><td class="centercelltable total">'.$currentdata->total.'</td><td class="centercelltable avg">'.$currentdata->avg.'</td><td class="centercelltable total_indb">'.$currentdata->total_indb.'</td><td class="centercelltable avg_indb">'.$currentdata->avg_indb.'</td><td class="centercelltable numr1">'.$currentdata->numr1.'</td><td class="centercelltable numr2">'.$currentdata->numr2.'</td><td class="centercelltable numr3">'.$currentdata->numr3.'</td><td class="centercelltable numr4">'.$currentdata->numr4.'</td><td class="centercelltable numr5">'.$currentdata->numr5.'</td></tr>';
 	}
 ?>
 	</table>
@@ -611,7 +614,6 @@ if($currentbadge->badge_orgin=='postid'){
 			
 					
 					<?php
-
 					//pull distinct page names and page ids from reviews table
 					$temptype ='custom';
 					$tempquery = "select type from ".$reviews_table_name." group by pageid";
@@ -664,7 +666,29 @@ if($currentbadge->badge_orgin=='postid'){
 						?>
 								<tr <?php echo $temphide;?> class="bo_<?php echo strtolower($fbpage->type);?>">
 								<td>
-								<input type="checkbox" class="pageselectclass" name="wprevpro_t_rpage[]" id="page_<?php echo $fbpage->pageid; ?>" value="<?php echo $fbpage->pageid; ?>"<?php if(in_array($fbpage->pageid, $rpagejsondecode)){echo 'checked="checked"';}?>><label for="page_<?php echo $fbpage->pageid; ?>"> <?php echo $fbpage->pagename.' ('.$fbpage->type.') - pageid: '.$fbpage->pageid.' - <a target="_blank" href="'.$temppagelink.'">'.substr($temppagelink,0,150).'...</a>'; ?></label>
+								<input type="checkbox" data-rtype="<?php echo strtolower($fbpage->type);?>" class="pageselectclass" name="wprevpro_t_rpage[]" id="page_<?php echo $fbpage->pageid; ?>" value="<?php echo $fbpage->pageid; ?>"<?php if(in_array($fbpage->pageid, $rpagejsondecode)){echo 'checked="checked"';}?>><label for="page_<?php echo $fbpage->pageid; ?>"> <?php echo $fbpage->pagename.' ('.$fbpage->type.') - pageid: '.$fbpage->pageid.' - <a target="_blank" href="'.$temppagelink.'">Source Page</a>'; ?></label>
+						
+						<?php
+						//find the totals and averages based on pageid
+						//print_r($currentdatas);
+						foreach ( $currentdatas as $currentdata ) 
+							{
+								if($currentdata->btp_id==$fbpage->pageid){
+									?>
+								<div id="badgedatapopup">
+									<div class="badgedatapopupflex-child">
+										<div class="bdp_tow"><span class="bdp_label">Source Site Total:</span><span class="bdp_value"><?php echo $currentdata->total; ?></span></div>
+										<div class="bdp_tow"><span class="bdp_label">Source Site Avg:</span><span class="bdp_value"><?php echo $currentdata->avg; ?></span></div>
+									</div>
+									<div class="badgedatapopupflex-child">
+										<div class="bdp_tow"><span class="bdp_label">Review List Total:</span><span class="bdp_value"><?php echo $currentdata->total_indb; ?></span></div>
+										<div class="bdp_tow"><span class="bdp_label">Review List Avg:</span><span class="bdp_value"><?php echo $currentdata->avg_indb; ?></span></div>
+									</div>
+								</div>
+									<?php
+								}
+							}
+						?>
 								</td>
 								</tr>
 						<?php
@@ -789,6 +813,13 @@ if($currentbadge->badge_orgin=='postid'){
 					$badge_misc_array['si_custom3_imgurl']='';
 					$badge_misc_array['si_custom3_linkurl']='';
 				}
+				if(!isset($badge_misc_array['outof'])){
+					$badge_misc_array['outof']='5';
+				}
+				if(!isset($badge_misc_array['liconheight'])){
+					$badge_misc_array['liconheight']='';
+					$badge_misc_array['liconwidth']='';
+				}
 
 				?>
 
@@ -800,6 +831,9 @@ if($currentbadge->badge_orgin=='postid'){
 								</div>
 								<div class="wprevpre_temp_label_row" >
 								<?php _e('# Average Decimals:', 'wp-review-slider-pro'); ?>
+								</div>
+								<div class="wprevpre_temp_label_row" >
+								<?php _e('Average Out Of:', 'wp-review-slider-pro'); ?>
 								</div>
 								<div class="wprevpre_temp_label_row t1oneonly" <?php if($currentbadge->style=='2'){echo "style=display:none;";} ?>>
 								<?php _e('Show Stars:', 'wp-review-slider-pro'); ?>
@@ -893,6 +927,12 @@ if($currentbadge->badge_orgin=='postid'){
 									  <option value="3" <?php if($badge_misc_array['roundavg']=='3'){echo "selected";} ?>><?php _e('3', 'wp-review-slider-pro'); ?></option>
 									</select>
 								</div>
+								<div class="wprevpre_temp_label_row" >
+									<select name="wprevpro_badge_misc_outof" id="wprevpro_badge_misc_outof">
+									  <option value="5" <?php if($badge_misc_array['outof']=='5'){echo "selected";} ?>><?php _e('5', 'wp-review-slider-pro'); ?></option>
+									  <option value="10" <?php if($badge_misc_array['outof']=='10'){echo "selected";} ?>><?php _e('10', 'wp-review-slider-pro'); ?></option>
+									</select>
+								</div>
 								<div class="wprevpre_temp_label_row t1oneonly" <?php if($currentbadge->style=='2'){echo "style=display:none;";} ?>>
 									<select name="wprevpro_badge_misc_showstars" id="wprevpro_badge_misc_showstars">
 									  <option value="yes" <?php if($badge_misc_array['showstars']=='yes'){echo "selected";} ?>><?php _e('Yes', 'wp-review-slider-pro'); ?></option>
@@ -953,11 +993,11 @@ if($currentbadge->badge_orgin=='postid'){
 								//preview will show here
 								?>
 							  </div>
-							  <div class="w3_wprs-col s12">
-							  <br>
-							  <?php _e('* The total and average rating above is just an example and does not reflect the actual values that will display on your page.', 'wp-review-slider-pro'); ?>
+							  <div class="w3_wprs-col s12 t2onlysource" style="color:red"><?php _e('<b>Note</b>: If you use Ratings From: Source Site for badge style 2, then the plugin will to try calculate the individual totals for each rating. The more reviews you have downloaded, the more accurate it will be.', 'wp-review-slider-pro'); ?></div>
+							  <div class="w3_wprs-col s12 fbsourcewarning" style="color:red" style="display:none;"><?php _e('<b>Note</b>: Facebook does not return the total and average from their API, so you will need to use "Review List" for the "Ratings From" values.', 'wp-review-slider-pro'); ?></div>
+							  <div class="w3_wprs-col s12" id="totalavgwarningmsg">
+							  <?php _e('Note: For Review Origin of "Submitted" or "Post Id" the total and average rating above is just an example and does not reflect the actual values that will display on your page.', 'wp-review-slider-pro'); ?>
 							  </div>
-							  <div class="w3_wprs-col s12 t2oneonly"><?php _e('Note: The Total and Averages for Badge Style 2 come from the reviews that have actually been downloaded and show up on the Review List page of the plugin.', 'wp-review-slider-pro'); ?></div>
 							  <div class="w3_wprs-col s12" id="wprevpro_gbadge_notice" style="display:none;">
 							  <?php _e('Note: Google does not return the total number of reviews in their API. It will default to what has actually been downloaded. Use the "Ratings From" field to input it manually.', 'wp-review-slider-pro'); ?>
 							  </div>
@@ -978,6 +1018,10 @@ if($currentbadge->badge_orgin=='postid'){
 								<div class="w3_wprs-col s12">
 								 <?php _e('Icon Link URL:', 'wp-review-slider-pro'); ?>
 								<input id="wprevpro_badge_misc_liconurllink" data-custom="custom" type="text" name="wprevpro_badge_misc_liconurllink" placeholder="" value="<?php echo $badge_misc_array['liconurllink']; ?>">
+								
+								<input id="wprevpro_badge_misc_liconwidth" data-custom="custom" type="hidden" name="wprevpro_badge_misc_liconwidth" placeholder="" value="<?php echo $badge_misc_array['liconwidth']; ?>">
+								<input id="wprevpro_badge_misc_liconheight" data-custom="custom" type="hidden" name="wprevpro_badge_misc_liconheight" placeholder="" value="<?php echo $badge_misc_array['liconheight']; ?>">
+								
 								</div>
 								</div>
 								<div class="w3_wprs-col s12 smallicondiv">

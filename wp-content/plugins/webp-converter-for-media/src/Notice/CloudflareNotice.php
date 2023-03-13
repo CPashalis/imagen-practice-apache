@@ -23,13 +23,6 @@ class CloudflareNotice extends NoticeAbstract implements NoticeInterface {
 	/**
 	 * {@inheritdoc}
 	 */
-	public static function get_default_value(): string {
-		return '';
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
 	public function is_available(): bool {
 		$cdn_server = strtolower( $_SERVER['HTTP_CDN_LOOP'] ?? '' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 		if ( isset( $_SERVER['KINSTA_CACHE_ZONE'] ) ) {
@@ -67,6 +60,8 @@ class CloudflareNotice extends NoticeAbstract implements NoticeInterface {
 
 	/**
 	 * {@inheritdoc}
+	 *
+	 * @return mixed[]
 	 */
 	public function get_vars_for_view(): array {
 		return [
@@ -86,7 +81,7 @@ class CloudflareNotice extends NoticeAbstract implements NoticeInterface {
 				),
 				sprintf(
 				/* translators: %1$s: section label, %2$s: button label */
-					__( 'Under %1$s, click %2$s. A warning window appears.', 'webp-converter-for-media' ),
+					__( 'Under %1$s, click %2$s. A warning window will appear.', 'webp-converter-for-media' ),
 					'<strong>"Purge Cache"</strong>',
 					'<strong>"Purge Everything"</strong>'
 				),

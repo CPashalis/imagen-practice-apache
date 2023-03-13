@@ -94,7 +94,7 @@ for ($x = 0; $x < count($rowarray); $x++) {
 		$tempreviewername = $templateclass->wprevpro_get_reviewername($review,$template_misc_array);
 		
 		//link to author url if turned on in template, use reviewer_id from db and create url for different types
-		$profilelink = $templateclass->wprevpro_get_profilelink($review,$currentform,$userpic,$tempreviewername,$template_misc_array,$burl);
+		$profilelink = $templateclass->wprevpro_get_profilelink($review,$currentform[0],$userpic,$tempreviewername,$template_misc_array,$burl);
 		
 		//userpic html, this could change to nothing if userpic turned off.
 		//$userpichtml = $profilelink['userpichtml'];
@@ -186,10 +186,10 @@ for ($x = 0; $x < count($rowarray); $x++) {
 		}		
 			
 		//verifiedstarhtlm
-		$verifiedstarhtmlarray = $templateclass->wprevpro_get_verifiedstarhtml($review,$template_misc_array,$currentform);
+		$verifiedstarhtmlarray = $templateclass->wprevpro_get_verifiedstarhtml($review,$template_misc_array,$currentform[0]);
 		
 		//starhtlm
-		$starhtmlarray = $templateclass->wprevpro_get_starhtml($review,$template_misc_array,$currentform,$starfile);
+		$starhtmlarray = $templateclass->wprevpro_get_starhtml($review,$template_misc_array,$currentform[0],$starfile);
 		$starhtml = $starhtmlarray[0];
 		if($starhtml!=''){
 			$starhtml = $starhtmlarray[0].$verifiedstarhtmlarray[0];
@@ -205,6 +205,8 @@ for ($x = 0; $x < count($rowarray); $x++) {
 		//media
 		$media = $templateclass->wprevpro_get_media($review,$template_misc_array);
 		
+//source pagename or form title
+		$sourcepagenamehtml = $templateclass->wprevpro_get_sourcepagename($review,$currentform[0],$template_misc_array);
 
 		
 		//load template from child theme if found
@@ -219,11 +221,12 @@ for ($x = 0; $x < count($rowarray); $x++) {
 					<?php echo $userpichtml; ?>
 					<?php echo $reviewnamehtml; ?><?php echo $companyhtml;?><?php echo $starhtml2;?>
 				</div>
-				<p class="wpproslider_t3_P_3 wprev_preview_tcolor1_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><img src="<?php echo $imgs_url."testimonial_quote.png"; ?>" alt="" class="wpproslider_t3_quote"><span class="wprevpro_star_imgs_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><?php echo $starhtml;?></span>
+				<div class="wpproslider_t3_P_3 wprev_preview_tcolor1_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><img src="<?php echo $imgs_url."testimonial_quote.png"; ?>" alt="" class="wpproslider_t3_quote"><span class="wprevpro_star_imgs_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><?php echo $starhtml;?></span>
 					<?php echo $title; ?><span class="wppro-reviewtext_T<?php echo $currentform[0]->style; ?>"><?php echo stripslashes($reviewtext); ?></span> <span class="wprev_showdate_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"> - <?php echo $datestring; ?><?php echo $verifiedstarhtmlarray[1]; ?></span>
-				</p>
+				</div>
 				<?php echo $media; ?>
 				<?php echo $miscpichtml; ?>
+				<?php echo $sourcepagenamehtml; ?>
 				<?php echo $logo; ?>
 			</div>
 		</div>

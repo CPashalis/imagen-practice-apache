@@ -48,7 +48,7 @@ class Meta extends CommonMigration\Meta {
 			function_exists( 'aioseoVideoSitemap' )
 		) {
 			// The video sitemap has already been instantiated, let's grab it.
-			$this->videoSitemap = property_exists( aioseoVideoSitemap(), 'video' ) ? aioseoVideoSitemap()->video : new VideoSitemap\VideoSitemap\Video;
+			$this->videoSitemap = property_exists( aioseoVideoSitemap(), 'video' ) ? aioseoVideoSitemap()->video : new VideoSitemap\VideoSitemap\Video();
 		}
 	}
 

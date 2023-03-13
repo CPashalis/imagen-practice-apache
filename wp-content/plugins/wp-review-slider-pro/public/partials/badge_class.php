@@ -14,8 +14,11 @@ class badgetools
 
 		//Use getimagesize to get size info about the image.
 		//this will error if we are trying to find path of protected directory like the plugin directory.
+		
+		//---turning off in version 11.5.5----------
+		//causing timeout issues, and slowing sites.
+		/*
 		$pos = strpos($imagePath, '/public/partials/imgs/');
-
 		if ($pos === false) {
 			$sizeInfo = @getimagesize($imagePath);
 			//widht and height html
@@ -23,6 +26,7 @@ class badgetools
 				$wh_html = $sizeInfo[3];
 			}
 		}
+		*/
 
 		return $wh_html;
 
@@ -172,7 +176,7 @@ class badgetools
 			$finalavg = esc_html($template_misc_array['ratingsavg']);
 
 		} else {
-			//if this is all or manual treat differently, need to find totals, only doing this is ratingsfrom not set or set to table not input
+			//if this is all or manual treat differently, need to find totals, only doing this is ratings from not set or set to table not input
 			if($badgeorgin=='manual'){
 				$x=0;
 				foreach ($wppro_total_avg_reviews_array as $key => $valuearray) {
@@ -281,8 +285,7 @@ class badgetools
 				
 				
 			} else {
-				
-				
+
 				//if this is not all or manual find pageids
 				//find the pageid array
 				if(isset($currentform[0]->rpage)){
@@ -350,7 +353,7 @@ class badgetools
 						}
 						if(!$skipthis){
 							//force to use db values if set
-							if($ratingsfrom=='db' || $currentform[0]->style=='2'){
+							if($ratingsfrom=='db'){
 
 								//found it, add to total and avg arrays
 								if(isset($valuearray['total_indb'])){
@@ -391,14 +394,31 @@ class badgetools
 								$temprating[3][$x]=$valuearray['numr3'];
 								$temprating[4][$x]=$valuearray['numr4'];
 								$temprating[5][$x]=$valuearray['numr5'];
+								if($ratingsfrom=='table' && $valuearray['total_indb']>0){
+									//if we are using the source site value make sure totals equal if not then multiple
+									$sumnum = intval($valuearray['numr1'])+intval($valuearray['numr2'])+intval($valuearray['numr3'])+intval($valuearray['numr4'])+intval($valuearray['numr5']);
+									if($sumnum<$valuearray['total']){
+										$pernum5 = intval($valuearray['numr5'])/$valuearray['total_indb'];
+										$temprating[5][$x] = round($pernum5*$valuearray['total']);
+										$pernum4 = intval($valuearray['numr4'])/$valuearray['total_indb'];
+										$temprating[4][$x] = round($pernum4*$valuearray['total']);
+										$pernum3 = intval($valuearray['numr3'])/$valuearray['total_indb'];
+										$temprating[3][$x] = round($pernum3*$valuearray['total']);
+										$pernum2 = intval($valuearray['numr2'])/$valuearray['total_indb'];
+										$temprating[2][$x] = round($pernum2*$valuearray['total']);
+										$pernum1 = intval($valuearray['numr1'])/$valuearray['total_indb'];
+										$temprating[1][$x] = round($pernum1*$valuearray['total']);
+									}
+								}
+								
 							} else {
 								$temprating[1][$x]=0;
 								$temprating[2][$x]=0;
 								$temprating[3][$x]=0;
 								$temprating[4][$x]=0;
 								$temprating[5][$x]=0;
-								
 							}
+
 							//we need to normalize in case we have a lot of reviews from one source then only a couple from another.
 							if (is_numeric($avgreviewsarray[$x]) && is_numeric($totalreviewsarray[$x])) {
 							$avgtimestotal[$x]=$avgreviewsarray[$x]*$totalreviewsarray[$x];
@@ -430,6 +450,10 @@ class badgetools
 		
 		$resultarray['finaltotal']=trim($finaltotal);
 		$resultarray['finalavg']=trim($finalavg);
+		//check if we are doubling finalavg
+		if(isset($template_misc_array['outof']) && $template_misc_array['outof']=="10"){
+			$resultarray['finalavg'] = $resultarray['finalavg']*2;
+		}
 		$resultarray['temprating']=$temprating;
 
 		return $resultarray;

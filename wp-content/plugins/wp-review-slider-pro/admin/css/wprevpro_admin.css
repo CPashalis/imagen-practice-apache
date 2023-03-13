@@ -6,6 +6,21 @@
  .welcomediv>p {
     font-size: 14px;
 }
+#badgedatatable {
+    width: -webkit-fill-available;
+}
+div#badgedatapopup {
+    display: flex;
+	margin-left: 24px;
+	color: #8c8f94;
+}
+.badgedatapopupflex-child {
+    flex: 1;
+}
+span.bdp_label {
+    margin-right: 5px;
+    font-style: italic;
+}
  .fs-freemium-licensing {
     display: none;
 }
@@ -1190,4 +1205,25 @@ table#popupjobtable {
 }
 .templatesettingstable p.description {
     display: none;
+}
+.notifications_sections .submit {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding-top: 5px;
+    padding-bottom: 0px;
+}
+label.rollabel {
+    font-weight: 700;
+    width: 103px;
+    display: inline-block;
+}
+.notifications_sections .pagerow {
+    margin-bottom: 5px;
+}
+img#reviewtypelogo {
+    margin-right: 5px;
+}
+span#headertypetext {
+    font-size: 20px;
+    vertical-align: middle;
 }

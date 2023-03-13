@@ -33,7 +33,7 @@ class Sitemap extends CommonSitemap\Sitemap {
 		$this->query         = new Query();
 		$this->priority      = new Priority();
 		$this->helpers       = new Helpers();
-		$this->requestParser = new RequestParser;
+		$this->requestParser = new RequestParser();
 
 		new CommonSitemap\Localization();
 

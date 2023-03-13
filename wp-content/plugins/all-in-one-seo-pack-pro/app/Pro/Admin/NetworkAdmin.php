@@ -27,7 +27,7 @@ class NetworkAdmin extends CommonAdmin\NetworkAdmin {
 
 		add_action( 'network_site_new_form', [ $this, 'newSiteForm' ] );
 		add_action( 'wp_initialize_site', [ $this, 'cloneSeoSettings' ], 1000 );
-		add_filter( 'wpmu_drop_tables', [ $this, 'dropTables' ], 10, 2 );
+		add_filter( 'wpmu_drop_tables', [ $this, 'dropTables' ] );
 	}
 
 	/**

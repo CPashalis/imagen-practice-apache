@@ -332,7 +332,7 @@
 										<img src="'+googlelogo+'" alt="TripAdvisor Logo" class="wprevpro_t2_site_logo siteicon">	\
 								</div></div></div></div>';	
 								
-		var style3html = '<style>.wpproslider_t3_P_3{ font: italic normal normal normal 16px / 21px Georgia, serif; }.wpproslider_t3_DIV_2{ font: italic normal normal normal 16px / 21px Georgia, serif; }</style><div class="wprevpro_t3_outer_div w3_wprs-row-padding">	\
+		var style3html = '<style>.wpproslider_t3_P_3{ font: normal normal normal normal 16px / 21px Georgia, serif; }.wpproslider_t3_DIV_2{ font: normal normal normal normal 16px / 21px Georgia, serif; }</style><div class="wprevpro_t3_outer_div w3_wprs-row-padding">	\
 				<div class="wpproslider_t3_DIV_1 w3_wprs-col l12">	\
 			<div class="wpproslider_t3_DIV_1a wprev_preview_bg2 wprev_preview_bradius">	\
 				<div class="wpproslider_t3_DIV_2 wprev_preview_bg1 wprev_preview_tcolor2 wprev_preview_tcolor3">	\
@@ -969,7 +969,7 @@
 		  if(ttype=="widget"){
 			openpopup(adminjs_script_vars.popuptitle1, '<p>'+adminjs_script_vars.popupmsg1+'</p>', "");
 		  } else {
-			openpopup(adminjs_script_vars.popuptitle2, '<p>'+adminjs_script_vars.popupmsg2a+' </br></br><code>[wprevpro_usetemplate tid="'+tid+'"] </code></br></br>'+adminjs_script_vars.or+'</br></br>[wprevpro_usetemplate tid="'+tid+'" pageid="" langcode="" tag="" strhasone="" strhasall="" strnot=""]</br><a href="https://wpreviewslider.userecho.com/knowledge-bases/2/articles/552-shortcode-parameter-to-filter-by-page-id" target="_blank">'+adminjs_script_vars.more_info+'</a><br></p><p>'+adminjs_script_vars.popupmsg2b+' </br></br><code> echo do_shortcode( \'[wprevpro_usetemplate tid="'+tid+'"]\' ); </code></br></br><code> do_action( \'wprev_pro_plugin_action\', '+tid+' ); </code></p>', '');
+			openpopup(adminjs_script_vars.popuptitle2, '<p>'+adminjs_script_vars.popupmsg2a+' </br></br>[wprevpro_usetemplate tid="'+tid+'"] </br></br>'+adminjs_script_vars.or+'</br></br>[wprevpro_usetemplate tid="'+tid+'" pageid="" langcode="" tag="" strhasone="" strhasall="" strnot=""]</br><a href="https://wpreviewslider.userecho.com/knowledge-bases/2/articles/552-shortcode-parameter-to-filter-by-page-id" target="_blank">'+adminjs_script_vars.more_info+'</a><br></p><p>'+adminjs_script_vars.popupmsg2b+' </br></br> echo do_shortcode( \'[wprevpro_usetemplate tid="'+tid+'"]\' ); </br></br> do_action( \'wprev_pro_plugin_action\', '+tid+' ); </p>', '');
 		  }
 
 		});

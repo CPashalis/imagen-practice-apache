@@ -6,6 +6,7 @@ use WebpConverter\Error\Notice\LibsNotInstalledNotice;
 use WebpConverter\Error\Notice\LibsWithoutWebpSupportNotice;
 use WebpConverter\PluginData;
 use WebpConverter\PluginInfo;
+use WebpConverter\Settings\Page\AdvancedSettingsPage;
 use WebpConverter\Settings\Page\PageIntegration;
 use WebpConverterVendor\MattPlugins\DeactivationModal;
 
@@ -53,20 +54,25 @@ class DeactivationModalGenerator {
 				sprintf( self::API_URL, $this->plugin_info->get_plugin_slug() ),
 				sprintf(
 				/* translators: %s: plugin name */
-					__( 'We are sorry that you are leaving our plugin %s', 'webp-converter-for-media' ),
+					__( 'We are sorry that you are leaving our %s plugin', 'webp-converter-for-media' ),
 					'Converter for Media'
 				),
-				__( 'Can you please take a moment to tell us why you are deactivating this plugin (anonymous answer)?', 'webp-converter-for-media' ),
+				__( 'Can you, please, take a moment to tell us why you are deactivating this plugin (anonymous answer)?', 'webp-converter-for-media' ),
 				__( 'Submit and Deactivate', 'webp-converter-for-media' ),
 				__( 'Skip and Deactivate', 'webp-converter-for-media' ),
-				'https://mattplugins.com/images/matt-plugins-gray.png'
+				'https://mattplugins.com/images/matt-plugins-gray.png',
+				$this->load_notice_message()
 			),
 			( new DeactivationModal\Model\FormOptions() )
 				->set_option(
 					new DeactivationModal\Model\FormOption(
 						'server_config',
 						10,
-						__( 'I have "Server configuration error" in plugin settings', 'webp-converter-for-media' ),
+						sprintf(
+							/* translators: %s: notice title */
+							__( 'I have the %s notice in the plugin settings', 'webp-converter-for-media' ),
+							__( 'Server configuration error', 'webp-converter-for-media' )
+						),
 						function () {
 							$errors = apply_filters( 'webpc_server_errors', [] );
 							if ( ! in_array(
@@ -79,18 +85,18 @@ class DeactivationModalGenerator {
 							return sprintf(
 							/* translators: %1$s: open anchor tag, %2$s: close anchor tag */
 								__( 'If your server does not meet the technical requirements, you can use "Remote server" as "Conversion method", in %1$sthe plugin settings%2$s.', 'webp-converter-for-media' ),
-								'<a href="' . PageIntegration::get_settings_page_url() . '">',
+								'<a href="' . esc_url( PageIntegration::get_settings_page_url() ) . '">',
 								'</a>'
 							);
 						},
-						__( 'What is your error? Have you been looking for solution to this issue?', 'webp-converter-for-media' )
+						__( 'What is your error? Have you been looking for a solution to this issue?', 'webp-converter-for-media' )
 					)
 				)
 				->set_option(
 					new DeactivationModal\Model\FormOption(
 						'misunderstanding',
 						20,
-						__( 'Images are not displayed in WebP format', 'webp-converter-for-media' ),
+						__( 'Images are not displayed in the WebP format', 'webp-converter-for-media' ),
 						function () {
 							return sprintf(
 							/* translators: %1$s: open anchor tag, %2$s: close anchor tag */
@@ -107,7 +113,15 @@ class DeactivationModalGenerator {
 						'website_broken',
 						30,
 						__( 'This plugin broke my website', 'webp-converter-for-media' ),
-						null,
+						function () {
+							return sprintf(
+							/* translators: %1$s: option label, %2$s: open anchor tag, %3$s: close anchor tag */
+								__( 'Check the %1$s option in %2$sthe plugin settings%3$s - this should solve the problem.', 'webp-converter-for-media' ),
+								__( 'Disable rewrite inheritance in .htaccess files', 'webp-converter-for-media' ),
+								'<a href="' . esc_url( PageIntegration::get_settings_page_url( AdvancedSettingsPage::PAGE_SLUG ) ) . '">',
+								'</a>'
+							);
+						},
 						__( 'What exactly happened?', 'webp-converter-for-media' )
 					)
 				)
@@ -117,7 +131,7 @@ class DeactivationModalGenerator {
 						40,
 						__( 'I found a better plugin', 'webp-converter-for-media' ),
 						null,
-						__( 'What is name of this plugin? Why is it better?', 'webp-converter-for-media' )
+						__( 'What is the name of this plugin? Why is it better?', 'webp-converter-for-media' )
 					)
 				)
 				->set_option(
@@ -135,7 +149,7 @@ class DeactivationModalGenerator {
 						60,
 						__( 'Other reason', 'webp-converter-for-media' ),
 						null,
-						__( 'What is reason? What can we improve for you?', 'webp-converter-for-media' )
+						__( 'What is the reason? What can we improve for you?', 'webp-converter-for-media' )
 					)
 				),
 			( new DeactivationModal\Model\FormValues() )
@@ -168,6 +182,8 @@ class DeactivationModalGenerator {
 								'webp_unconverted'    => $this->stats_manager->get_images_webp_unconverted(),
 								'avif_all'            => $this->stats_manager->get_images_avif_all(),
 								'avif_unconverted'    => $this->stats_manager->get_images_avif_unconverted(),
+								'rewrite_root'        => PathsGenerator::get_rewrite_root(),
+								'rewrite_path'        => PathsGenerator::get_rewrite_path(),
 							];
 
 							$stats_json = json_encode( $stats_data );
@@ -183,6 +199,29 @@ class DeactivationModalGenerator {
 						}
 					)
 				)
+		);
+	}
+
+	/**
+	 * @return string|null
+	 */
+	private function load_notice_message() {
+		if ( ( apply_filters( 'webpc_server_errors', [] ) !== [] ) || is_multisite() ) {
+			return null;
+		}
+
+		$images_all  = $this->stats_manager->get_images_webp_all() ?: 0;
+		$images_left = $this->stats_manager->get_images_webp_unconverted() ?: 0;
+		if ( ( $images_all === 0 ) || ( $images_left === 0 ) ) {
+			return null;
+		}
+
+		return sprintf(
+		/* translators: %1$s: button label, %2$s: open anchor tag, %3$s: close anchor tag */
+			__( 'You have unconverted images on your website - click the %1$s button in %2$sthe plugin settings%3$s. This is all you need to do after installing the plugin.', 'webp-converter-for-media' ),
+			'"' . __( 'Start Bulk Optimization', 'webp-converter-for-media' ) . '"',
+			'<a href="' . esc_url( admin_url( 'upload.php?page=' . PageIntegration::UPLOAD_MENU_PAGE ) ) . '">',
+			'</a>'
 		);
 	}
 }

@@ -282,6 +282,7 @@ class DynamicOptions extends CommonOptions\DynamicOptions {
 				'toolsSettings'             => [ 'type' => 'boolean', 'default' => false ],
 				'featureManagerSettings'    => [ 'type' => 'boolean', 'default' => false ],
 				'pageAnalysis'              => [ 'type' => 'boolean', 'default' => false ],
+				'searchStatisticsSettings'  => [ 'type' => 'boolean', 'default' => false ],
 				'pageGeneralSettings'       => [ 'type' => 'boolean', 'default' => false ],
 				'pageAdvancedSettings'      => [ 'type' => 'boolean', 'default' => false ],
 				'pageSchemaSettings'        => [ 'type' => 'boolean', 'default' => false ],

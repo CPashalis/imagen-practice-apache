@@ -18,7 +18,9 @@
 	
  //use the template id to find template in db, echo error if we can't find it or just don't display anything
  	//Get the form--------------------------
-	$currentform = $wpdb->get_results("SELECT * FROM $table_name WHERE id = ".$a['tid']);
+	$tid = htmlentities($a['tid']);
+	$tid = intval($tid);
+	$currentform = $wpdb->get_results("SELECT * FROM $table_name WHERE id = ".$tid);
 	
 	$totalreviewsnum ='';
 	$reviewratingsarray = Array();
@@ -59,6 +61,9 @@
 		$totalreviews = $totalreviewsarray['reviews'];
 		//$totalreviewsarray['totalcount']
 		//$totalreviewsarray['totalavg']
+
+		
+		//print_r($totalreviews);
 	
 		$reviewsperpage= $currentform[0]->display_num*$currentform[0]->display_num_rows;
 		
@@ -142,8 +147,11 @@
 			$template_misc_array['header_rating']='';
 			$template_misc_array['header_langcodes']='';
 		}
+		if(!isset($template_misc_array['header_rtypes'])){
+			$template_misc_array['header_rtypes']='';
+		}
 		//if any header search is turned on and this is not normal slider then we need to force on load more
-		if($template_misc_array['header_search']=='yes' || $template_misc_array['header_sort']=='yes' || $template_misc_array['header_tag']=='yes' || $template_misc_array['header_rating']=='yes' || $template_misc_array['header_langcodes']=='yes'){
+		if($template_misc_array['header_search']=='yes' || $template_misc_array['header_sort']=='yes' || $template_misc_array['header_tag']=='yes' || $template_misc_array['header_rating']=='yes' || $template_misc_array['header_langcodes']=='yes' || $template_misc_array['header_rtypes']=='yes'){
 			if($currentform[0]->createslider != "yes"){
 			$currentform[0]->load_more='yes';
 			}
@@ -211,6 +219,28 @@
 				//print_r($tagarray);
 			}
 			
+			//adding header rtypes buttons if set.
+			if(isset($template_misc_array['header_rtypes']) && $template_misc_array['header_rtypes']=='yes'){
+				echo '<div class="wprevpro_rtypes_div">';
+				//find types listed in this template. coming from get_reviewsclass
+				foreach($totalreviewsarray['reviewtypesarray'] as $temptype){
+					if($temptype!='' && $temptype!='Manual'){
+						
+						$img = WPREV_PLUGIN_URL."/public/partials/imgs/".strtolower($temptype)."_small_icon.png";
+						$imgdir = WPREV_PLUGIN_DIR."public/partials/imgs/".strtolower($temptype)."_small_icon.png";
+						//echo $img;
+						if(file_exists($imgdir)){
+							echo '<span class="wprevpro_stype_btn"><img class="wprevrtypebtn" src="'.$img.'" alt="'.$temptype.' filter" height="32">'.esc_html($temptype).'</span>';
+						} else {
+							echo '<span class="wprevpro_stype_btn">'.esc_html($temptype).'</span>';
+						}
+					}
+				}
+				// create html for each type.
+				echo '<img loading="lazy" src="'.$loading_img_url.'" class="wprppagination_rtypes_loading_img" style="display:none;">';
+				echo '</div>';
+			}
+			
 			echo '</div>';
 			
 		}
@@ -221,11 +251,11 @@
 			$notsameheight="";
 		} else {
 			//only using for non-slider
-			if($currentform[0]->createslider != "yes"){
+			//if($currentform[0]->createslider != "yes"){
 				$notsameheight="revnotsameheight";
-			} else {
-				$notsameheight='';
-			}
+			//} else {
+				//$notsameheight='';
+			//}
 		}
 
 //echo $reviewsperpage;
@@ -252,10 +282,14 @@
 					$rtltag = 'dir="rtl"';
 				}
 				$mobileoneperslide = "";
+				$animateHeightslider = '';
 				if(isset($currentform[0]->slidermobileview) && $currentform[0]->slidermobileview == "one"){
 					$mobileoneperslide = 'data-onemobil="yes"';
 				}
-				echo '<div style="display:none;" class="wprevpro wprev-slider '.$notsameheight.'" '.$mobileoneperslide.' '.$rtltag.' id="wprev-slider-'.$currentform[0]->id.'">';
+				if($currentform[0]->sliderheight!="" && $currentform[0]->sliderheight=='yes' && $forceheight==''){
+					$animateHeightslider = 'animateheight';
+				}
+				echo '<div style="display:none;" class="wprevpro wprev-slider '.$notsameheight.' '.$animateHeightslider.'" '.$mobileoneperslide.' '.$rtltag.' id="wprev-slider-'.$currentform[0]->id.'">';
 			}
 		} else if($currentform[0]->createslider == "sli"){
 			echo '<div class="wprevpro wprev-slick-slider '.$notsameheight.'" id="wprev-slider-'.$currentform[0]->id.'">';
@@ -349,6 +383,7 @@
 				$sli_autoplaySpeedval = intval($currentform[0]->sliderdelay)*1000;
 				$sli_autoplaySpeed = ',"autoplaySpeed": '.$sli_autoplaySpeedval.'';
 			}
+			//echo $currentform[0]->sliderspeed;
 			if($currentform[0]->sliderspeed!="" && intval($currentform[0]->sliderspeed)>0){
 				$sli_Speedval = intval($currentform[0]->sliderspeed);
 				$sli_Speed = ',"speed": '.$sli_Speedval.'';
@@ -406,7 +441,7 @@
 				}
 			}
 
-			echo '<div id="wprevgoslickid_'.esc_attr($currentform[0]->id).'" '.$slickrtlhtml.' style="display:none;" class="wprevgoslick w3_wprs-row-padding" '.$dataavatartemplate.' data-totalreviewsnum="'.$totalreviewsnum.'" data-wprevmasonry="'.esc_attr($currentform[0]->display_masonry).'" '.$sli_dataloadmore.' data-avatarnav="no" data-revsameheight="'.$revsameheight.'" data-slickwprev=\'{'.$slidesetup.''.$sli_slidestoscroll.''.$sli_dots.''.$sli_arrows.''.$sli_infinite.''.$sli_Speed.''.$sli_adaptiveheight.$sli_centermode.$sli_fade.$sli_centermode_padding.$slickrtl.$sli_rows.$sli_autoplay.$sli_autoplaySpeed.$sli_asnavfor.'}\'>';
+			echo '<div id="wprevgoslickid_'.esc_attr($currentform[0]->id).'" '.$slickrtlhtml.' style="display:none;" class="wprevgoslick w3_wprs-row" '.$dataavatartemplate.' data-totalreviewsnum="'.$totalreviewsnum.'" data-revsperrow="'.intval($currentform[0]->display_num).'" data-wprevmasonry="'.esc_attr($currentform[0]->display_masonry).'" '.$sli_dataloadmore.' data-avatarnav="no" data-revsameheight="'.$revsameheight.'" data-slickwprev=\'{'.$slidesetup.''.$sli_slidestoscroll.''.$sli_dots.''.$sli_arrows.''.$sli_infinite.''.$sli_Speed.''.$sli_adaptiveheight.$sli_centermode.$sli_fade.$sli_centermode_padding.$slickrtl.$sli_rows.$sli_autoplay.$sli_autoplaySpeed.$sli_asnavfor.'}\'>';
 		}
 		//---------end slick slider-----------------------
 		
@@ -560,7 +595,7 @@
 			$forceheight ='';
 			if($currentform[0]->review_same_height!=""){
 				if($currentform[0]->review_same_height=='yes' || $currentform[0]->review_same_height=='cur' || $currentform[0]->review_same_height=='yea'){
-					$forceheight='var maxheights = $("#wprev-slider-'.$currentform[0]->id.'").find(".w3_wprs-col").find("p").parent().map(function (){return $(this).outerHeight();}).get();var maxHeightofslide = Math.max.apply(null, maxheights);if(maxHeightofslide>0){$("#wprev-slider-'.$currentform[0]->id.'").find(".w3_wprs-col").find("p").parent().css( "min-height", maxHeightofslide );}';
+					$forceheight='var maxheights = $("#wprev-slider-'.$currentform[0]->id.'").find(".indrevdiv").map(function (){return $(this).outerHeight();}).get();var maxHeightofslide = Math.max.apply(null, maxheights);if(maxHeightofslide>0){$("#wprev-slider-'.$currentform[0]->id.'").find(".indrevdiv").css( "min-height", maxHeightofslide );}';
 				}
 			}
 		

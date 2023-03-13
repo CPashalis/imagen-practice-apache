@@ -130,6 +130,15 @@
 			if( tempstrval ) {
 				$( "#urlnote" ).html(tempstrval);
 			}
+			
+			//special note for sitetype
+			$( "#sitetypenote" ).html("");
+			var sitetype = $( "#wprevpro_site_type" ).val();
+			var tempstr1 = "sitetypenote_"+sitetype.toLowerCase();
+			var tempstrval1 = adminjs_script_vars[tempstr1];
+			if( tempstrval1 ) {
+				$( "#sitetypenote" ).html(tempstrval1);
+			}
 		}
 		
 		//===========for pop-up==========
@@ -279,6 +288,8 @@
 										//===================================
 										//---fix this with a cache file on server next time we have backup
 										numberinline = ajaxlistjobque(jobobjarray[i].job_id);
+									} else {
+										previousjobcomplete = true;
 									}
 									if(jobobjarray[i].percentage_complete==100){
 										if(jobobjarray[i].diff_job_id>1){

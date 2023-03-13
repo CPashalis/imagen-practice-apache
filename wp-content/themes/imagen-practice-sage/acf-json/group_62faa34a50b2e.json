@@ -173,6 +173,22 @@
             "maxlength": ""
         },
         {
+            "key": "field_63ecff3ab94fd",
+            "label": "Schedule Form Outbound Link",
+            "name": "schedule_form_outbound_link",
+            "type": "url",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "placeholder": ""
+        },
+        {
             "key": "field_62faa3e578b16",
             "label": "Social",
             "name": "",
@@ -288,7 +304,7 @@
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
-                "width": "50",
+                "width": "",
                 "class": "",
                 "id": ""
             },
@@ -304,15 +320,15 @@
             "mime_types": ""
         },
         {
-            "key": "field_639781415a885",
+            "key": "field_63f79e69f60e8",
             "label": "Primary Nav Logo Height",
             "name": "primary_nav_logo_height",
             "type": "number",
-            "instructions": "Default set to 44px",
+            "instructions": "",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
-                "width": "50",
+                "width": "",
                 "class": "",
                 "id": ""
             },
@@ -752,6 +768,33 @@
                 "id": ""
             },
             "default_value": "#F9FAFB"
+        },
+        {
+            "key": "field_640f30953c8d1",
+            "label": "Font Options",
+            "name": "font_options",
+            "type": "radio",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "quicksand": "Quicksand (default)",
+                "roboto": "Roboto (sans)",
+                "monty": "Montserrat (sans)",
+                "newsreader": "Newsreader (serif)",
+                "noto": "Noto (serif)"
+            },
+            "allow_null": 0,
+            "other_choice": 0,
+            "default_value": "",
+            "layout": "vertical",
+            "return_format": "value",
+            "save_other_choice": 0
         }
     ],
     "location": [
@@ -771,5 +814,5 @@
     "hide_on_screen": "",
     "active": true,
     "description": "",
-    "modified": 1670873699
+    "modified": 1678717364
 }

@@ -3,7 +3,6 @@ $urltrimmedtab = remove_query_arg( array('page', 'forcerecal','_wpnonce', 'rtype
 
 $urlget['getrevs'] = esc_url( add_query_arg( 'page', 'wp_pro-getrevs',$urltrimmedtab ) );
 $urlget['review_funnel'] = esc_url( add_query_arg( 'page', 'wp_pro-reviewfunnel',$urltrimmedtab ) );
-$urlget['settings'] = esc_url( add_query_arg( 'page', 'wp_pro-settings',$urltrimmedtab ) );
 $urlget['googlesettings'] = esc_url( add_query_arg( 'page', 'wp_pro-googlesettings',$urltrimmedtab ) );
 $urlget['reviews'] = esc_url( add_query_arg( 'page', 'wp_pro-reviews',$urltrimmedtab ) );
 $urlget['templates_posts'] = esc_url( add_query_arg( 'page', 'wp_pro-templates_posts',$urltrimmedtab ) );
@@ -61,6 +60,10 @@ $urlget['get_apps_feefo'] = esc_url( add_query_arg( array(
     'page' => 'wp_pro-get_apps',
     'rtype' => 'Feefo',
 ),$urltrimmedtab ) );
+$urlget['get_apps_facebook'] = esc_url( add_query_arg( array(
+    'page' => 'wp_pro-get_apps',
+    'rtype' => 'Facebook',
+),$urltrimmedtab ) );
 $urlget['get_apps_gcrawl'] = esc_url( add_query_arg( array(
     'page' => 'wp_pro-get_apps',
     'rtype' => 'Google',
@@ -113,29 +116,31 @@ $urlget['get_apps_yelp'] = esc_url( add_query_arg( array(
     'page' => 'wp_pro-get_apps',
     'rtype' => 'Yelp',
 ),$urltrimmedtab ) );
+$urlget['get_apps_birdeye'] = esc_url( add_query_arg( array(
+    'page' => 'wp_pro-get_apps',
+    'rtype' => 'Birdeye',
+),$urltrimmedtab ) );
+$urlget['get_apps_yotpo'] = esc_url( add_query_arg( array(
+    'page' => 'wp_pro-get_apps',
+    'rtype' => 'Yotpo',
+),$urltrimmedtab ) );
 
 
 
-//Notifications
-?>	
-	<h2 class="nav-tab-wrapper">
-<?php
+
 if (current_user_can('manage_options')) {
 
 ?>
+<h2 class="nav-tab-wrapper">
 	<div style="position: relative;">
 	<a href="<?php echo $urlget['getrevs']; ?>" class="getrevshiddenmenu nav-tab <?php if($_GET['page']=='wp_pro-getrevs'){echo 'nav-tab-active';} ?>"><?php _e('Get Reviews', 'wp-review-slider-pro'); ?></a>
 	<div id="getrevshiddenmenu_inner">
 		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-getrevs" class="ahiddengetrevs"><i>Welcome</i></a>
 		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_apps&rtype=Airbnb" class="ahiddengetrevs">Airbnb</a>
-		<?php
-		/*
-		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_airbnb" class="ahiddengetrevs">Airbnb</a>
-		*/
-		?>
 		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_apps&rtype=AngiesList" class="ahiddengetrevs">Angie's List</a>
+		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_apps&rtype=Birdeye" class="ahiddengetrevs">Birdeye</a>
 		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_apps&rtype=Experience" class="ahiddengetrevs">Experience</a>
-		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-settings" class="ahiddengetrevs">Facebook</a>
+		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_apps&rtype=Facebook" class="ahiddengetrevs">Facebook</a>
 		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_apps&rtype=FeedbackCompany" class="ahiddengetrevs">FeedbackCompany</a>
 		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_apps&rtype=Feefo" class="ahiddengetrevs">Feefo</a>
 		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_apps&rtype=Freemius" class="ahiddengetrevs">Freemius</a>
@@ -158,39 +163,29 @@ if (current_user_can('manage_options')) {
 		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_woo" class="ahiddengetrevs">WooCommerce</a>
 		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_apps&rtype=WordPress" class="ahiddengetrevs">WordPress.org</a>
 		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_apps&rtype=Yelp" class="ahiddengetrevs">Yelp</a>
+		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_apps&rtype=Yotpo" class="ahiddengetrevs">Yotpo</a>
 		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-get_apps&rtype=Zillow" class="ahiddengetrevs">Zillow</a>
 		<a href="<?php echo site_url();?>/wp-admin/admin.php?page=wp_pro-reviewfunnel" class="ahiddengetrevs">Review Funnels</a>
 	</div>
 	</div>
 	<a href="<?php echo $urlget['review_funnel']; ?>" class="nav-tab <?php if($_GET['page']=='wp_pro-reviewfunnel'){echo 'nav-tab-active';} ?>"><?php _e('Review Funnels', 'wp-review-slider-pro'); ?></a>
-<?php
-}
-if (current_user_can('edit_pages')) {
-?>
+
 	<a href="<?php echo $urlget['reviews']; ?>" class="nav-tab <?php if($_GET['page']=='wp_pro-reviews'){echo 'nav-tab-active';} ?>"><?php _e('Review List', 'wp-review-slider-pro'); ?></a>
-<?php
-}
-if (current_user_can('manage_options')) {
-?>
+
 	<a href="<?php echo $urlget['templates_posts']; ?>" class="nav-tab <?php if($_GET['page']=='wp_pro-templates_posts'){echo 'nav-tab-active';} ?>"><?php _e('Templates', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['badges']; ?>" class="nav-tab <?php if($_GET['page']=='wp_pro-badges'){echo 'nav-tab-active';} ?>"><?php _e('Badges', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['forms']; ?>" class="nav-tab <?php if($_GET['page']=='wp_pro-forms'){echo 'nav-tab-active';} ?>"><?php _e('Forms', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['float']; ?>" class="nav-tab <?php if($_GET['page']=='wp_pro-float'){echo 'nav-tab-active';} ?>"><?php _e('Floats', 'wp-review-slider-pro'); ?></a>
-<?php
-}
-if (current_user_can('edit_pages')) {
-?>
+
 	<a href="<?php echo $urlget['analytics']; ?>" class="nav-tab <?php if($_GET['page']=='wp_pro-analytics'){echo 'nav-tab-active';} ?>"><?php _e('Analytics', 'wp-review-slider-pro'); ?></a>
-<?php
-}
-if (current_user_can('manage_options')) {
-?>
+
 	<a href="<?php echo $urlget['notifications']; ?>" class="nav-tab <?php if($_GET['page']=='wp_pro-notifications'){echo 'nav-tab-active';} ?>"><?php _e('Tools', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['forum']; ?>" class="nav-tab <?php if($_GET['page']=='wp_pro-forum'){echo 'nav-tab-active';} ?>"><?php _e('Support', 'wp-review-slider-pro'); ?></a>
+	</h2>
 <?php
 }
 ?>
-	</h2>
+	
 <div class="getrevshiddenmenu">
 
 </div>

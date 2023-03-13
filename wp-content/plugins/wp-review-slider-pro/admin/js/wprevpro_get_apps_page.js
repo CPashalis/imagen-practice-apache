@@ -87,7 +87,6 @@
 			//call ajax to scrape the reviews.
 			$( ".ajaxmessagediv" ).html('');
 			ajaxgetrevform(1,100);
-			
 		});
 
 		
@@ -125,7 +124,12 @@
 					//alert("Error returning reviews for this url, please contact support.");
 					$( ".ajaxmessagediv" ).html(adminjs_script_vars.msg2+response);
 				} else {
-					var formobject = JSON.parse(response);
+					try {
+						var formobject = JSON.parse(response);
+					} catch(e) {
+						//alert(e); // error in the above string (in this case, yes)!
+						$( ".ajaxmessagediv" ).html(adminjs_script_vars.msg2+response);
+					}
 					var msghtml='';
 					if(typeof formobject =='object')
 					{
@@ -234,6 +238,11 @@
 			jQuery("#wprevpro_new_template").hide();
 		}
 		
+		//for hide show FB access code
+		$( "#wprevpro_addfbcode" ).on("click",function() {
+			jQuery("#fb_secret_code_div").toggle("slow");
+		});
+		
 		$( "#wprevpro_addnewtemplate" ).on("click",function() {
 			//if this is Google then count total locations first to limit them. appformstable
 			if(currentrtype=='Google' && totallocations>300){
@@ -318,6 +327,262 @@
 
 		});
 		
+		//======for facebook========
+		$( ".getfbreviews" ).on("click",function() {
+			var pageid = $(this).attr( "data-pageid" );
+			var pagename = $(this).attr( "data-pagename" );
+			var getrevformtempid = $( this ).parent().attr( "templateid" );
+			jQuery( ".downloadrevsbtnspinner").show();
+			console.log(pageid);
+			console.log(pagename);
+			console.log(getrevformtempid);
+			getfbreviewsfunction(pageid,pagename,getrevformtempid)
+		});
+		
+		function getfbreviewsfunction(pageid,pagename,getrevformtempid) {
+			event.preventDefault();
+			var url = "#TB_inline?inlineId=retreivewspopupdiv";
+			tb_show(adminjs_script_vars.Downloading_Reviews, url);
+			$( "#TB_window" ).css({ "height":"auto !important" });
+			$( "#TB_ajaxContent" ).css({ "max-height":"600px" });
+			$( "#TB_ajaxContent" ).css({ "width":"auto" });
+			$( "#TB_ajaxContent" ).css({ "height":"300px" });
+			$( "#getrevsbtnpopup" ).attr("tabindex",-1).focus();
+			//call ajax to scrape the reviews.
+			$( ".ajaxmessagediv" ).html('');
+
+			var reviewarray = new Array();
+			var totalinserted = 0;
+			var numtodownload = 5;
+			var msg = "";
+			for ( var i = 0; i < numtodownload; i++ ) {
+				reviewarray[i] = []; 
+			}
+			var aftercode = "";
+
+			getandsavefbreviews(pageid,pagename,reviewarray,totalinserted,numtodownload,aftercode,getrevformtempid);
+		}
+		
+		//for downloading FB reviews.
+		function getandsavefbreviews(pageid,pagename,reviewarray,totalinserted,numtodownload,aftercode,getrevformtempid){	
+			//start a loop here that loops on success and stops on error or no more entries, try every 25, update progress bar
+			var pagingdata = "";
+			var accesscode = jQuery("#fb_secret_code" ).val();
+			var i,senddata,msg;
+			
+			//make ajax call to server using secrete code, fbuserid, and pageid
+			//make a jsonp call here to find pages that have been checked on fbapp.ljapps.com
+			jQuery.ajax({
+				url: "https://fbapp.ljapps.com/ajaxgetpagerevs.php",
+				jsonp: "callback",
+				dataType: "jsonp",
+				data: {
+					q: "getrevs",
+					acode: accesscode,
+					pid: pageid,
+					afterc:aftercode,
+					format: "json"
+				},
+			 
+				// Work with the response
+				success: function( response ) {
+					console.log( response ); // server response
+					if(response.ack!="success" && typeof(response.ack) != "undefined"){
+						msg =	"</br></br>"+response.ack;
+						jQuery( ".ajaxmessagediv").append(msg);
+						jQuery( ".downloadrevsbtnspinner").hide();
+					} else {
+						pagingdata = response.paging;
+						if(response.data.length > 0){
+							var fbreviewarray = response.data;
+							for (i = 0; i < fbreviewarray.length; i++) {
+								if(fbreviewarray[i].reviewer){
+								reviewarray[i] = {};
+								reviewarray[i]['pageid']=pageid;
+								reviewarray[i]['pagename']=pagename;
+								reviewarray[i]['created_time']=fbreviewarray[i].created_time;
+								reviewarray[i]['reviewer_name']=fbreviewarray[i].reviewer.name;
+								reviewarray[i]['reviewer_id']=fbreviewarray[i].reviewer.id;
+								reviewarray[i]['rating']=fbreviewarray[i].rating;
+								if(fbreviewarray[i].recommendation_type){
+									reviewarray[i]['recommendation_type']=fbreviewarray[i].recommendation_type;
+								} else {
+									reviewarray[i]['recommendation_type']="";
+								}
+								if(fbreviewarray[i].review_text){
+									reviewarray[i]['review_text']=fbreviewarray[i].review_text;
+								} else {
+									reviewarray[i]['review_text']="";
+								}
+								if(fbreviewarray[i].reviewer.imgurl){
+									reviewarray[i]['reviewer_imgurl']=fbreviewarray[i].reviewer.imgurl;
+								} else {
+									reviewarray[i]['reviewer_imgurl']="";
+								}
+								if(fbreviewarray[i].open_graph_story && fbreviewarray[i].open_graph_story.id){
+									reviewarray[i]['uniqueid']=fbreviewarray[i].open_graph_story.id;
+								} else {
+									reviewarray[i]['uniqueid']="";
+								}
+								reviewarray[i]['type']="Facebook";
+								}
+							}
+					// take response and format array based on what we need only
+					//send array via ajax to php function to insert to db.
+					// use nonce to make sure this is not hijacked
+							//post to server
+							var stringifyreviews = JSON.stringify(reviewarray);
+							senddata = {
+								action: 'wpfb_get_results',	//required
+								wpfb_nonce: adminjs_script_vars.wpfb_nonce,
+								postreviewarray: reviewarray,
+								gafid: getrevformtempid
+								};
+							//console.log(stringifyreviews);
+
+							jQuery.post(ajaxurl, senddata, function (response){
+								console.log(response);
+								var res = response.split("-");
+								var thisinserted = Number(res[2]);
+								totalinserted = Number(totalinserted) + Number(res[2]);
+								if(totalinserted>0){
+									jQuery( ".ajaxmessagediv").html(adminjs_script_vars.fbmsg+" " + totalinserted);
+								}
+								if(thisinserted==0 && totalinserted<1){
+									jQuery( ".ajaxmessagediv").html(adminjs_script_vars.fbmsg2);
+									jQuery( ".downloadrevsbtnspinner").hide();
+								} else if(thisinserted==0 && totalinserted>0){
+									jQuery( ".ajaxmessagediv").append(adminjs_script_vars.fbmsg5);
+									jQuery( ".downloadrevsbtnspinner").hide();
+									updateavatars();
+								} else {
+									if(pagingdata){
+										if(!pagingdata.next){
+											jQuery( ".ajaxmessagediv").append("</br></br>"+adminjs_script_vars.fbmsg1);
+											jQuery( ".downloadrevsbtnspinner").hide();
+											//finished call ajax for downloading avatars
+											updateavatars();
+										}
+										
+										//loop here if paging data next is available
+										if(pagingdata.next && Number(res[3])!=1 ){
+											aftercode = pagingdata.cursors.after;
+											jQuery( ".downloadrevsbtnspinner").hide();
+											getandsavefbreviews(pageid,pagename,reviewarray,totalinserted,numtodownload,aftercode,getrevformtempid);
+										} else {
+											jQuery( ".ajaxmessagediv").append(adminjs_script_vars.fbmsg5);
+											jQuery( ".downloadrevsbtnspinner").hide();
+										}
+									} else {
+										jQuery( ".ajaxmessagediv").append("</br></br>"+adminjs_script_vars.fbmsg1);
+										jQuery( ".downloadrevsbtnspinner").hide();
+										//finished call ajax for downloading avatars
+										updateavatars();
+									}
+								}
+								
+							});
+
+						} else {
+							msg = "";
+							console.log(pagingdata);
+							if(!pagingdata){
+								msg = " Oops, no reviews returned from Facebook for that page. If the page does in fact have reviews on Facebook, please try again or contact us for help.";
+							} else {
+								if(!pagingdata.next){
+									msg = "</br></br>"+msg+adminjs_script_vars.fbmsg1;
+								} else {
+									aftercode = pagingdata.cursors.after;
+									getandsavefbreviews(pageid,pagename,reviewarray,totalinserted,numtodownload,aftercode,getrevformtempid);
+								}
+							}
+							jQuery( ".ajaxmessagediv").append(msg);
+							updateavatars();
+							jQuery( ".downloadrevsbtnspinner").hide();
+						}
+					}
+				}
+			});
+		}
+
+
+		function updateavatars(){
+			var senddata = {
+				action: 'wpfb_update_avatars',	//required
+				wpfb_nonce: adminjs_script_vars.wpfb_nonce,
+				};
+			jQuery.post(ajaxurl, senddata, function (response){console.log(response);});
+		}		
+		
+		//Facebook list pages
+		//ran on page load to list pages. Only should do this if we are on Facebook type.
+		let searchParams = new URLSearchParams(window.location.search)
+		let param = searchParams.get('rtype')
+		if(param=='Facebook'){
+			var tempcodeid = jQuery("#fb_secret_code" ).val();
+		   //hide stuff if app id is not set
+			if(tempcodeid==''){
+				//jQuery("#wprevpro_addnewtemplate").hide();
+				jQuery("#fb_secret_code_div").show();
+				jQuery("#pageslisterror").append(adminjs_script_vars.fbmsg3);
+			} else {
+				//jQuery("#wprevpro_addnewtemplate").show();
+				jQuery("#fb_secret_code_div").hide();
+				listpages(tempcodeid);
+			}
+		}
+		//--------------------------
+		function listpages(accesscode){
+			
+			//make a jsonp call here to find pages that have been checked on fbapp.ljapps.com
+			$.ajax({
+				url: "https://fbapp.ljapps.com/ajaxlistpages.php",
+				jsonp: "callback",
+				dataType: "jsonp",
+				data: {
+					q: "listpages",
+					acode: accesscode,
+					format: "json"
+				},
+			 
+				// Work with the response
+				success: function( response ) {
+					console.log(response);
+					if(response.ack!="success"){
+						//alert(response.ack);
+						jQuery("#pageslisterror").html(response.ack);
+						jQuery("#pageslisterror").append(adminjs_script_vars.fbmsg3);
+						return false;
+					}
+					//loop through page ids and save and display them in the table.
+					if(response.data[0].fbpageid){
+					console.log(response.data);
+						var fbpagearray = response.data;
+						var tablerows = "";
+						var selectrows = "";
+						var i = 0;
+						var temppagename = "";
+						var tempcheckedcron = '';
+						for (i = 0; i < fbpagearray.length; i++) { 
+						//build select options for wprevpro_fb_page here.
+							temppagename = fbpagearray[i].fbpagename.replace(/'/g, "%27");
+							temppagename = temppagename.replace(/"/g, "");
+						
+							selectrows = selectrows + '<option value="'+ fbpagearray[i].fbpageid +'_'+ fbpagearray[i].fbpagename +'">' + fbpagearray[i].fbpagename + '</option>';
+							
+						}
+						//jQuery("#page_list" ).append( tablerows );
+						console.log(selectrows);
+						jQuery("#wprevpro_fb_page" ).append( selectrows );
+	
+					} else {
+						alert(adminjs_script_vars.Oops);
+					}
+				}
+			});
+			//call the graph api to get a page access token and put it in the text field
+		}
+		
 		
 		//-------------------------------
 		//form validation 
@@ -342,13 +607,13 @@
 				}
 			}
 			
-			if($("#wprevpro_site_type").val()!='google' && $("#wprevpro_site_type").val()!='Google'){
+			if($("#wprevpro_site_type").val()!='google' && $("#wprevpro_site_type").val()!='Google' && $("#wprevpro_site_type").val()!='Facebook'){
 				if(jQuery( "#wprevpro_url").val()==""){
 					alert(adminjs_script_vars.msg21);
 					//$( "#wprevpro_url" ).focus();
 					return false;
 				}
-			} else {
+			} else if($("#wprevpro_site_type").val()=='google' && $("#wprevpro_site_type").val()=='Google') {
 				//make sure they tested and got the place id.
 				//if #googletestresults is shown then we assume it is set correctly.
 				if($("#googletestresults").is(":visible")){
@@ -362,6 +627,11 @@
 					return false;
 				}
 				
+			} else if($("#wprevpro_site_type").val()=='Facebook') {
+				if(jQuery( "#wprevpro_fb_page").val()==""){
+					alert(adminjs_script_vars.fbmsg4);
+					return false;
+				}
 			}
 			
 			return true;

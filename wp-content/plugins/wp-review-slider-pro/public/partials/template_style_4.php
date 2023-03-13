@@ -81,7 +81,7 @@ for ($x = 0; $x < count($rowarray); $x++) {
 		$tempreviewername = $templateclass->wprevpro_get_reviewername($review,$template_misc_array);
 		
 		//link to author url if turned on in template, use reviewer_id from db and create url for different types
-		$profilelink = $templateclass->wprevpro_get_profilelink($review,$currentform,$userpic,$tempreviewername,$template_misc_array,$burl);
+		$profilelink = $templateclass->wprevpro_get_profilelink($review,$currentform[0],$userpic,$tempreviewername,$template_misc_array,$burl);
 		
 		//userpic html, this could change to nothing if userpic turned off.
 		//$userpichtml = $profilelink['userpichtml'];
@@ -178,7 +178,7 @@ for ($x = 0; $x < count($rowarray); $x++) {
 		}
 		
 		//starhtlm
-		$starhtmlarray = $templateclass->wprevpro_get_starhtml($review,$template_misc_array,$currentform,$starfile);
+		$starhtmlarray = $templateclass->wprevpro_get_starhtml($review,$template_misc_array,$currentform[0],$starfile);
 		$starhtml = $starhtmlarray[0];
 		$starhtml2 = $starhtmlarray[1];
 		
@@ -189,7 +189,11 @@ for ($x = 0; $x < count($rowarray); $x++) {
 		$media = $templateclass->wprevpro_get_media($review,$template_misc_array);
 		
 		//verifiedstarhtlm
-		$verifiedstarhtmlarray = $templateclass->wprevpro_get_verifiedstarhtml($review,$template_misc_array,$currentform);
+		$verifiedstarhtmlarray = $templateclass->wprevpro_get_verifiedstarhtml($review,$template_misc_array,$currentform[0]);
+		
+		//source pagename or form title
+		$sourcepagenamehtml = $templateclass->wprevpro_get_sourcepagename($review,$currentform[0],$template_misc_array);
+
 		
 		//load template from child theme if found
 		$custometheme= get_stylesheet_directory()."/wprevpro/template".$currentform[0]->style.".php";
@@ -207,13 +211,14 @@ for ($x = 0; $x < count($rowarray); $x++) {
 			<span class="wpproslider_t4_SPAN_4">
 			<span class="wprevpro_star_imgs_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><?php echo $starhtml; ?><?php echo $verifiedstarhtmlarray[0]; ?></span>
 			</span>
-			<p class="wpproslider_t4_P_5 wprev_preview_tcolor2_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>">
+			<div class="wpproslider_t4_P_5 wprev_preview_tcolor2_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>">
 				<?php echo $title; ?><?php echo stripslashes($reviewtext); ?><?php echo $verifiedstarhtmlarray[1]; ?>
-			</p>
+			</div>
 			<span class="wpproslider_t4_date wprev_preview_tcolor3_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"> <span class="wprev_showdate_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><?php echo $datestring; ?></span></span>
 			<?php echo $logo; ?>
 			<?php echo $media; ?>
 			<?php echo $miscpichtml; ?>
+			<?php echo $sourcepagenamehtml; ?>
 		</div>
 	</div>
 	<?php

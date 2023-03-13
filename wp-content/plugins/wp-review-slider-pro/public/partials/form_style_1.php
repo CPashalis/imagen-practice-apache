@@ -175,6 +175,9 @@ for ($x = 0; $x < count($formfieldsarray); $x++) {
 			if(isset($formfieldsarray[$x]['maxrating']) && $formfieldsarray[$x]['maxrating']>0){
 				$maxrating = $formfieldsarray[$x]['maxrating'];
 			}
+			if($formfieldsarray[$x]['default_form_value']==''){
+				$formfieldsarray[$x]['default_form_value']=0;
+			}
 			for ($k = 0; $k <= $maxrating; $k++) {
 				$tempchecked='';
 				if($formfieldsarray[$x]['default_form_value']==$k){

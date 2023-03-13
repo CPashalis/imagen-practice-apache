@@ -34,7 +34,15 @@ class Template_Functions {
 								$thumburl = $urlvalue;
 							}
 							$thumburl = esc_url($thumburl);
-							$media= $media . '<a class="wprev_media_img_a" href="'.$urlvalue.'" data-lity><img src="'.$thumburl.'" class="wprev_media_img"  alt="media thumbnail '.$n.'"></a>';
+							//check if this is youtube video
+							if(stripos($urlvalue,'youtu')===false){
+								//not youtube
+								$tempclass = 'notyoutu';
+							} else {
+								//is youtube
+								$tempclass = 'youtu';
+							}
+							$media= $media . '<a class="wprev_media_img_a '.$tempclass.'" href="'.$urlvalue.'" data-lity><img src="'.$thumburl.'" class="wprev_media_img"  alt="media thumbnail '.$n.'"></a>';
 						}
 						$n++;
 					}
@@ -78,34 +86,34 @@ class Template_Functions {
 			
 			//if trip or yelp display star images instead of fonts
 			if($review->type=="Yelp" && $template_misc_array['icon_over_yelp']!="yes"){
-				$starhtml='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform[0]->style.'_star_img_file">';
+				$starhtml='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform->style.'_star_img_file">';
 				if(isset($template_misc_array['starlocation'])){
 					if($template_misc_array['starlocation'] == '2'){
-						$starhtml2='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform[0]->style.'_star_img_file_loc2">';
+						$starhtml2='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform->style.'_star_img_file_loc2">';
 						$starhtml='';
 					}
 				}
 			} else if($review->type=="Manual" && $review->from_name=="yelp" && $template_misc_array['icon_over_yelp']!="yes"){
-				$starhtml='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform[0]->style.'_star_img_file">';
+				$starhtml='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform->style.'_star_img_file">';
 				if(isset($template_misc_array['starlocation'])){
 					if($template_misc_array['starlocation'] == '2'){
-						$starhtml2='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform[0]->style.'_star_img_file_loc2">';
+						$starhtml2='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform->style.'_star_img_file_loc2">';
 						$starhtml='';
 					}
 				}
 			} else if($review->type=="TripAdvisor" && $template_misc_array['icon_over_trip']!="yes"){
-				$starhtml='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform[0]->style.'_star_img_file">';
+				$starhtml='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform->style.'_star_img_file">';
 				if(isset($template_misc_array['starlocation'])){
 					if($template_misc_array['starlocation'] == '2'){
-						$starhtml2='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform[0]->style.'_star_img_file_loc2">';
+						$starhtml2='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform->style.'_star_img_file_loc2">';
 						$starhtml='';
 					}
 				}
 			} else if($review->type=="Manual" && $review->from_name=="tripadvisor" && $template_misc_array['icon_over_trip']!="yes"){
-				$starhtml='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform[0]->style.'_star_img_file">';
+				$starhtml='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform->style.'_star_img_file">';
 				if(isset($template_misc_array['starlocation'])){
 					if($template_misc_array['starlocation'] == '2'){
-						$starhtml2='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform[0]->style.'_star_img_file_loc2">';
+						$starhtml2='<img src="'.$imgs_url."".$starfile.'" alt="'.$review->rating.' star rating" class="wprevpro_t'.$currentform->style.'_star_img_file_loc2">';
 						$starhtml='';
 					}
 				}
@@ -225,7 +233,7 @@ class Template_Functions {
 		$imgs_url = esc_url( plugins_url( 'imgs/', __FILE__ ) );
 		$review->reviewer_name = esc_html($review->reviewer_name);
 		$tempprofileurl='';
-		if(	$currentform[0]->add_profile_link=="yes" || $currentform[0]->add_profile_link=="fol"){
+		if(	$currentform->add_profile_link=="yes" || $currentform->add_profile_link=="fol"){
 			if($review->type=="Yelp"){
 				if($review->from_url_review!=''){
 					$tempprofileurl = urldecode($review->from_url_review);
@@ -265,7 +273,7 @@ class Template_Functions {
 				}
 			}
 			if($tempprofileurl!=""){
-				if($currentform[0]->add_profile_link=="fol"){
+				if($currentform->add_profile_link=="fol"){
 					$profilelink['start'] = '<a href="'.$tempprofileurl.'" target="_blank">';
 				} else {
 					$profilelink['start'] = '<a href="'.$tempprofileurl.'" target="_blank" rel="nofollow noreferrer">';
@@ -360,13 +368,14 @@ class Template_Functions {
 				}
 			}
 		}
+		//add reviewer location if turned on
 		if(isset($template_misc_array['showlocation'])){
 			if($template_misc_array['showlocation']=="yes"){
-				
 				$location = '<div class="wprevpro_'.$template.'_SPAN_7 wprevlocation">'.esc_html($review->location).'</div>';
 			}
 		}
-			return stripslashes($location.$companyhtml);
+
+		return stripslashes($location.$companyhtml);
 	}
 	
 	
@@ -667,8 +676,14 @@ class Template_Functions {
 		} else if($currentform->facebook_icon!="no" && $review->type!="Submitted" && $review->type!="WooCommerce"){
 			//used for Airbnb and other generic types
 			//echo "here4";
+			if(!isset($review->from_url)){
+				$review->from_url = '';
+			}
+			if(!isset($review->from_url_review)){
+				$review->from_url_review = '';
+			}
+			
 			$from_url = $review->from_url;
-			//echo $from_url;
 			$from_url_review = $review->from_url_review;
 			
 			if($from_url!=''){
@@ -765,6 +780,7 @@ class Template_Functions {
 		}
 		return $html;
 	} 
+
 	public function wprevpro_get_reviewtext($review,$currentform,$length_type="words"){
 		
 		$reviewtext = "";
@@ -873,7 +889,9 @@ class Template_Functions {
 			
 		}
 		
-		return $reviewtext;
+		//return $reviewtext;
+		
+		return apply_filters( 'wprevpro_modify_reviewtext', $reviewtext, $review, $currentform, $length_type );
 		//------
 	}
 	
@@ -884,7 +902,6 @@ class Template_Functions {
 		$title = strip_tags($review->pagename);
 		if($review->type =="WooCommerce"){
 			$miscpicsrc = "";
-			
 			if($review->miscpic!=''){
 				$miscpicsrc ='<img src="'.$review->miscpic.'" class="miscpic-listing-image rounded" width="75" height="auto" title="'.$title.'" alt="'.$title.' Image">';
 			}
@@ -897,10 +914,39 @@ class Template_Functions {
 			$linkstart='<a href="'.$review->from_url.'" class="miscpiclink" title="'.$title.'">';
 			$linkend="</a>";
 		}
-		
 		return $linkstart.$miscpicimagehtml.$linkend;
 		//------
 	}
+	
+	public function wprevpro_get_sourcepagename($review,$currentform,$template_misc_array){
+		
+		$sourcepagename = "";
+		//add source page name if turned on.
+		$linkstart="";
+		$linkend="";
+		
+		if($review->pagename!="Manually Added"){
+		
+		if(isset($template_misc_array['showsourceplink']) && $review->from_url!=''){
+			if($template_misc_array['showsourceplink']=="yes"){
+				$linkstart = "<a href='".esc_html($review->from_url)."' target='_blank' rel='nofollow noreferrer'>";
+				$linkend="</a>";
+			} else if($template_misc_array['showsourceplink']=="yesf"){
+				$linkstart = "<a href='".esc_html($review->from_url)."' target='_blank'>";
+				$linkend="</a>";
+			}
+		}
+		if(isset($template_misc_array['showsourcep'])){
+			if($template_misc_array['showsourcep']=="yes"){
+				$sourcepagename = '<div class="wprevpro_t'.$currentform->style.'_SPAN_8 wprevsourcepage">'.$linkstart.esc_html($review->pagename).$linkend.'</div>';
+			}
+		}
+		}
+		
+		return $sourcepagename;
+		//------
+	}
+	
 	public function wprevpro_get_miscpichtml_t11($review,$currentform){
 
 		//add product image and title for WooCommerce here, use later for instagram/twitter
@@ -970,12 +1016,17 @@ class Template_Functions {
 			$location = 2;
 		}
 		$tooltiploc = 'right';
-		if($currentform[0]->style=='10' && $location == 2){
+		if($currentform->style=='10' && $location == 2){
 			$tooltiploc = 'bottom';
+		}
+		//for yelp or trip
+		$yelptrip = '';
+		if($review->type =="TripAdvisor" || $review->type =="Yelp"){
+			$yelptrip = 'yelptripver';
 		}
 		
 		$containerstarthtml = '<span class="verifiedloc'.$location.' wprevpro_verified_svg wprevtooltip" data-wprevtooltip="'.$verifiedstardesc.'">'; 
-		$starhtml= '<span class="svgicons svg-wprsp-verified"></span>';
+		$starhtml= '<span class="svgicons svg-wprsp-verified '.$yelptrip.'"></span>';
 		$containerendhtml = '</span>'; 
 		
 		$verifiedstarhtml= $containerstarthtml.$starhtml.$containerendhtml;
@@ -990,6 +1041,15 @@ class Template_Functions {
 			$verifiedstarhtmlarray[0]='';
 			$verifiedstarhtmlarray[1]=$verifiedstarhtml;
 		}
+		//make sure we are not hiding stars on the actual review
+		if(!isset($review->hidestars)){
+			$review->hidestars="";
+		}
+		if($review->rating<1 || $review->hidestars=='yes'){
+			$verifiedstarhtmlarray[0]='';
+			$verifiedstarhtmlarray[1]='';
+		}
+		
 		return $verifiedstarhtmlarray;
 	}
 	

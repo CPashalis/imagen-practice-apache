@@ -12,8 +12,9 @@ if (isset($_GET['rtype'])) {
 	<a href="<?php echo $urlget['getrevs']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-getrevs'){echo 'w3-bluewp';} ?>"><?php _e('Welcome', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['get_apps_airbnb']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_airbnb'){echo 'w3-bluewp';} ?>"><?php _e('Airbnb', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['get_apps_angieslist']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_apps' && $rtype=='AngiesList'){echo 'w3-bluewp';} ?>"><?php _e('AngiesList', 'wp-review-slider-pro'); ?></a>
+	<a href="<?php echo $urlget['get_apps_birdeye']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_apps' && $rtype=='Birdeye'){echo 'w3-bluewp';} ?>"><?php _e('Birdeye', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['get_apps_experience']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_apps' && $rtype=='Experience'){echo 'w3-bluewp';} ?>"><?php _e('Experience', 'wp-review-slider-pro'); ?></a>
-	<a href="<?php echo $urlget['settings']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-settings'){echo 'w3-bluewp';} ?>"><?php _e('Facebook', 'wp-review-slider-pro'); ?></a>
+	<a href="<?php echo $urlget['get_apps_facebook']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_apps' && $rtype=='Facebook'){echo 'w3-bluewp';} ?>"><?php _e('Facebook', 'wp-review-slider-pro'); ?></a>	
 	<a href="<?php echo $urlget['get_apps_feedbackcompany']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_apps' && $rtype=='FeedbackCompany'){echo 'w3-bluewp';} ?>"><?php _e('FeedbackCompany', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['get_apps_feefo']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_apps' && $rtype=='Feefo'){echo 'w3-bluewp';} ?>"><?php _e('Feefo', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['get_apps_fr']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_apps' && $rtype=='Freemius'){echo 'w3-bluewp';} ?>"><?php _e('Freemius', 'wp-review-slider-pro'); ?></a>
@@ -36,6 +37,7 @@ if (isset($_GET['rtype'])) {
 	<a href="<?php echo $urlget['get_woo']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_woo'){echo 'w3-bluewp';} ?>"><?php _e('WooCommerce', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['get_apps_wordpress']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_apps' && $rtype=='WordPress'){echo 'w3-bluewp';} ?>"><?php _e('WordPress.org', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['get_apps_yelp']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_apps' && $rtype=='Yelp'){echo 'w3-bluewp';} ?>"><?php _e('Yelp', 'wp-review-slider-pro'); ?></a>
+	<a href="<?php echo $urlget['get_apps_yotpo']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_apps' && $rtype=='Yotpo'){echo 'w3-bluewp';} ?>"><?php _e('Yotpo', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['get_apps_zillow']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-get_apps' && $rtype=='Zillow'){echo 'w3-bluewp';} ?>"><?php _e('Zillow', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $urlget['reviewfunnel']; ?>" class="w3-bar-item w3-button <?php if($_GET['page']=='wp_pro-reviewfunnel'){echo 'w3-bluewp';} ?>"><b><?php _e('Review Funnels<br><small>(more sites)</small>', 'wp-review-slider-pro'); ?></b></a>
 	

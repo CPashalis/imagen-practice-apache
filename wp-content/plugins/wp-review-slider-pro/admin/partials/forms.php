@@ -13,7 +13,7 @@
  */
  
      // check user capabilities
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('manage_options') && $this->wprev_canuserseepage('forms')==false) {
         return;
     }
 	$dbmsg = "";
@@ -420,15 +420,21 @@ echo $dbmsg;
 				</tr>
 				<tr class="wprevpro_row">
 					<th scope="row">
-						<?php _e('Ajax Submission', 'wp-review-slider-pro'); ?>
+						<?php _e('Submission Type', 'wp-review-slider-pro'); ?>
 					</th>
 					<td>
 						<select name="wprevpro_form_useajax" id="wprevpro_form_useajax">
-									  <option value="no" selected><?php _e('No', 'wp-review-slider-pro'); ?></option>
-									  <option value="yes"><?php _e('Yes', 'wp-review-slider-pro'); ?></option>
+									  <option value="no" selected><?php _e('Page Reload', 'wp-review-slider-pro'); ?></option>
+									  <option value="yes"><?php _e('Ajax Submission', 'wp-review-slider-pro'); ?></option>
+									  <option value="prd"><?php _e('Page Redirect', 'wp-review-slider-pro'); ?></option>
 						</select>
-						<p class="description">
-						<?php _e('Use Ajax to submit the form instead of a page reload. Make sure you are not caching the page more than an hour or this will not work.', 'wp-review-slider-pro'); ?></p>
+						<input style="display:none;" class='fullwidth' id="wprevpro_form_redirecturl" data-custom="custom" type="url" name="wprevpro_form_redirecturl" placeholder="Enter URL for redirect." value="">
+						<p class="description formsubmittype pagereload">
+						<?php _e('Reloads the page with a success message.', 'wp-review-slider-pro'); ?></p>
+						<p style="display:none;" class="description formsubmittype pageajax">
+						<?php _e('Use Ajax to submit the form. Make sure you are not caching the page more than an hour or this will not work.', 'wp-review-slider-pro'); ?></p>
+						<p style="display:none;" class="description formsubmittype pageredirect">
+						<?php _e('Redirects the user to the URL of your choice after form submission.', 'wp-review-slider-pro'); ?></p>
 					</td>
 				</tr>
 				<tr class="wprevpro_row">

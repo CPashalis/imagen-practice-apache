@@ -54,11 +54,11 @@
 		var wprevsliderini_height= {};
 		var wprevsliderini_height_widget= {};
 		var smallestwprev= {};
+		var prevslickreadmoreheight;
 
 			$( "body" ).on( "click", ".wprs_rd_more", function(event) {	
 				event.preventDefault();
 				readmoreclicked(this);
-
 			});
 			
 			function readmoreclicked(thisclicked){
@@ -93,33 +93,43 @@
 				
 				$(thisclicked).closest('.indrevdiv').css( 'height', 'auto' );
 				$(thisclicked).closest('.indrevdiv').parent().css( 'height', 'auto' );
+
+				
 				$(thisclicked ).hide();
 				$( thisclicked ).prevAll('span.wprs_rd_more_1').hide();
 				$( thisclicked ).next('span').show(0, function() {
 					// Animation complete.
 					$( this ).css('display', 'inline');
 					$( this ).next('.wprs_rd_less').show();
+
 					//only do this for slider or grid that is same height, also doing this for Fade transition
-					if(!$(this).closest('.wprevpro').hasClass('revnotsameheight')){
+					if(!$(this).closest('.wprevpro').hasClass('revnotsameheight') || $(this).closest('.wprevpro').hasClass('wprs_unslider-fade') || $(this).closest('.wprevpro').hasClass('animateheight')){
 						//waiting a bit for chrome
 						var morelink = $(this);
 						setTimeout ( function () {
+							console.log('setmoreheight');
 							setmoreheight(morelink);
 						}, 10);
 					}
 					//if this is in slickslider with adaptiveHeight then we need to update
 					var slideprops = $(thisclicked).closest('.wprevgoslick').attr( "data-slickwprev" );
 					if(slideprops){
-					var slidepropsobj = JSON.parse(slideprops);
+						var slidepropsobj = JSON.parse(slideprops);
 						if(slidepropsobj.adaptiveHeight==true){
 							if(slidepropsobj.rows>1){
+								console.log('slick1');
 								$(thisclicked).closest('.slickwprev-list').css('height', 'auto');
 							} else {
-								var newheighttemp =$(thisclicked).closest('.outerrevdiv').height()+42;
+								console.log('slick2');
+								var newheighttemp =$(thisclicked).closest('.outerrevdiv').height();
 								var oldslickheight = $(thisclicked).closest('.slickwprev-list').height();
 								//alert(newheighttemp);
 								if(oldslickheight<newheighttemp){
-									$(thisclicked).closest('.slickwprev-list').css('height', newheighttemp);
+									//$(thisclicked).closest('.slickwprev-list').css('height', newheighttemp);
+									$(thisclicked ).closest('.slickwprev-list').animate({
+										height: newheighttemp,
+									 }, 200 );
+									 prevslickreadmoreheight = oldslickheight;
 								}
 							}
 						}
@@ -155,9 +165,6 @@
 							}).get(),
 				overallheight = Math.max.apply(null, heights);
 				
-				//console.log('li:'+liheight);
-				//console.log('o:'+overallheight);
-				
 				if(liheight>overallheight || liheight==overallheight){
 					$(morelink ).closest( '.wprev-slider' ).animate({height: liheight,}, 300 );
 					$(morelink ).closest( '.wprev-slider-widget' ).animate({height: liheight,}, 300 );
@@ -184,8 +191,8 @@
 					$(this ).prevAll('.wprs_rd_more').show();
 					$( this ).prevAll('span.wprs_rd_more_1').show();
 				});
-				if(!$(thisclicked).closest('.wprevpro').hasClass('revnotsameheight')){
-					//check if there are no readless then use smallest value
+				if(!$(thisclicked).closest('.wprevpro').hasClass('revnotsameheight') || $(thisclicked).closest('.wprevpro').hasClass('wprs_unslider-fade') || $(thisclicked).closest('.wprevpro').hasClass('animateheight')){
+					//check if there are no read less then use smallest value
 					var checkreadless = $(this ).closest('.wprevprodiv').find('.wprs_rd_less:visible').length;
 					//if checkreadless = 0 then we need to make smallest
 					var tempsliderheight = wprevsliderini_height[slideid];
@@ -204,6 +211,19 @@
 						height: tempsliderheightwidget,
 					  }, 200 );
 				}
+				
+				//if this is in slickslider with adaptiveHeight then we need to update
+				var slideprops = $(thisclicked).closest('.wprevgoslick').attr( "data-slickwprev" );
+					if(slideprops){
+						var slidepropsobj = JSON.parse(slideprops);
+						if(slidepropsobj.adaptiveHeight==true){
+							$(thisclicked ).closest('.slickwprev-list').animate({
+										height: prevslickreadmoreheight,
+									 }, 200 );
+						}
+					}
+
+				
 				//update masonry
 				turnonmasonry();
 			}
@@ -551,14 +571,23 @@
 
 			//for clicking the floating badge or a badge with a slide-out
 			$( ".wprevpro_badge_container" ).on("click",function(event) {
+				//console.log('here');
+				var onclickaction = $(this).attr('data-onc');
+				var onclickurl =  $(this).attr('data-oncurl');
+				var onclickurltarget =  $(this).attr('data-oncurltarget');
+				var badgeid = $(this).attr('data-badgeid');
+			
 				//first close any open popups or sliders
-				//$('.wprevpro_slideout_container').hide();
-				
-			var onclickaction = $(this).attr('data-onc');
-			var onclickurl =  $(this).attr('data-oncurl');
-			var onclickurltarget =  $(this).attr('data-oncurltarget');
-			var badgeid = $(this).attr('data-badgeid');
-			//console.log('here');
+				$('.wprevpro_slideout_container').each(function(){
+					var parentid = $(this).parent().attr('id');
+					var slideid = $(this).attr('id');
+					slideid = slideid.replace('wprevpro_badge_slide_', '');
+					//if this is a different slide then we close it.
+					if(Number(slideid)!=Number(badgeid) && $(this).is(":visible") && parentid!='preview_badge_outer'){
+						//$( this).hide();
+					}
+				 });
+
 			//only do this if not clicking an arrow  wprs_rd_less  wprev_pro_float_outerdiv-close  
 			if(!$(event.target).closest('.wprs_unslider-arrow').length && !$(event.target).closest('.wprs_rd_less').length && !$(event.target).closest('.wprs_rd_more').length && !$(event.target).closest('.wprs_unslider-nav').length && !$(event.target).closest('a').length && !$(event.target).closest('.wprevpro_load_more_btn').length  && !$(event.target).closest('.wprev_pro_float_outerdiv-close').length && !$(event.target).hasClass('slickwprev-arrow') && !$(event.target).closest('.slickwprev-dots').length ) {
 				//console.log('here2');
@@ -581,13 +610,10 @@
 					}
 					return false;
 				} else if(onclickaction=='slideout'){
-					//console.log('here3');
 					//slideout the reviews from the side, find the correct one in relation to this click 
-					//$(this).siblings('.wprevpro_slideout_container').toggle();
-					$( "#wprevpro_badge_slide_"+ badgeid).toggle();
-					//if this is a showing a slider we need to unset the height
-					setTimeout(function(){
-					  //fix height if we need to. if it doesn't have the revnotsameheight class then it is same height
+					
+					$( "#wprevpro_badge_slide_"+ badgeid).toggle(0,function() {
+						 //fix height if we need to. if it doesn't have the revnotsameheight class then it is same height
 						var wprevprodivvar = $( "#wprevpro_badge_slide_"+ badgeid).find('.wprevpro');
 						if(!wprevprodivvar.hasClass('revnotsameheight')){
 							var indrevdiv = wprevprodivvar.find('div');
@@ -597,24 +623,25 @@
 							} else if(wprevprodivvar.hasClass('wprev-slider')){
 								//regular slider
 								checkfixheightslider(indrevdiv);
-							} else if(wprevprodivvar.hasClass('wprev-slick-slider')){
-								//destroy
-								wprevprodivvar.find('.wprevgoslick').slickwprev('unslickwprev');
-								//slick slider, need to recreate slider.
-								createaslick(wprevprodivvar.find('.wprevgoslick'));
 							}
 						}
-					
-					}, 50);
-					//check if we need to masonry this
-					turnonmasonry();
+						//for slick we are recreating no matter what.
+						if(wprevprodivvar.hasClass('wprev-slick-slider')){
+							//destroy
+							console.log('badgeid:'+badgeid);
+							wprevprodivvar.find('.wprevgoslick').slickwprev('unslickwprev');
+							//slick slider, need to recreate slider.
+							createaslick(wprevprodivvar.find('.wprevgoslick'));
+						}
+
+						//check if we need to masonry this
+						turnonmasonry();
+					  });
 					return false;
 				} else if(onclickaction=='popup'){
 					//popup the reviews in to a modal, find the correct one in relation to this click 
-					$( "#wprevpro_badge_pop_"+ badgeid).toggle();
+					$( "#wprevpro_badge_pop_"+ badgeid).toggle(0,function() {
 					
-					//if this is a showing a slider we need to unset the height
-					setTimeout(function(){
 					  $( "#wprevpro_badge_pop_"+ badgeid).find('.wprs_unslider').css('margin-left', '25px');
 					  $( "#wprevpro_badge_pop_"+ badgeid).find('.wprs_unslider').css('margin-right', '25px');
 					  $( "#wprevpro_badge_pop_"+ badgeid).find('.wprev-slider').css('height', 'unset');
@@ -632,17 +659,24 @@
 							} else if(wprevprodivvar.hasClass('wprev-slider')){
 								//regular slider
 								checkfixheightslider(indrevdiv);
-							} else if(wprevprodivvar.hasClass('wprev-slick-slider')){
+							}
+						}
+						//for slick we recreate no matter what
+						if(wprevprodivvar.hasClass('wprev-slick-slider')){
 								//destroy
 								wprevprodivvar.find('.wprevgoslick').slickwprev('unslickwprev');
 								//slick slider, need to recreate slider.
 								createaslick(wprevprodivvar.find('.wprevgoslick'));
-							}
 						}
+						turnonmasonry();
+					});
+					//if this is a showing a slider we need to unset the height
+					setTimeout(function(){
+
 					
 					}, 50);
 					//check if we need to masonry this
-					turnonmasonry();
+					
 					return false;
 				}
 			}
@@ -747,6 +781,28 @@
 			startofgetpagination(1,parentdiv);
 
 		});
+		//for clicking a quick type filter
+		$('.wprevpro_stype_btn').on('click', function() {
+			//if this already has the class current then we unsearch
+			var myValue = $(this).text();
+			if($(this).hasClass('current')){
+				$(this).parent().attr("data-rtype","");
+				$(this).removeClass('current');
+			} else {
+				//remove all currents then add to this one.
+				$(this).parent().find('.wprevpro_stype_btn').removeClass('current');
+				$(this).parent().attr("data-rtype",myValue);
+				$(this).addClass('current');
+			}
+			var parentdiv = $(this).closest('.wprev_search_sort_bar').next('.wprevpro').find('.wppro_pagination');
+			//fix if searching using Load More button
+				if(!parentdiv.length){
+					parentdiv = $(this).closest('.wprev_search_sort_bar').next('.wprevpro').find('.wprevpro_load_more_btn');
+				}
+			$(this).closest('.wprev_search_sort_bar').find('.wprppagination_rtypes_loading_img').show();
+			startofgetpagination(1,parentdiv);
+
+		});
 		//for pagination click, ajax second page add to html, only doing for grid
 		$( ".wppro_pagination" ).on( "click", ".wppro_page_numbers", function(event) {
 			event.stopPropagation();
@@ -756,16 +812,17 @@
 			var clickedpagenum = $(clickedthis).text();
 			//alert(sliderid);
 			if($(clickedthis).hasClass("current")==false){
+				$(parentdiv).find( ".wprppagination_loading_image" ).show();
 				startofgetpagination(clickedpagenum,parentdiv);
 			}
 		});
 		//function to start get pagination data
 		function startofgetpagination(clickedpagenum,parentdiv){
-			
+			//console.log('sgp');
 			//if this is the slick slider and you clicked a filter then we stop here and rebuild slider
 			//console.log(parentdiv.attr('data-slideshow'));
 			if(parentdiv.attr('data-slideshow')=='sli'){
-				console.log('slick');
+				//console.log('slick');
 				var thisslick = parentdiv.parent().prev('.wprevgoslick');
 				var thebutton = parentdiv;
 				loadmorerevs(thebutton,thisslick,'yes');
@@ -807,7 +864,7 @@
 			//see if we have search text
 			var searchtext = $(parentdiv).closest('.wprevpro').prev('.wprev_search_sort_bar').find('.wprev_search').val();
 			if(!searchtext){
-				spinner.show();
+				//spinner.show();
 			}
 			//override searchtext if we clicked a tag
 			if($('.wprevpro_stag.current').text()!=''){
@@ -822,6 +879,11 @@
 			
 			//see if we have a language specified
 			var langfilter = $(parentdiv).closest('.wprevpro').prev('.wprev_search_sort_bar').find('#wprevpro_header_langcodes').val();
+			
+			//see if we are specified review type. $(this).parent().attr("data-rtype","");
+			var rtype = $(parentdiv).closest('.wprevpro').prev('.wprev_search_sort_bar').find('.wprevpro_rtypes_div').attr("data-rtype");
+			
+			//console.log('rtype:'.rtype);
 
 			//make ajax call
 			 var senddata = {
@@ -845,6 +907,7 @@
 				textsort: sorttext,
 				textrating: ratingfilter,
 				textlang: langfilter,
+				textrtype: rtype,
 				};
 			console.log(senddata);
 			//send to ajax to update db
@@ -852,7 +915,7 @@
 			var havepagesaved = false;
 			
 			//check to see if this page html has been viewed before, load if so.
-			var property = 'tid'+senddata.revid+'p'+senddata.clickedpnum+'t'+senddata.textsearch+senddata.textsort+senddata.textrating+senddata.textlang;
+			var property = 'tid'+senddata.revid+'p'+senddata.clickedpnum+'t'+senddata.textsearch+senddata.textsort+senddata.textrating+senddata.textlang+senddata.textrtype;
 			
 			//console.log('first prop: '+property);
 
@@ -931,11 +994,12 @@
 				//console.log(jsondata);
 
 				//save in case we want to quick load, only save if 
-				var property = 'tid'+senddata.revid+'p'+senddata.clickedpnum+'t'+senddata.textsearch+senddata.textsort+senddata.textrating+senddata.textlang;
+				var property = 'tid'+senddata.revid+'p'+senddata.clickedpnum+'t'+senddata.textsearch+senddata.textsort+senddata.textrating+senddata.textlang+senddata.textrtype;
 				loadedpagehtmls[property]=innerrevhtml;
 
 				$('.wprppagination_loading_image_search').hide();
 				$('.wprppagination_loading_image_tag').hide();
+				$('.wprppagination_rtypes_loading_img').hide();
 				
 				//console.log(parentdiv);
 
@@ -1076,7 +1140,7 @@
 		});
 		//console.log(wprevpublicjs_script_vars.wpfb_ajaxurl);
 		function loadmorerevs(thebtn,thisslick,filterbar='no'){
-			console.log(thisslick);
+			//console.log(thisslick);
 			//get number of review rows and per a row, use this number for offset call to db
 			var spinner = $(thebtn).next( ".wprploadmore_loading_image" );
 			var loadbtn = $(thebtn);
@@ -1110,6 +1174,9 @@
 			//see if we have a language specified
 			var langfilter = $(thebtn).closest('.wprevpro').prev('.wprev_search_sort_bar').find('#wprevpro_header_langcodes').val();
 			
+			//see if we are specified review type. $(this).parent().attr("data-rtype","");
+			var rtype = $(thebtn).closest('.wprevpro').prev('.wprev_search_sort_bar').find('.wprevpro_rtypes_div').attr("data-rtype");
+			
 			if(thisslick==''){
 			spinner.show();
 			}
@@ -1137,6 +1204,7 @@
 				textrating: ratingfilter,
 				textlang: langfilter,
 				filterbar: filterbar,
+				textrtype: rtype,
 				};
 				//console.log(senddata);
 				//send to ajax to update db
@@ -1202,6 +1270,7 @@
 								if(filterbar=='yes'){
 									$('.wprppagination_loading_image_search').hide();
 									$('.wprppagination_loading_image_tag').hide();
+									$('.wprppagination_rtypes_loading_img').hide();
 									//destroy
 									$(thisslick).slickwprev('unslickwprev');
 									//replace the html
@@ -1226,9 +1295,15 @@
 								if(revsameheight=='yes'){
 									setTimeout (() => { 
 										fun_revsameheight(thisslick);
-										fun_fixheightsliajax(thisslick);
-									}, 1);
+										//fun_fixheightsliajax(thisslick);
+									}, 10);
 								}
+								var wprevmasonry = $(thisslick).attr( "data-wprevmasonry" );
+								if(wprevmasonry!='yes'){
+									setTimeout (() => { 
+											fun_fixheightsliajax(thisslick);
+										}, 20);
+									}
 								}
 							//}
 							
@@ -1276,23 +1351,27 @@
 		$( ".wprevpro.wprev-no-slider" ).each(function( index ) {
 			if(!$( this ).hasClass('revnotsameheight') && !$(this).closest(".wprevmodal_modal").length && !$(this).closest(".wprevpro_float_outer").length ){
 				//set revs same height
-				checkfixheightgrid($( this ).find('div'));
+				setTimeout(() => { checkfixheightgrid($( this ).find('div')) }, 100);
+				//checkfixheightgrid($( this ).find('div'));
 			}
 		});
 						
 		//when loading more for grid via button or page then we set height
 		function checkfixheightgrid(thebtn){
-			var maxheights = $(thebtn).closest( '.wprevpro' ).find(".w3_wprs-col").find("p").parent().map(function (){return $(this).outerHeight();}).get();
-			var maxHeightofgrid = Math.max.apply(null, maxheights);
-			$(thebtn).closest( '.wprevpro' ).find(".w3_wprs-col").find("p").parent().css( "height", maxHeightofgrid );
+			//first make sure this is visible.
+			if($(thebtn).closest( '.wprevpro' ).is(":visible")){
+				var maxheights = $(thebtn).closest( '.wprevpro' ).find(".indrevdiv").map(function (){return $(this).outerHeight();}).get();
+				var maxHeightofgrid = Math.max.apply(null, maxheights);
+				$(thebtn).closest( '.wprevpro' ).find(".indrevdiv").css( "height", maxHeightofgrid );
+			}
 		}
 		
 		//when loading more, check to see if we are fixing the height, if so then set the height here
 		function checkfixheightslider(thebtn){
 			//wprs_unslider
-			var maxheights = $(thebtn).closest( '.wprs_unslider' ).find(".w3_wprs-col").find("p").parent().map(function (){return $(this).outerHeight();}).get();
+			var maxheights = $(thebtn).closest( '.wprs_unslider' ).find(".indrevdiv").map(function (){return $(this).outerHeight();}).get();
 			var maxHeightofslide = Math.max.apply(null, maxheights);
-			$(thebtn).closest( '.wprs_unslider' ).find(".w3_wprs-col").find("p").parent().css( "height", maxHeightofslide );
+			$(thebtn).closest( '.wprs_unslider' ).find(".indrevdiv").css( "height", maxHeightofslide );
 			
 			//fix if the new height is bigger than overallheight
 			var liheight = $(thebtn ).closest( 'li' ).prevAll( '.wprs_unslider-active' ).outerHeight();
@@ -1554,19 +1633,15 @@
 		
 		
 		function fun_revsameheight(thisslick){
-					//console.log('check if height fix');
-					//console.log(thisslick);
-					var maxheights = $(thisslick).find(".w3_wprs-col").find("p").parent().map(function (){return $(this).outerHeight();}).get();
+					var maxheights = $(thisslick).find(".indrevdiv").map(function (){return $(this).outerHeight();}).get();
 					//console.log(maxheights);
 					var maxHeightofslide = Math.max.apply(null, maxheights);
 					//console.log(maxHeightofslide);
 					if(maxHeightofslide>0){
-						$(thisslick).find(".w3_wprs-col").find("p").parent().css( "min-height", maxHeightofslide );
+						$(thisslick).find(".indrevdiv").css( "min-height", maxHeightofslide );
 					}
 		}
 		function fun_fixheightsliajax(thisslick){
-					//console.log('check if height fix ajax min');
-					//console.log(thisslick);
 					var maxheights = $(thisslick).find(".w3_wprs-col").map(function (){return $(this).outerHeight();}).get();
 					//console.log(maxheights);
 					var maxHeightofslide = Math.max.apply(null, maxheights);
@@ -1600,7 +1675,13 @@
 		
 		//for slick slider, check to make sure there is a slick template on page first
 		$( ".wprevgoslick" ).each(function( index ) {
-			createaslick(this);
+			//if this slick is in a float then delay for 1, parent must have  class
+			//if ($(this).parents('.wprevpro_slideout_container').length) {
+				//this in a slideout, so we wait to create it on slideout.
+
+			//} else {
+				createaslick(this);
+			//}
 		});
 		var okaytoloadnextslickslide = true;
 		function createaslick(thisslickdiv){
@@ -1619,8 +1700,9 @@
 			if(revsameheight=='yes'){
 				setTimeout (() => { 
 					fun_revsameheight(thisslick);
-				}, 1);
+				}, 50);
 			}
+
 
 			//if we are doing more than one row and masonry turned off then set min-height of each reviews to largest review.
 			var slideprops = $(thisslickdiv).attr( "data-slickwprev" );
@@ -1630,12 +1712,17 @@
 			var displaymasonry = $(thisslickdiv).attr( "data-wprevmasonry" );
 			//is this an avatar nav
 			var isavatarnav = $(thisslickdiv).attr( "data-avatarnav" );
+			var revsperrow = $(thisslickdiv).attr( "data-revsperrow" );
 			
 			if(slidepropsobj.rows > 1 && displaymasonry=='no'){
 				var maxheights = $(thisslickdiv).find(".outerrevdiv").map(function (){return $(this).outerHeight();}).get();
 				var maxHeightofrev = Math.max.apply(null, maxheights);
 				//console.log(maxHeightofrev);
-				$(thisslickdiv).find(".outerrevdiv").css( "min-height", maxHeightofrev );
+				if(revsperrow==true && revsperrow=="1"){
+					//do nothing since one per a row.
+				} else {
+					$(thisslickdiv).find(".outerrevdiv").css( "min-height", maxHeightofrev );
+				}
 			}
 			var centerpad = '50px';
 			var centerpad2 = '50px';
@@ -1795,7 +1882,8 @@
 		function mediareviewpopup(){
 			//search for masonry elements
 			//alert("here!");
-			var mediadiv = $(".wprevpro").find(".wprev_media_div");
+			//var mediadiv = $(".wprevprodiv").find(".wprev_media_div");
+			var mediadiv = $(".wprev_media_div");
 			if(mediadiv.length){
 				//load js and css files.
 				//console.log(wprevpublicjs_script_vars);

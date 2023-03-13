@@ -39,6 +39,16 @@ class WP_Review_Pro_Admin {
 	 * @var      string    $version    The current version of this plugin.
 	 */
 	private $version;
+	
+	/**
+	 * The token of the plugin.
+	 *
+	 * @since    11.6.0
+	 * @access   protected
+	 * @var      string    $_token   The token of the plugin.
+	 */
+	private $_token;	//must declare this now in php 8.2
+	private $intpluginversion;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -97,7 +107,7 @@ class WP_Review_Pro_Admin {
 		 */
 		//only load for this plugin
 		if(isset($_GET['page'])){
-			if($_GET['page']=="wp_pro-getrevs" || $_GET['page']=="wp_pro-getrevschoice" || $_GET['page']=="wp_pro-settings" || $_GET['page']=="wp_pro-reviews" || $_GET['page']=="wp_pro-templates_posts" || $_GET['page']=="wp_pro-reviewfunnel" || $_GET['page']=="wp_pro-get_apps" || $_GET['page']=="wp_pro-get_twitter" || $_GET['page']=="wp_pro-get_woo" ||$_GET['page']=="wp_pro-forum" || $_GET['page']=="wp_pro-settings-account" || $_GET['page']=="wp_pro-settings-contact" || $_GET['page']=="wp_pro-settings-pricing" || $_GET['page']=="wp_pro-googlesettings" || $_GET['page']=="wp_pro-notifications" || $_GET['page']=="wp_pro-badges" || $_GET['page']=="wp_pro-forms" || $_GET['page']=="wp_pro-float" || $_GET['page']=="wp_pro-analytics"){
+			if($_GET['page']=="wp_pro-getrevs" || $_GET['page']=="wp_pro-getrevschoice" || $_GET['page']=="wp_pro-reviews" || $_GET['page']=="wp_pro-templates_posts" || $_GET['page']=="wp_pro-reviewfunnel" || $_GET['page']=="wp_pro-get_apps" || $_GET['page']=="wp_pro-get_twitter" || $_GET['page']=="wp_pro-get_woo" ||$_GET['page']=="wp_pro-forum" || $_GET['page']=="wp_pro-settings-account" || $_GET['page']=="wp_pro-settings-contact" || $_GET['page']=="wp_pro-settings-pricing" || $_GET['page']=="wp_pro-googlesettings" || $_GET['page']=="wp_pro-notifications" || $_GET['page']=="wp_pro-badges" || $_GET['page']=="wp_pro-forms" || $_GET['page']=="wp_pro-float" || $_GET['page']=="wp_pro-analytics"){
 				wp_enqueue_style( $this->_token, plugin_dir_url( __FILE__ ) . 'css/wprevpro_admin.css', array(), $this->version, 'all' );
 				wp_enqueue_style( $this->_token."_wprevpro_w3", plugin_dir_url(dirname(__FILE__)) . 'public/css/wprevpro_w3.css', array(), $this->version, 'all' );
 			}
@@ -128,7 +138,7 @@ class WP_Review_Pro_Admin {
 			}
 			
 			//load template styles for get revs pages
-			if($_GET['page']=="wp_pro-getrevs" || $_GET['page']=="wp_pro-getrevschoice" || $_GET['page']=="wp_pro-settings" || $_GET['page']=="wp_pro-get_woo" || $_GET['page']=="wp_pro-reviewfunnel" || $_GET['page']=="wp_pro-get_apps"|| $_GET['page']=="wp_pro-get_twitter" || $_GET['page']=="wp_pro-googlesettings" || $_GET['page']=="wp_pro-analytics"){
+			if($_GET['page']=="wp_pro-getrevs" || $_GET['page']=="wp_pro-getrevschoice" || $_GET['page']=="wp_pro-get_woo" || $_GET['page']=="wp_pro-reviewfunnel" || $_GET['page']=="wp_pro-get_apps"|| $_GET['page']=="wp_pro-get_twitter" || $_GET['page']=="wp_pro-googlesettings" || $_GET['page']=="wp_pro-analytics"){
 				//enque styles for w3 css
 				wp_enqueue_style( $this->_token."_w3", plugin_dir_url( __FILE__ ) . 'css/w3.css', array(), $this->version, 'all' );
 			}
@@ -179,7 +189,7 @@ class WP_Review_Pro_Admin {
 
 		//scripts for all pages in this plugin
 		if(isset($_GET['page'])){
-			if($_GET['page']=="wp_pro-getrevs" || $_GET['page']=="wp_pro-getrevschoice" || $_GET['page']=="wp_pro-settings" || $_GET['page']=="wp_pro-reviews" || $_GET['page']=="wp_pro-templates_posts" || $_GET['page']=="wp_pro-get_woo" || $_GET['page']=="wp_pro-googlesettings" || $_GET['page']=="wp_pro-notifications" || $_GET['page']=="wp_pro-badges" || $_GET['page']=="wp_pro-reviewfunnel" || $_GET['page']=="wp_pro-get_apps" || $_GET['page']=="wp_pro-get_twitter" || $_GET['page']=="wp_pro-forms" || $_GET['page']=="wp_pro-float" || $_GET['page']=="wp_pro-analytics"){
+			if($_GET['page']=="wp_pro-getrevs" || $_GET['page']=="wp_pro-getrevschoice" || $_GET['page']=="wp_pro-reviews" || $_GET['page']=="wp_pro-templates_posts" || $_GET['page']=="wp_pro-get_woo" || $_GET['page']=="wp_pro-googlesettings" || $_GET['page']=="wp_pro-notifications" || $_GET['page']=="wp_pro-badges" || $_GET['page']=="wp_pro-reviewfunnel" || $_GET['page']=="wp_pro-get_apps" || $_GET['page']=="wp_pro-get_twitter" || $_GET['page']=="wp_pro-forms" || $_GET['page']=="wp_pro-float" || $_GET['page']=="wp_pro-analytics"){
 				//pop-up script
 				wp_register_script( 'simple-popup-js',  plugin_dir_url( __FILE__ ) . 'js/wprevpro_simple-popup.min.js' , '', $this->version, false );
 				wp_enqueue_script( 'simple-popup-js' );
@@ -236,7 +246,9 @@ class WP_Review_Pro_Admin {
 			
 		}
 		
-		//common localized variables array
+		//common localized variables arra
+		//======delete this after move to get_apps
+		/*
 		$script_vars_array = array(
 					'wpfb_nonce'=> wp_create_nonce('randomnoncestring'),
 					'popuptitle' => esc_html__('Downloading Reviews', 'wp-review-slider-pro'),
@@ -252,6 +264,7 @@ class WP_Review_Pro_Admin {
 					);
 		
 		//scripts for get fb reviews page
+		
 		if(isset($_GET['page'])){
 			if($_GET['page']=="wp_pro-settings"){
 				//admin js
@@ -260,6 +273,9 @@ class WP_Review_Pro_Admin {
 				wp_localize_script($this->_token, 'adminjs_script_vars',$script_vars_array);
 			}
 		}
+		*/
+		
+		//=================
 		
 		//scripts for get Yelp reviews page
 /*
@@ -364,12 +380,12 @@ class WP_Review_Pro_Admin {
 					'Edit' => esc_html__('Edit', 'wp-review-slider-pro'),
 					'Copy' => esc_html__('Copy', 'wp-review-slider-pro'),
 					'Review_Response' => esc_html__('Review Response', 'wp-review-slider-pro'),
-					'msg3' => sprintf(__( 'No reviews found. Please visit the %1$sGet Reviews%2$s page to retrieve reviews. If you\'ve already downloaded reviews and they are not showing, then go de-activate and re-activate this plugin. That will force the database tables to update. ', 'wp-review-slider-pro' ),'<a href="?page=wp_pro-settings">','</a>'),
+					'msg3' => sprintf(__( 'No reviews found. Please visit the %1$sGet Reviews%2$s page to retrieve reviews. If you\'ve already downloaded reviews and they are not showing, then go de-activate and re-activate this plugin. That will force the database tables to update. ', 'wp-review-slider-pro' ),'<a href="?page=wp_pro-getrevs">','</a>'),
 					'Total_Reviews' => esc_html__('Total Reviews', 'wp-review-slider-pro'),
 					'msg4' => esc_html__('Oops! Unable to update the sort weight. Please contact support.', 'wp-review-slider-pro'),
 					)
 				);
-				//No reviews found. Please visit the <a href="?page=wp_pro-settings">Get Reviews</a> page to retrieve reviews.
+
 				
 				//currently has select cat id script
 				wp_register_script( 'common-to-admin',  plugin_dir_url( __FILE__ ) . 'js/wprevpro_commontoadmin.js' , '', $this->version, false );
@@ -384,7 +400,7 @@ class WP_Review_Pro_Admin {
 					);
 				
 				//for media popup
-				wp_register_script( 'wprev_lity',  plugin_dir_url( __FILE__ ) . 'js/lity.min.js' , '', $this->version, false );
+				wp_register_script( 'wprev_lity',  plugin_dir_url( __FILE__ ) . 'js/lity.js' , '', $this->version, false );
 				wp_enqueue_script( 'wprev_lity' );
 				
 				
@@ -418,6 +434,7 @@ class WP_Review_Pro_Admin {
 						'Error' => esc_html__('Error', 'wp-review-slider-pro'),
 						'Updated' => esc_html__('Updated', 'wp-review-slider-pro'),
 						'reviews' => esc_html__('reviews', 'wp-review-slider-pro'),
+						'Role_Filter' => esc_html__('Select Roles', 'wp-review-slider-pro'),
 						)
 					);
 					
@@ -598,7 +615,7 @@ class WP_Review_Pro_Admin {
 					'note_healthgrades' => esc_html__('Note: Healthgrades requires single doctor/physician url, it can not use the group reviews page url.', 'wp-review-slider-pro'),
 					'note_airbnb' => esc_html__('Note: Airbnb - Currently only rooms are supported. To download reviews for experiences then you would need to use the Get Reviews > Airbnb.', 'wp-review-slider-pro'),
 					'note_googleshopping' => esc_html__('Example URL: https://www.google.com/shopping/ratings/account/metrics?q=outbax.com.au&c=AU&v=17', 'wp-review-slider-pro'),
-					
+					'sitetypenote_trustpilot' => sprintf(__( '<b>Warning:</b> Trustpilot does not legally allow you to display their reviews unless you use one of their widgets. They have forced me to remove Trustpilot icons from this plugin. Use at your own risk. More info %1$s. ', 'wp-review-slider-pro' ),'<a href="https://legal.trustpilot.com/for-businesses/legal-brand-guidelines" target="_blank">here</a>'),
 					)
 				);
 
@@ -635,7 +652,7 @@ class WP_Review_Pro_Admin {
 					'msg3' => esc_html__('Reviews returned.', 'wp-review-slider-pro'),
 					'msg4' => esc_html__('New Reviews inserted in to your database.', 'wp-review-slider-pro'),
 					'msg5' => esc_html__('They should now show up on the Review List page.', 'wp-review-slider-pro'),
-					'msg6' => esc_html__('No new reviews found.', 'wp-review-slider-pro'),
+					'msg6' => esc_html__('No new reviews found. Check the Review List for your reviews.', 'wp-review-slider-pro'),
 					'msg7' => esc_html__('Error: No Reviews returned. Please see javascript console for more details. Right-click > inspect, look for console window.', 'wp-review-slider-pro'),
 					'msg8' => esc_html__('Error returning json object:', 'wp-review-slider-pro'),
 					'msg9' => esc_html__('Error using ajax to return reviews, please try again or contact support.', 'wp-review-slider-pro'),
@@ -644,6 +661,18 @@ class WP_Review_Pro_Admin {
 					'msg22' => esc_html__('Please click the "Save & Test" button above', 'wp-review-slider-pro'),
 					'msg23' => esc_html__('There is a limit of 40 locations with this download method.', 'wp-review-slider-pro'),
 					'Done' => esc_html__('Done', 'wp-review-slider-pro'),
+
+					'fbmsg' => esc_html__('Downloaded so far:', 'wp-review-slider-pro'),
+					'fbmsg1' => esc_html__('Finished! The reviews should now show up on the Review List page of the plugin.', 'wp-review-slider-pro'),
+					'fbmsg2' => esc_html__('No new reviews found.', 'wp-review-slider-pro'),
+					'fbmsg3' => esc_html__(' Please use the button above to enter or modify your access code.', 'wp-review-slider-pro'),
+					'fbmsg4' => esc_html__(' Please select a Facebook page.', 'wp-review-slider-pro'),
+					'fbmsg5' => esc_html__('<br>Finished searching for new reviews.', 'wp-review-slider-pro'),
+					'fbRetrieve_Reviews' => esc_html__('Retrieve Reviews', 'wp-review-slider-pro'),
+					'fbYes' => esc_html__('Yes', 'wp-review-slider-pro'),
+					'fbOops' => esc_html__('Oops, no Facebook pages found. Please try again or contact us for help.', 'wp-review-slider-pro'),
+					
+					
 					)
 				);
 				
@@ -952,138 +981,170 @@ class WP_Review_Pro_Admin {
 		$capabilityeditor = 'edit_pages';
 		$menu_slug = 'wp_pro-getrevs';
 		
-		add_menu_page($page_title, $menu_title, $capability, $menu_slug, array($this,'wp_fb_getrevs'),'dashicons-star-half');
+		// Check Tools page to see if any other roles can also see this.
+		$defaultcap = $capability;
+		$getreviewsallcap = $capability;
+		$checkcapuser = $this->wprev_canuserseepage('getrevs');
+		if($checkcapuser['canview']==true && $checkcapuser['cap']!=''){
+			$defaultcap = $checkcapuser['cap'];
+			$getreviewsallcap = $defaultcap;
+		}
+		add_menu_page($page_title, $menu_title, $defaultcap, $menu_slug, array($this,'wp_fb_getrevs'),'dashicons-star-half');
 		$sub_menu_title = 'Get Reviews';
-		add_submenu_page($menu_slug, $page_title, $sub_menu_title, $capability, $menu_slug, array($this,'wp_fb_getrevs'));
+		add_submenu_page($menu_slug, $page_title, $sub_menu_title, $defaultcap, $menu_slug, array($this,'wp_fb_getrevs'));
 		
 		// Now add a hidden page for iframing the template preview
 		$submenu_page_title = 'WP Reviews Pro : Template Preview';
 		$submenu_title = 'Preview';
 		$submenu_slug = 'wp_pro-get_preview';
-		add_submenu_page(null, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_getpreview'));
+		add_submenu_page('', $submenu_page_title, $submenu_title, $getreviewsallcap, $submenu_slug, array($this,'wp_fb_getpreview'));
 		
 		// Now add a non-menu page for choosing download method
 		$submenu_page_title = 'WP Reviews Pro : Choose Method';
 		$submenu_title = 'Choose';
 		$submenu_slug = 'wp_pro-getrevschoice';
-		add_submenu_page(null, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_getrevschoice'));
+		add_submenu_page('', $submenu_page_title, $submenu_title, $getreviewsallcap, $submenu_slug, array($this,'wp_fb_getrevschoice'));
 		
-		// Now add the submenu page for airbnb
-		/*
-		$submenu_page_title = 'WP Reviews Pro : Airbnb';
-		$submenu_title = 'Airbnb';
-		$submenu_slug = 'wp_pro-get_airbnb';
-		add_submenu_page(null, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_getairbnb'));
-		*/
-
 		// Now add the submenu page for FB
+		/*
 		$submenu_page_title = 'WP Reviews Pro : Get Facebook Reviews';
 		$submenu_title = 'Facebook';
 		$submenu_slug = 'wp_pro-settings';
-		add_submenu_page(null, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_settings'));
+		add_submenu_page(null, $submenu_page_title, $submenu_title, $getreviewsallcap, $submenu_slug, array($this,'wp_fb_settings'));
+		*/
 		
 		// Now add the submenu page for google page
 		$submenu_page_title = 'WP Google Places Reviews: Google Places API';
 		$submenu_title = 'Google';
 		$submenu_slug = 'wp_pro-googlesettings';
-		add_submenu_page(null, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_googlesettings'));
+		add_submenu_page('', $submenu_page_title, $submenu_title, $getreviewsallcap, $submenu_slug, array($this,'wp_fb_googlesettings'));
 		
 	
 		// Now add the hidden submenu page for app stores/itunes
 		$submenu_page_title = 'WP Reviews Pro : iTunes';
 		$submenu_title = 'iTunes';
 		$submenu_slug = 'wp_pro-get_apps';
-		add_submenu_page(null, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_getapps'));
-		
-		// Now add the submenu page for tripadvisor
-		/*
-		$submenu_page_title = 'WP Reviews Pro : TripAdvisor';
-		$submenu_title = 'TripAdvisor';
-		$submenu_slug = 'wp_pro-get_tripadvisor';
-		add_submenu_page(null, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_gettripadvisor'));
-		*/
+		add_submenu_page('', $submenu_page_title, $submenu_title, $getreviewsallcap, $submenu_slug, array($this,'wp_fb_getapps'));
 		
 		// Now add the hidden submenu page for twitter
 		$submenu_page_title = 'WP Reviews Pro : Twitter';
 		$submenu_title = 'Twitter';
 		$submenu_slug = 'wp_pro-get_twitter';
-		add_submenu_page(null, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_gettwitter'));
+		add_submenu_page('', $submenu_page_title, $submenu_title, $getreviewsallcap, $submenu_slug, array($this,'wp_fb_gettwitter'));
 		
-		// Now add the submenu page for airbnb
-		//$submenu_page_title = 'WP Reviews Pro : VRBO';
-		//$submenu_title = 'VRBO';
-		//$submenu_slug = 'wp_pro-get_vrbo';
-		//add_submenu_page(null, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_getvrbo'));
-		
-	
 		// Now add the submenu page for woocommerce
 		$submenu_page_title = 'WP Reviews Pro : WooCommerce';
 		$submenu_title = 'WooCommerce';
 		$submenu_slug = 'wp_pro-get_woo';
-		add_submenu_page(null, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_getwoo'));
-		
-		// Now add the submenu page for yelp
-		/*
-		$submenu_page_title = 'WP Reviews Pro : Yelp';
-		$submenu_title = 'Yelp';
-		$submenu_slug = 'wp_pro-get_yelp';
-		add_submenu_page(null, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_getyelp'));
-		*/
-		
+		add_submenu_page('', $submenu_page_title, $submenu_title, $getreviewsallcap, $submenu_slug, array($this,'wp_fb_getwoo'));
+				
 		// Now add the hidden submenu page for reviewscraper
+		// Check Tools page to see if any other roles can also see this.
+		$defaultcap = $capability;
+		$checkcapuser = $this->wprev_canuserseepage('reviewfunnel');
+		if($checkcapuser['canview']==true && $checkcapuser['cap']!=''){
+			$defaultcap = $checkcapuser['cap'];
+		}
 		$submenu_page_title = 'WP Reviews Pro : Review Funnel';
 		$submenu_title = 'Review Funnels';
 		$submenu_slug = 'wp_pro-reviewfunnel';
-		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_reviewfunnel'));
+		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $defaultcap, $submenu_slug, array($this,'wp_fb_reviewfunnel'));
 		
 		// Now add the submenu page for the actual reviews list
+		// Check Tools page to see if any other roles can also see this.
+		$defaultcap = $capabilityeditor;
+		$checkcapuser = $this->wprev_canuserseepage('reviews');
+		if($checkcapuser['canview']==true && $checkcapuser['cap']!=''){
+			$defaultcap = $checkcapuser['cap'];
+		}
 		$submenu_page_title = 'WP Reviews Pro : Review List';
 		$submenu_title = 'Review List';
 		$submenu_slug = 'wp_pro-reviews';
-		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $capabilityeditor, $submenu_slug, array($this,'wp_fb_reviews'));
+		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $defaultcap, $submenu_slug, array($this,'wp_fb_reviews'));
 		
 		// Now add the submenu page for the reviews templates
+		// Check Tools page to see if any other roles can also see this.
+		$defaultcap = $capability;
+		$checkcapuser = $this->wprev_canuserseepage('templates_posts');
+		if($checkcapuser['canview']==true && $checkcapuser['cap']!=''){
+			$defaultcap = $checkcapuser['cap'];
+		}
 		$submenu_page_title = 'WP Reviews Pro : Templates';
 		$submenu_title = 'Templates';
 		$submenu_slug = 'wp_pro-templates_posts';
-		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_templates_posts'));
+		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $defaultcap, $submenu_slug, array($this,'wp_fb_templates_posts'));
 		
 		// Now add the submenu page for the badges
+		// Check Tools page to see if any other roles can also see this.
+		$defaultcap = $capability;
+		$checkcapuser = $this->wprev_canuserseepage('badges');
+		if($checkcapuser['canview']==true && $checkcapuser['cap']!=''){
+			$defaultcap = $checkcapuser['cap'];
+		}
 		$submenu_page_title = 'WP Reviews Pro : Badges';
 		$submenu_title = 'Badges';
 		$submenu_slug = 'wp_pro-badges';
-		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_badges'));
+		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $defaultcap, $submenu_slug, array($this,'wp_fb_badges'));
 		
 		// Now add the submenu page for the forms
+		// Check Tools page to see if any other roles can also see this.
+		$defaultcap = $capability;
+		$checkcapuser = $this->wprev_canuserseepage('forms');
+		if($checkcapuser['canview']==true && $checkcapuser['cap']!=''){
+			$defaultcap = $checkcapuser['cap'];
+		}
 		$submenu_page_title = 'WP Reviews Pro : Forms';
 		$submenu_title = 'Forms';
 		$submenu_slug = 'wp_pro-forms';
-		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_forms'));
+		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $defaultcap, $submenu_slug, array($this,'wp_fb_forms'));
 		
 		// Now add the submenu page for the Float
+		// Check Tools page to see if any other roles can also see this.
+		$defaultcap = $capability;
+		$checkcapuser = $this->wprev_canuserseepage('float');
+		if($checkcapuser['canview']==true && $checkcapuser['cap']!=''){
+			$defaultcap = $checkcapuser['cap'];
+		}
 		$submenu_page_title = 'WP Reviews Pro : Float';
 		$submenu_title = 'Floats';
 		$submenu_slug = 'wp_pro-float';
-		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_float'));
-		
+		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $defaultcap, $submenu_slug, array($this,'wp_fb_float'));
 		
 		// Now add the submenu page for the analytics
+		// Check Tools page to see if any other roles can also see this.
+		$defaultcap = $capabilityeditor;
+		$checkcapuser = $this->wprev_canuserseepage('analytics');
+		if($checkcapuser['canview']==true && $checkcapuser['cap']!=''){
+			$defaultcap = $checkcapuser['cap'];
+		}
 		$submenu_page_title = 'WP Reviews Pro : Analytics';
 		$submenu_title = 'Analytics';
 		$submenu_slug = 'wp_pro-analytics';
-		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $capabilityeditor, $submenu_slug, array($this,'wp_fb_analytics'));
+		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $defaultcap, $submenu_slug, array($this,'wp_fb_analytics'));
 		
 		// Now add the submenu page for the notifications
+		// Check Tools page to see if any other roles can also see this.
+		$defaultcap = $capability;
+		$checkcapuser = $this->wprev_canuserseepage('notifications');
+		if($checkcapuser['canview']==true && $checkcapuser['cap']!=''){
+			$defaultcap = $checkcapuser['cap'];
+		}
 		$submenu_page_title = 'WP Reviews Pro : Tools';
 		$submenu_title = 'Tools';
 		$submenu_slug = 'wp_pro-notifications';
-		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_notifications'));
+		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $defaultcap, $submenu_slug, array($this,'wp_fb_notifications'));
 		
 		// Now add the submenu page for the forum
+		// Check Tools page to see if any other roles can also see this.
+		$defaultcap = $capability;
+		$checkcapuser = $this->wprev_canuserseepage('forum');
+		if($checkcapuser['canview']==true && $checkcapuser['cap']!=''){
+			$defaultcap = $checkcapuser['cap'];
+		}
 		$submenu_page_title = 'WP Reviews Pro : Forum';
 		$submenu_title = 'Forum';
 		$submenu_slug = 'wp_pro-forum';
-		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, array($this,'wp_fb_forum'));
+		add_submenu_page($menu_slug, $submenu_page_title, $submenu_title, $defaultcap, $submenu_slug, array($this,'wp_fb_forum'));
 		
 
 	}
@@ -1108,9 +1169,9 @@ class WP_Review_Pro_Admin {
 		require_once plugin_dir_path( __FILE__ ) . 'partials/get_woo.php';
 	}
 	
-	public function wp_fb_settings() {
-		require_once plugin_dir_path( __FILE__ ) . 'partials/settings.php';
-	}
+	//public function wp_fb_settings() {
+	//	require_once plugin_dir_path( __FILE__ ) . 'partials/settings.php';
+	//}
 	public function wp_fb_reviews() {
 		require_once plugin_dir_path( __FILE__ ) . 'partials/review_list.php';
 	}
@@ -1757,10 +1818,7 @@ class WP_Review_Pro_Admin {
 				'class'             => 'wprevpro_row langsupport',
 				'wprevpro_custom_data' => 'custom',
 			]);
-		
-		
-		
-		
+
 			
 	}	
 	
@@ -2262,7 +2320,6 @@ https://www.tripadvisor.com/Restaurant_Review-g34346-d804726-Reviews-Kaiyo_Grill
 		);
 	 
 		//register Google API key input field
-		
 		add_settings_field(
 			'google_api_key', 
 			__( 'Google API Key', 'wp-review-slider-pro'),
@@ -2318,7 +2375,7 @@ https://www.tripadvisor.com/Restaurant_Review-g34346-d804726-Reviews-Kaiyo_Grill
 		//looping here based on how many we need
 		$tempoptions = get_option('wpfbr_google_options');
 		//print_r($tempoptions);
-		if(!isset($tempoptions['google_business_location_total'])){
+		if(isset($tempoptions) && !isset($tempoptions['google_business_location_total'])){
 			//first time seeing this find total of locations currently being used and set to that. if only using one then set to zero
 			$numinuse = 1;
 			for ($x = 2; $x <= 4; $x++) {
@@ -2620,6 +2677,7 @@ https://www.tripadvisor.com/Restaurant_Review-g34346-d804726-Reviews-Kaiyo_Grill
 	/**
 	 * custom option and settings on Facebook settings page
 	 */
+	 /*
 	public function wprevpro_settings_init()
 	{
 		// register a new setting for "wp_pro-settings" page
@@ -2672,6 +2730,8 @@ https://www.tripadvisor.com/Restaurant_Review-g34346-d804726-Reviews-Kaiyo_Grill
 
 		
 	}
+	*/
+	
 	/**
 	 * custom option and settings:
 	 * callback functions
@@ -2681,10 +2741,10 @@ https://www.tripadvisor.com/Restaurant_Review-g34346-d804726-Reviews-Kaiyo_Grill
 	// section callbacks can accept an $args parameter, which is an array.
 	// $args have the following keys defined: title, id, callback.
 	// the values are defined at the add_settings_section() function.
-	public function wprevpro_section_developers_cb($args)
-	{
+	//public function wprevpro_section_developers_cb($args)
+	//{
 		//echos out at top of section
-	}
+	//}
 
 	
 	//==== field cb =====
@@ -2694,6 +2754,7 @@ https://www.tripadvisor.com/Restaurant_Review-g34346-d804726-Reviews-Kaiyo_Grill
 	// the "label_for" key value is used for the "for" attribute of the <label>.
 	// the "class" key value is used for the "class" attribute of the <tr> containing the field.
 	// you can add custom key value pairs to be used inside your callbacks.
+	/*
 	public function wprevpro_field_fb_code_cb($args)
 	{
 		// get the value of the setting we've registered with register_setting()
@@ -2747,7 +2808,7 @@ https://www.tripadvisor.com/Restaurant_Review-g34346-d804726-Reviews-Kaiyo_Grill
 		<?php
 	}
 	
-	
+	*/
 	public function wprev_jsontocommastr($jsonstring){
 			if($jsonstring!=''){
 				$strarrayjson = json_decode($jsonstring,true);
@@ -2757,7 +2818,68 @@ https://www.tripadvisor.com/Restaurant_Review-g34346-d804726-Reviews-Kaiyo_Grill
 				return $str;
 			}
 	}
+	
+	//for returning list of site Roles, we can call this admin/partials.
+	public function wprev_get_role_names() {
+		global $wp_roles;
+		if ( ! isset( $wp_roles ) )
+			$wp_roles = new WP_Roles();
+		return $wp_roles->get_names();
+	}
+	//used for returning which roles the current user has
+	public function wprev_get_user_roles() {
+		 $user = wp_get_current_user(); // getting & setting the current user 
+		 //print_r($user);
+		 $roles = ( array ) $user->roles; // obtaining the role 
+		 return $roles;
+	}
 
+	//function for returning whether or not a current logged in user can see the page. Set in Tools.
+	//input is the page. output is true/false
+	public function wprev_canuserseepage($pageurl=''){
+		$results['cap']='';
+		$results['canview']=false;
+		//get current saved values from Tools page
+		 if(get_option('wprev_rolepages')){
+			$savedrolesjson = get_option('wprev_rolepages');
+			$savedrolesarray = json_decode($savedrolesjson,true);
+		 } else {
+			$savedrolesarray = Array(); 
+		 }
+		 //echo "<br><br>";
+		 //print_r($savedrolesarray);
+		 //echo "<br><br>";
+		 //ex: Array ( [getrevs] => Array ( [0] => author ) [reviewfunnel] => Array ( [0] => contributor [1] => subscriber ) [reviews] => Array ( [0] => customer ) [templates_posts] => Array ( [0] => editor [1] => author ) [forms] => Array ( [0] => contributor ) [notifications] => Array ( [0] => contributor ) )
+		 
+		 //check to see if $pageurl is in the $savedrolesarray
+		 if(isset($savedrolesarray[$pageurl]) && is_array($savedrolesarray[$pageurl])){
+			 //echo "here";
+			 //if true then get the role of the current user.
+			 $userroles = $this->wprev_get_user_roles();	//array of user roles.
+			// echo "<br><br>";
+			//print_r($userroles);
+			//echo "<br><br>";
+			//print_r($savedrolesarray[$pageurl]);
+			
+			foreach ($savedrolesarray[$pageurl] as $value) {
+			  //loop each userroles and see if a match.
+			  foreach ($userroles as $userrole) {
+				  if($userrole == $value){
+					$results['canview']=true;
+				    $capabilityarray = get_role($userrole)->capabilities;
+				    $firstKey = array_key_first($capabilityarray);
+					$results['cap'] = $firstKey;
+				  }
+				  if($userrole == 'subscriber'){
+					  //not opening up to subscribers
+					  $results['canview']=false;
+				  }
+			  }
+			}
 
+		 }
+		 
+		 return $results;
+	}
 
 }

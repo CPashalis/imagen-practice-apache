@@ -36,6 +36,10 @@
 		var pageclicked = 1;	//for pagination click
 		var currentwindowpos = 0;	//used to set window position back when editing a review.
 		
+		//sorting values
+		var csortbyval = '';
+		var csortd = '';
+		
 		//load reviews
 		sendtoajaxreview('','','',"",'yes');
 		
@@ -185,22 +189,23 @@
 		
 		//remove all button
 		$( "#wprevpro_removeallbtn" ).on("click",function() {
+			var sec = $(this).attr('data-sec');
 			console.log(adminjs_script_vars.globalwprevtypearray);
 			var typearray = JSON.parse(adminjs_script_vars.globalwprevtypearray);
 			var btnhtml = '';
 			for(var i=0; i<typearray.length; i++){
 				if (typearray[i] !== null){
 				var tempopt = 'del_'+typearray[i].toLowerCase();
-				btnhtml = btnhtml + '<a class="button rmrevbtn dashicons-before dashicons-no" href="?page=wp_pro-reviews&opt_type=type&opt='+tempopt+'">'+typearray[i]+'</a>';
+				btnhtml = btnhtml + '<a class="button rmrevbtn dashicons-before dashicons-no" href="?page=wp_pro-reviews&opt_type=type&opt='+tempopt+'&_wpnonce='+sec+'">'+typearray[i]+'</a>';
 				}
 			}
 			var btnhtml2 = ''
 			var pagearray = JSON.parse(adminjs_script_vars.pagenamearray);
 			for(var i=0; i<pagearray.length; i++){
 				var tempopt = encodeURIComponent(pagearray[i]);
-				btnhtml2 = btnhtml2 + '<a class="button rmrevbtn dashicons-before dashicons-no" href="?page=wp_pro-reviews&opt_type=page&opt='+tempopt+'">'+pagearray[i]+'</a>';
+				btnhtml2 = btnhtml2 + '<a class="button rmrevbtn dashicons-before dashicons-no" href="?page=wp_pro-reviews&opt_type=page&opt='+tempopt+'&_wpnonce='+sec+'">'+pagearray[i]+'</a>';
 			}
-		  openpopup(adminjs_script_vars.popuptitle1, adminjs_script_vars.popupmsg1, '<a class="button rmrevbtn dashicons-before dashicons-no" href="?page=wp_pro-reviews&opt=delall">'+adminjs_script_vars.all_reviews+'</a>'+btnhtml+'<p>'+adminjs_script_vars.popupmsg3+'</p>'+btnhtml2);
+		  openpopup(adminjs_script_vars.popuptitle1, adminjs_script_vars.popupmsg1, '<a class="button rmrevbtn dashicons-before dashicons-no" href="?page=wp_pro-reviews&opt=delall&_wpnonce='+sec+'">'+adminjs_script_vars.all_reviews+'</a>'+btnhtml+'<p>'+adminjs_script_vars.popupmsg3+'</p>'+btnhtml2);
 		});	
 
 		//upgrade to pro
@@ -810,9 +815,15 @@
 		$(".wpfb_review_list_pagination_bar").on("click", "span", function (event) {
 			pageclicked = $(this).text();
 			//console.log('page:'+pageclicked);
-			var sortbyval = $(this).attr( 'sortbyval' );
-			var sortd = $(this).attr( 'sortd' );
-			sendtoajaxreview('',sortbyval,sortd,"");
+			var tsortbyval ='';
+			var tsortd ='';
+			if($(this).attr( 'sortbyval' )){
+				var tsortbyval = $(this).attr( 'sortbyval' );
+			}
+			if($(this).attr( 'sortd' )){
+				var tsortd = $(this).attr( 'sortd' );
+			}
+			sendtoajaxreview('',tsortbyval,tsortd,"");
 		});
 		//to get a URL parameter
 		function getUrlVars() {
@@ -841,6 +852,11 @@
 		//to get the review list
 		function sendtoajaxreview(notused,sortbyval,sortd,selrevs,firstload='no'){
 
+			if(sortbyval!=''){
+			csortbyval = sortbyval;
+			csortd = sortd;
+			}
+		
 			$("#reviewlistspinner").show();
 			//console.log('cpage:'+pageclicked);
 			var filterbytext = $("#wprevpro_filter_table_name").val();
@@ -878,8 +894,8 @@
 			var senddata = {
 					action: 'wpfb_find_reviews',	//required
 					wpfb_nonce: adminjs_script_vars.wpfb_nonce,
-					sortby: sortbyval,
-					sortdir: sortd,
+					sortby: csortbyval,
+					sortdir: csortd,
 					filtertext: filterbytext,
 					filterrating: filterbyrating,
 					filtertype: filterbytype,
@@ -1153,7 +1169,7 @@
 					var reviewtotalcount = Number(object['reviewtotalcount']);
 
 					var pagebarhtml="";
-					if(numpages>1){
+					if(numpages>1 && reviewtotalcount>20){
 
 						var blue_grey;
 						var i;

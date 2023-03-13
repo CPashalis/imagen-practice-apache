@@ -34,12 +34,12 @@ export default async (app) => {
     /**
      * Proxy origin (`WP_HOME`)
      */
-    .proxy("http://imagen-apache.test:5111")
+    .proxy("http://localhost:3111")
 
     /**
      * Development origin
      */
-    .serve("http://localhost:5111/")
+    .serve("http://localhost:3111/")
 
     /**
      * URI of the `public` directory

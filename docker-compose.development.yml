@@ -1,0 +1,65 @@
+version: '3'
+services:
+  # Database
+  db:
+    image: mariadb:10.6
+    volumes:
+      - db_data:/var/lib/mariadb
+    restart: always
+    ports:
+      - 3116:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: zrA74AB7YjLzKNgg
+      MYSQL_DATABASE: wp_roots
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: Fqp3ATzFG65YNq8E
+    container_name: wp_database 
+    networks:
+      - imagen-development-apache-network
+  # phpmyadmin
+  phpmyadmin:
+    container_name: phpmyadmin
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - '3117:80'
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: password 
+      UPLOAD_LIMIT: 1000M
+    networks:
+      - imagen-development-apache-network
+  # Wordpress
+  wordpress:
+    container_name: wp_theme
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - '3111:80'
+    restart: always
+    volumes: 
+      - wp_plugins:/var/www/html/wp-content/plugins
+      - wp_images:/var/www/html/wp-content/uploads
+      - wp_themes:/var/www/html/wp-content/themes
+      - wp_imagesCompressed:/var/www/html/wp-content/uploads-webpc
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: Fqp3ATzFG65YNq8E
+      WORDPRESS_DATABASE: wp_roots
+    networks:
+      - imagen-development-apache-network
+networks:
+   imagen-development-apache-network:
+     external: true
+volumes:
+  db_data:
+  wp_plugins:
+  wp_images:
+  wp_themes:
+  wp_imagesCompressed:

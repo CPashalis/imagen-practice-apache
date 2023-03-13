@@ -18,7 +18,9 @@
 	
  //use the template id to find template in db, echo error if we can't find it or just don't display anything
  	//Get the form--------------------------
-	$currentform = $wpdb->get_results("SELECT * FROM $table_name WHERE id = ".$a['tid']);
+	$tid = htmlentities($a['tid']);
+	$tid = intval($tid);
+	$currentform = $wpdb->get_results("SELECT * FROM $table_name WHERE id = ".$tid);
 	
 	$totalreviewsnum ='';
 	$reviewratingsarray = Array();

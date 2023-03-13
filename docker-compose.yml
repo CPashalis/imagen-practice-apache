@@ -1,55 +1,69 @@
 version: '3'
 services:
   # Database
-  db:
-    env_file:
-      - ./envs/development/db.env
-    container_name: imagen-${PRACTICE_NAME_VAR}-database-development
-    image: mariadb:10.6
-    volumes:
-      - db_data:/var/lib/mariadb
-    restart: always
-    ports:
-      - 8116:3306
-    networks:
-      - network
-  # phpmyadmin
-  phpmyadmin:
-    env_file:
-      - ./envs/development/db.env
-    container_name: imagen-${PRACTICE_NAME_VAR}-apache-phpmyadmin
-    depends_on:
-      - db
-    image: phpmyadmin/phpmyadmin
-    restart: always
-    ports:
-      - '8117:80'
-    environment:
-      PMA_HOST: imagen-${PRACTICE_NAME_VAR}-database-development
-    networks:
-      - network
+  # db:
+  #   env_file:
+  #     - ./envs/development/db.env
+  #   container_name: imagen-${PRACTICE_NAME_VAR}-database-development
+  #   image: mariadb:10.6
+  #   volumes:
+  #     - db_data:/var/lib/mariadb
+  #   restart: always
+  #   ports:
+  #     - 8116:3306
+  #   networks:
+  #     - network
+  # # phpmyadmin
+  # phpmyadmin:
+  #   env_file:
+  #     - ./envs/development/db.env
+  #   container_name: imagen-${PRACTICE_NAME_VAR}-apache-phpmyadmin
+  #   depends_on:
+  #     - db
+  #   image: phpmyadmin/phpmyadmin
+  #   restart: always
+  #   ports:
+  #     - '8117:80'
+  #   environment:
+  #     PMA_HOST: imagen-${PRACTICE_NAME_VAR}-database-development
+  #   networks:
+  #     - network
   # Wordpress
   wordpress:
     build:
       context: .
       dockerfile: docker/Dockerfile
+    #image: imagenwusregistry.azurecr.io/imagen-practice-apache-wordpress:3.3
     env_file:
       - ./envs/development/.env
-    container_name: imagen-${PRACTICE_NAME_VAR}-apache-development
-    depends_on:
-      - db
+    # container_name: imagen-${PRACTICE_NAME_VAR}-apache-development
+    # depends_on:
+    #   - db
     ports:
-      - '8111:80'
+      - '8001:80'
     restart: always
-    volumes: 
-      - ./wp-content:/var/www/html/wp-content
     environment:
       environment: development
-    networks:
-      - network
-networks:
-  network:
-    name: 'imagen-${PRACTICE_NAME_VAR}-apache-network'
-    external: true
+    # volumes:
+    #   - type: volume
+    #     source: wpmedia-storage
+    #     target: /wp-content/uploads
+
+      # - type: bind
+      #   source: /var/run/postgres/postgres.sock
+      #   target: /var/run/postgres/postgres.sock
+    volumes:
+      - customImages:/var/www/html/wp-content/uploads
+      - customImages:/var/www/html/wp-content/plugins
+    #   - ${WEBAPP_STORAGE_HOME}/site/wwwroot/wp-content/plugins:/var/www/html/wp-content/plugins:rw
+    #   - ${WEBAPP_STORAGE_HOME}/LogFiles:/var/log
+
 volumes:
-  db_data:
+  customImages:
+#     external: true
+#     networks:
+#       - network
+# networks:
+#   network:
+#     name: 'imagen-${PRACTICE_NAME_VAR}-apache-network'
+#     external: true

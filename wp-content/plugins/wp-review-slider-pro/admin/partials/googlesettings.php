@@ -13,7 +13,7 @@
  */
 
     // check user capabilities
-    if (!current_user_can('manage_options')) {
+     if (!current_user_can('manage_options') && $this->wprev_canuserseepage('googlesettings')==false) {
         return;
     }
  

@@ -46,6 +46,18 @@ class WP_Review_Pro_Admin_Hooks {
 	 * @param      string    $plugintoken       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
+	 
+	/**
+	 * The token of the plugin.
+	 *
+	 * @since    11.6.0
+	 * @access   protected
+	 * @var      string    $_token   The token of the plugin.
+	 */
+	private $_token;	//must declare this now in php 8.2
+	private $_default_api_token;
+	private $dbversion;
+	
 	public function __construct( $plugintoken, $version ) {
 
 		$this->_token = $plugintoken;
@@ -310,7 +322,7 @@ class WP_Review_Pro_Admin_Hooks {
 						//get reviewer id from author url so we can display on front end
 						$intreviewer_id = filter_var($item['author_url'], FILTER_SANITIZE_NUMBER_INT);
 						
-						$temppagename = $response['result']['name']. ' '.$urlnum;
+						$temppagename = $response['result']['name'];
 						
 						//last name option to not save in db
 						$user_name = $item['author_name'];
@@ -560,8 +572,12 @@ class WP_Review_Pro_Admin_Hooks {
 		check_ajax_referer('randomnoncestring', 'wpfb_nonce');
 		
 		$postreviewarray = $_POST['postreviewarray'];
+		$gafid = $_POST['gafid'];
 		
-		$getresponse = $this->wpfb_process_ajax_go( $postreviewarray );
+		//print_r($_POST);
+		//die();
+		
+		$getresponse = $this->wpfb_process_ajax_go( $postreviewarray,$gafid );
 		
 		echo $getresponse;
 		
@@ -569,11 +585,8 @@ class WP_Review_Pro_Admin_Hooks {
 	}
 	
 	//for last name options of FB page, called from below
-	public function formatlastname($tempreviewername){
+	public function formatlastname($tempreviewername,$lastnameoption){
 		//what to do with last name
-		$option = get_option('wprevpro_options');
-		if(isset($option['fb_last_name_option'])){
-			$lastnameoption = $option['fb_last_name_option'];
 			if(isset($lastnameoption)){
 				//make sure php mb extension is loaded
 				if (extension_loaded('mbstring')) {
@@ -598,7 +611,6 @@ class WP_Review_Pro_Admin_Hooks {
 					}
 				}
 			}
-		}
 		return $tempreviewername;
 	}
 	
@@ -615,13 +627,32 @@ class WP_Review_Pro_Admin_Hooks {
 	 }
 
  
-	public function wpfb_process_ajax_go($postreviewarray){
+	public function wpfb_process_ajax_go($postreviewarray,$gafid){
 		//loop through each one and insert in to db  
 		global $wpdb;
 		$db_charset = $wpdb->charset;
 		$table_name = $wpdb->prefix . 'wpfb_reviews';
 		$foundone = 0;
 		$stats = array();
+		
+		$fid = intval($gafid);
+		
+		$table_name_form = $wpdb->prefix . 'wpfb_getapps_forms';
+		$reviewformdetails = $wpdb->get_row( "SELECT * FROM $table_name_form WHERE id = $fid" );
+		$tempcats='';
+		if(isset($reviewformdetails->categories)){
+		$tempcats=$reviewformdetails->categories;
+		}
+		$tempposts='';
+		if(isset($reviewformdetails->posts)){
+		$tempposts=$reviewformdetails->posts;
+		}
+		$lastnameoption = '';
+		if(isset($reviewformdetails->last_name)){
+		$lastnameoption=$reviewformdetails->last_name;
+		}
+		//print_r($reviewformdetails);
+		//die();
 
 		foreach($postreviewarray as $item) { //foreach element in $arr
 			$pageid = $item['pageid'];
@@ -634,7 +665,9 @@ class WP_Review_Pro_Admin_Hooks {
 			$created_time_stamp = $created_time_stamp + $timezoneoffset;
 			$created_time = date ("Y-m-d H:i:s", $created_time_stamp);
 			$reviewer_name = $item['reviewer_name'];
-			$reviewer_name = $this->formatlastname( $reviewer_name );
+			//get last name option.
+			$reviewer_name = $this->formatlastname( $reviewer_name,$lastnameoption );
+			
 			$reviewer_id = $item['reviewer_id'];
 			$reviewer_imgurl = $item['reviewer_imgurl'];
 			if(array_key_exists('rating', $item) && $item['rating']){
@@ -671,15 +704,17 @@ class WP_Review_Pro_Admin_Hooks {
 			$rtype = $item['type'];
 
 			//option for saving positive recommendation_type as 5 start
-			$option = get_option('wprevpro_options');
-			if(isset($option['fb_recommendation_to_star'])){
-				if($option['fb_recommendation_to_star'] =='1'){
-					if($rating==0 && $recommendation_type=="positive"){
-						$rating=5;
-					}
-					if($rating==0 && $recommendation_type=="negative"){
-						$rating=2;
-					}
+			$fb_recommendation_to_star = '';
+			if(isset($reviewformdetails->rectostar)){
+			 $fb_recommendation_to_star=$reviewformdetails->rectostar;
+			}
+
+			if($fb_recommendation_to_star =='1'){
+				if($rating==0 && $recommendation_type=="positive"){
+					$rating=5;
+				}
+				if($rating==0 && $recommendation_type=="negative"){
+					$rating=2;
 				}
 			}
 			
@@ -710,7 +745,9 @@ class WP_Review_Pro_Admin_Hooks {
 						'review_length_char' => $review_length_char,
 						'type' => $rtype,
 						'userpic' => $reviewer_imgurl,
-						'unique_id' => $uniqueid
+						'unique_id' => $uniqueid,
+						'categories' => trim($tempcats),
+						'posts' => trim($tempposts)
 					);
 				}
 			} else {
@@ -748,6 +785,7 @@ class WP_Review_Pro_Admin_Hooks {
 	 * @since   1.0.0
 	 * @return  void
 	 */
+	 /*
 	public function wpfb_process_ajax_cron_page(){
 	//ini_set('display_errors',1);  
 	//error_reporting(E_ALL);
@@ -794,6 +832,7 @@ class WP_Review_Pro_Admin_Hooks {
 
 		die();
 	}
+	*/
 
     /**
 	 * check for new reviews of fb pages with cron job checked. 
@@ -801,96 +840,84 @@ class WP_Review_Pro_Admin_Hooks {
 	 * @since   1.0.0
 	 * @return  void
 	 */	
-	public function wprevpro_get_fb_reviews_cron() {
+	public function wprevpro_get_fb_reviews_cron($pageid,$gafid) {
       global $pagenow;
-	  //$foreverpagetokens = get_option('wprevpro_forever_pagetokens');
-	  //$foreverpagetokensarray = json_decode($foreverpagetokens, true);
-
-	  $pagestocron = get_option('wpfb_cron_pages');
-	  $fbcronpagesarray = json_decode($pagestocron, true);
 	  
-	  $option = get_option('wprevpro_options');
-	  $accesscode = $option['fb_app_code'];
+	  $accesscode = get_option('wprevpro_fb_secret_code');
 	  //must have long lasting page tokens
 	  //print_r($fbcronpagesarray);
 	  
-	  //loop through each page
-	  $n=1;
-		foreach($fbcronpagesarray as $x => $pageid) {
 
-				//made it this far now try to grab reviews
-				$tempurl = "https://fbapp.ljapps.com/ajaxgetpagerevs.php?rlimit=10&q=getrevs&acode=".$accesscode."&afterc=&callback=cron&pid=".$pageid;
-				//echo $tempurl."<br>";
-				
-				//first try wp_remote_get
-				//$data = wp_remote_get( $tempurl );
-				//if( is_wp_error( $data ) ) {
-					if (ini_get('allow_url_fopen') == true) {
-						$data=file_get_contents($tempurl);
-					} else if (function_exists('curl_init')) {
-						$data=$this->file_get_contents_curl($tempurl);
-					}
-				//}
-				// If the response is an array, it's coming from wp_remote_get,
-				// so we just want to capture to the body index for json_decode.
-				//if( is_array( $data ) ) {
-				//	$data = $data['body'];
-				//}
-				
-				//$data = file_get_contents($tempurl);
-				//echo($data)."<br>";;
-				$data = json_decode($data, true);
-				//print_r($data);
-				$reviewdata = $data['data'];
-				//print_r($reviewdata);
-				
-					if (is_array($reviewdata)){
-					//put data in to another array and pass to function
-					$arrlength = count($reviewdata);
-					//echo "<br>length:".$arrlength;
-					for($x = 0; $x < $arrlength; $x++) {
-						$reviewarray[$x]['pageid']=$pageid;
-						$reviewarray[$x]['pagename']=$reviewdata[$x]['pagename'];
-						$reviewarray[$x]['created_time']=$reviewdata[$x]['created_time'];
-						$reviewarray[$x]['reviewer_name']=$reviewdata[$x]['reviewer']['name'];
-						$reviewarray[$x]['reviewer_id']=$reviewdata[$x]['reviewer']['id'];
-						if(isset($reviewdata[$x]['rating'])){
-							$reviewarray[$x]['rating']=$reviewdata[$x]['rating'];
-						} else {
-							$reviewarray[$x]['rating']='';
-						}
-						if(isset($reviewdata[$x]['recommendation_type'])){
-							$reviewarray[$x]['recommendation_type']=$reviewdata[$x]['recommendation_type'];
-						} else {
-							$reviewarray[$x]['recommendation_type']='';
-						}
-						if(isset($reviewdata[$x]['review_text'])){
-							$reviewarray[$x]['review_text']=$reviewdata[$x]['review_text'];
-						} else {
-							$reviewarray[$x]['review_text']='';
-						}
-						if(isset($reviewdata[$x]['reviewer']['imgurl'])){
-							$reviewarray[$x]['reviewer_imgurl']=$reviewdata[$x]['reviewer']['imgurl'];
-						} else {
-							$reviewarray[$x]['reviewer_imgurl']='';
-						}
-						
-						$reviewarray[$x]['type']="Facebook";
-					}
-					//save them to db
-					//print_r($reviewarray);
-					if (isset($reviewarray) && is_array($reviewarray)){
-						$savereviews = $this->wpfb_process_ajax_go( $reviewarray );
-						//unset array
-						foreach ($reviewarray as $key => $value) {
-							unset($reviewarray[$key]);
-						}
-					}
+		//made it this far now try to grab reviews
+		$tempurl = "https://fbapp.ljapps.com/ajaxgetpagerevs.php?rlimit=20&q=getrevs&acode=".$accesscode."&afterc=&callback=cron&pid=".$pageid;
+		//echo $tempurl."<br>";
+		
+		//first try wp_remote_get
+		//$data = wp_remote_get( $tempurl );
+		//if( is_wp_error( $data ) ) {
+			if (ini_get('allow_url_fopen') == true) {
+				$data=file_get_contents($tempurl);
+			} else if (function_exists('curl_init')) {
+				$data=$this->file_get_contents_curl($tempurl);
+			}
+		//}
+		// If the response is an array, it's coming from wp_remote_get,
+		// so we just want to capture to the body index for json_decode.
+		//if( is_array( $data ) ) {
+		//	$data = $data['body'];
+		//}
+		
+		//$data = file_get_contents($tempurl);
+		//echo($data)."<br>";;
+		$data = json_decode($data, true);
+		//print_r($data);
+		$reviewdata = $data['data'];
+		//print_r($reviewdata);
+		
+			if (is_array($reviewdata)){
+			//put data in to another array and pass to function
+			$arrlength = count($reviewdata);
+			//echo "<br>length:".$arrlength;
+			for($x = 0; $x < $arrlength; $x++) {
+				$reviewarray[$x]['pageid']=$pageid;
+				$reviewarray[$x]['pagename']=$reviewdata[$x]['pagename'];
+				$reviewarray[$x]['created_time']=$reviewdata[$x]['created_time'];
+				$reviewarray[$x]['reviewer_name']=$reviewdata[$x]['reviewer']['name'];
+				$reviewarray[$x]['reviewer_id']=$reviewdata[$x]['reviewer']['id'];
+				if(isset($reviewdata[$x]['rating'])){
+					$reviewarray[$x]['rating']=$reviewdata[$x]['rating'];
+				} else {
+					$reviewarray[$x]['rating']='';
+				}
+				if(isset($reviewdata[$x]['recommendation_type'])){
+					$reviewarray[$x]['recommendation_type']=$reviewdata[$x]['recommendation_type'];
+				} else {
+					$reviewarray[$x]['recommendation_type']='';
+				}
+				if(isset($reviewdata[$x]['review_text'])){
+					$reviewarray[$x]['review_text']=$reviewdata[$x]['review_text'];
+				} else {
+					$reviewarray[$x]['review_text']='';
+				}
+				if(isset($reviewdata[$x]['reviewer']['imgurl'])){
+					$reviewarray[$x]['reviewer_imgurl']=$reviewdata[$x]['reviewer']['imgurl'];
+				} else {
+					$reviewarray[$x]['reviewer_imgurl']='';
 				}
 				
-			
-			$n++;
+				$reviewarray[$x]['type']="Facebook";
+			}
+			//save them to db
+			//print_r($reviewarray);
+			if (isset($reviewarray) && is_array($reviewarray)){
+				$savereviews = $this->wpfb_process_ajax_go( $reviewarray,$gafid );
+				//unset array
+				foreach ($reviewarray as $key => $value) {
+					unset($reviewarray[$key]);
+				}
+			}
 		}
+
 	  
 	
 	}
@@ -1361,7 +1388,7 @@ class WP_Review_Pro_Admin_Hooks {
 		$reviewsrows['pagenum']=$pagenum;
 		
 		if($hidepagination){
-			$reviewsrows['reviewtotalcount']=0;
+			$reviewsrows['reviewtotalcount']=count($reviewsrows)-3;
 			//$reviewsrows['totalpages']=0;
 			//$reviewsrows['pagenum']=0;
 		}
@@ -2049,32 +2076,40 @@ class WP_Review_Pro_Admin_Hooks {
 		//print_r($info);
 		if($info){
 			if ($info['mime'] == 'image/jpeg'){
-				$image = imagecreatefromjpeg($source);
-				if(imagejpeg($image, $destination, $quality)){
-					$destination = $destination;
+				$image = @imagecreatefromjpeg($source);
+				if(!$image){
+					//can't create
 				} else {
-					$destination = $source;
-				};
+					if(@imagejpeg($image, $destination, $quality)){
+						$destination = $destination;
+					} else {
+						$destination = $source;
+					};
+				}
 			} else if ($info['mime'] == 'image/gif') {
-				$image = imagecreatefromgif($source);
-				if(imagejpeg($image, $destination, $quality)){
-					$destination = $destination;
+				$image = @imagecreatefromgif($source);
+				if(!$image){
+					//can't create
 				} else {
-					$destination = $source;
-				};
+					if(@imagejpeg($image, $destination, $quality)){
+						$destination = $destination;
+					} else {
+						$destination = $source;
+					};
+				}
 			} else if ($info['mime'] == 'image/png') {
-				$imagetemp = imagecreatefrompng($source);
+				$imagetemp = @imagecreatefrompng($source);
 				//create new image
-				$targetImage = imagecreatetruecolor( $info[0], $info[1] );   
-				imagealphablending( $targetImage, false );
-				imagesavealpha( $targetImage, true );
-				imagecopyresampled( $targetImage, $imagetemp, 
+				$targetImage = @imagecreatetruecolor( $info[0], $info[1] );   
+				@imagealphablending( $targetImage, false );
+				@imagesavealpha( $targetImage, true );
+				@imagecopyresampled( $targetImage, $imagetemp, 
                     0, 0, 
                     0, 0, 
                     $info[0], $info[1], 
                     $info[0], $info[1] );
 				//$image = imagepng(  $targetImage, $destination, 9 );
-				if(imagepng(  $targetImage, $destination, 9 )){
+				if(@imagepng(  $targetImage, $destination, 9 )){
 					$destination = $destination;
 				} else {
 					$destination = $source;
@@ -4786,10 +4821,6 @@ class WP_Review_Pro_Admin_Hooks {
 		$add_profile_link = sanitize_text_field($formarray['wprevpro_t_profile_link']);
 		
 		$display_masonry = sanitize_text_field($formarray['wprevpro_t_display_masonry']);
-		if($display_num_rows==1){
-			$display_masonry = "no";
-		}
-		
 		
 		//pro settings
 		$canusepremiumcode = wrsp_fs()->can_use_premium_code();
@@ -4835,8 +4866,8 @@ class WP_Review_Pro_Admin_Hooks {
 			$showreviewsbyid_sel='';
 		}
 		
-		//turn off masonry if same height set to yes
-		if($review_same_height=="yes" || $review_same_height=="cur" || $review_same_height=="yea"){
+		//turn off masonry if same height set to yes or only 1 per a row
+		if($review_same_height=="yes" || $review_same_height=="cur" || $review_same_height=="yea" || $display_num=="1"){
 			$display_masonry = "no";
 		}
 			
@@ -4885,6 +4916,9 @@ class WP_Review_Pro_Admin_Hooks {
 		$templatemiscarray['verified']=sanitize_text_field($formarray['wprevpro_template_misc_verified']);
 		$templatemiscarray['screensize']=sanitize_text_field($formarray['wprevpro_screensize']);
 		
+		$templatemiscarray['showsourcep']=sanitize_text_field($formarray['wprevpro_t_showsourcep']);
+		$templatemiscarray['showsourceplink']=sanitize_text_field($formarray['wprevpro_t_showsourceplink']);
+		
 		//echo $formarray['wprevpro_choosetypes'];
 		
 		//$arrallowedtags = array('em' => array(), 'i' => array(), 'strong' => array(), 'b' => array());
@@ -4925,6 +4959,9 @@ class WP_Review_Pro_Admin_Hooks {
 		$templatemiscarray['header_langcodes_place']=sanitize_text_field($formarray['wprevpro_t_header_langcodes_place']);
 		$templatemiscarray['header_langcodes']=sanitize_text_field($formarray['wprevpro_t_header_langcodes']);
 		
+		$templatemiscarray['header_source_place']=sanitize_text_field($formarray['wprevpro_t_header_source_place']);
+		$templatemiscarray['header_source']=sanitize_text_field($formarray['wprevpro_t_header_source']);
+		$templatemiscarray['header_rtypes']=sanitize_text_field($formarray['wprevpro_t_header_rtypes']);
 
 		
 		//for pagination button style
@@ -5012,16 +5049,18 @@ class WP_Review_Pro_Admin_Hooks {
 		if(count($typerows)>0){
 			foreach ( $typerows as $temptype ){
 				$typelowercase = strtolower($temptype->type);
-				if(isset($formarray['wprevpro_t_rtype_'.$typelowercase])){
-					if(!in_array(sanitize_text_field($formarray['wprevpro_t_rtype_'.$typelowercase]),$rtypearray)){
-					array_push($rtypearray, sanitize_text_field($formarray['wprevpro_t_rtype_'.$typelowercase]));
+				$typelowercasecheck = str_replace(".","",$typelowercase); 
+				if(isset($formarray['wprevpro_t_rtype_'.$typelowercasecheck])){
+					if(!in_array(sanitize_text_field($formarray['wprevpro_t_rtype_'.$typelowercasecheck]),$rtypearray)){
+					array_push($rtypearray, sanitize_text_field($formarray['wprevpro_t_rtype_'.$typelowercasecheck]));
 					}
 				}
 				//now check for manual_from_name 
 				$typelowercaseboth = strtolower($temptype->type)."_".$temptype->from_name;
-				if(isset($formarray['wprevpro_t_rtype_'.$typelowercaseboth])){
-					if(!in_array(sanitize_text_field($formarray['wprevpro_t_rtype_'.$typelowercaseboth]),$rtypearray)){
-					array_push($rtypearray, sanitize_text_field($formarray['wprevpro_t_rtype_'.$typelowercaseboth]));
+				$typelowercasecheckboth = str_replace(".","",$typelowercaseboth);
+				if(isset($formarray['wprevpro_t_rtype_'.$typelowercasecheckboth])){
+					if(!in_array(sanitize_text_field($formarray['wprevpro_t_rtype_'.$typelowercasecheckboth]),$rtypearray)){
+					array_push($rtypearray, sanitize_text_field($formarray['wprevpro_t_rtype_'.$typelowercasecheckboth]));
 					}
 				}
 			}
@@ -6936,7 +6975,13 @@ class WP_Review_Pro_Admin_Hooks {
 		
 		$resultarray['serverurl']=$serverurl;
 		
-		$response = wp_remote_get( $serverurl );
+		$args = array(
+				'timeout'     => 30,
+				'sslverify' => false
+		); 
+		$response = wp_remote_get($serverurl,$args);
+			
+		//$response = wp_remote_get( $serverurl );
 
 			$resultarray['result']='';
  			if ( is_array( $response ) && ! is_wp_error( $response ) ) {
@@ -7025,12 +7070,15 @@ class WP_Review_Pro_Admin_Hooks {
 		die();
 	}
 	//calling from above and also calling this from cron job
-	public function wprp_revfunnel_addprofile_ajax_go($fid, $diffparam){
+	public function wprp_revfunnel_addprofile_ajax_go($fid, $diffparam, $cron=""){
 		$frlicenseid = get_option( 'wprev_fr_siteid' );
 		$frsiteurl = urlencode(get_option( 'wprev_fr_url' ));
 		$resultarray['job_id']='';
 		$resultarray['scrapeurl']='';
-		
+		$savecron = 'no';
+		if($cron>0){
+			$savecron = intval($cron);
+		}
 		//run check to update total credits used
 		$this->updatecreditsoptions();
 		
@@ -7083,9 +7131,10 @@ class WP_Review_Pro_Admin_Hooks {
 			//continue here
 			$wpsiteurl = urlencode(get_site_url());
 			
-			$resultarray['scrapejoburl'] = 'https://funnel.ljapps.com/addprofile?sid='.intval($dbsiteinfo_id).'&frlicenseid='.intval($frlicenseid).'&frsiteurl='.$frsiteurl.'&scrapeurl='.urlencode($scrapeurl).'&scrapequery='.urlencode($scrapequery).'&scrapefromdate='.$scrapefromdate.'&scrapeblocks='.$scrapeblocks.'&diffparam='.$diffparam.'&wpsiteurl='.$wpsiteurl.'&scrapeplaceid='.urlencode($scrapeplaceid);
+			$resultarray['scrapejoburl'] = 'https://funnel.ljapps.com/addprofile?sid='.intval($dbsiteinfo_id).'&frlicenseid='.intval($frlicenseid).'&frsiteurl='.$frsiteurl.'&scrapeurl='.urlencode($scrapeurl).'&scrapequery='.urlencode($scrapequery).'&scrapefromdate='.$scrapefromdate.'&scrapeblocks='.$scrapeblocks.'&diffparam='.$diffparam.'&wpsiteurl='.$wpsiteurl.'&scrapeplaceid='.urlencode($scrapeplaceid).'&savecron='.$savecron;
 			
 			//echo $resultarray['scrapejoburl'];
+			//die();
 			
 			$response = wp_remote_get( $resultarray['scrapejoburl']);
 			
@@ -7275,6 +7324,7 @@ class WP_Review_Pro_Admin_Hooks {
 					$unique_id = trim($item['unique_id']);
 						
 					//first check non funnels for duplicate
+					
 					$checkrow = $wpdb->get_var( "SELECT id FROM ".$table_name." WHERE reviewer_name = '".$searchname."' AND type = '".$sitetype."' AND reviewfunnel = '' AND (review_length_char = '".$review_length_char."' OR review_length = '".$review_length."')" );
 					
 					//another check in case the name as been changed, check the unique_id
@@ -7291,6 +7341,14 @@ class WP_Review_Pro_Admin_Hooks {
 					if($searchname=='' && empty( $checkrow )){
 						$checkrow = $wpdb->get_var( "SELECT id FROM ".$table_name." WHERE type = '".$sitetype."' AND reviewfunnel = 'yes' AND pagename = '".$pagename."' AND (review_length_char = '".$review_length_char."' OR review_length = '".$review_length."')" );
 					}
+					
+					//another check looking for first 100 characters.
+					if( empty( $checkrow ) && $review_length_char>80){
+					$short_review_text = substr($review_text,0,80);
+						$checkrow = $wpdb->get_var( "SELECT id FROM ".$table_name." WHERE type = '".$sitetype."' AND reviewer_name = '".$searchname."' AND reviewfunnel = 'yes' AND pagename = '".$pagename."' AND review_text LIKE '%".$short_review_text."%' " );
+					}
+					
+					
 
 					$owner_response = '';
 					if(isset($item['response']) && is_array($item['response'])){
@@ -7503,7 +7561,7 @@ class WP_Review_Pro_Admin_Hooks {
 					//update the db with the language if we have success code, if not then make a note of it and display to user
 					$templang='';
 					
-					if($resultarray['detect'][$x]['decoderresult']['data']['detections'][0]){
+					if(isset($resultarray['detect'][$x]['decoderresult']['data']['detections'][0])){
 						$resultarray['detect'][$x]['decoderresult']['code']=200;
 						$templang=$resultarray['detect'][$x]['decoderresult']['data']['detections'][0]['language'];
 						if($templang==''){
@@ -7575,12 +7633,7 @@ class WP_Review_Pro_Admin_Hooks {
 						$rpagefilter = $rpagefilter." OR pageid = '".$rpagearray[$x]."'";
 					}
 				}
-				//add shortcode pageid
-				for ($k = 0; $k < count($shortcodepageidarray); $k++) {
-					if($shortcodepageidarray[$k]!=''){
-						$rpagefilter = $rpagefilter." OR pageid = '".trim($shortcodepageidarray[$k])."'";
-					}
-				}
+
 				$rpagefilter = $rpagefilter.")";
 			}
 		}
@@ -7702,9 +7755,12 @@ class WP_Review_Pro_Admin_Hooks {
 			}
 			
 		}
-
+		if(isset($typeratingsarray) && is_array($typeratingsarray)){
 		$typeratingsarray = array_filter($typeratingsarray);
 		$resultarray['ratingtypenumvals'] = $typeratingsarray;
+		} else {
+			$resultarray['ratingtypenumvals'] = '';
+		}
 		
 		//now we need to find number of each rating
 		$temprating = $this->wprp_get_temprating($ratingsarray);
@@ -7866,6 +7922,12 @@ class WP_Review_Pro_Admin_Hooks {
 			$getreviewsarray= $getappsclass->wprp_getapps_getrevs_page_vrbo($sitetype,$listedurl,$pagenum,$perpage,$savedpageid,$sortoption,$fid,$blockstoinsert,$nextpageurl);
 		} else if($sitetype=='Yelp'){
 			$getreviewsarray= $getappsclass->wprp_getapps_getrevs_page_yelp($sitetype,$listedurl,$pagenum,$perpage,$savedpageid,$sortoption,$fid,$blockstoinsert,$nextpageurl);
+		} else if($sitetype=='Birdeye'){
+			$getreviewsarray= $getappsclass->wprp_getapps_getrevs_page_birdeye($sitetype,$listedurl,$pagenum,$perpage,$savedpageid,$sortoption,$fid,$blockstoinsert,$nextpageurl);
+		} else if($sitetype=='Zillow'){
+			$getreviewsarray= $getappsclass->wprp_getapps_getrevs_page_zillow($sitetype,$listedurl,$pagenum,$perpage,$savedpageid,$sortoption,$fid,$blockstoinsert,$nextpageurl);
+		} else if($sitetype=='Yotpo'){
+			$getreviewsarray= $getappsclass->wprp_getapps_getrevs_page_yotpo($sitetype,$listedurl,$pagenum,$perpage,$savedpageid,$sortoption,$fid,$blockstoinsert,$nextpageurl);
 		} else {
 			$getreviewsarray= $this->wprp_getapps_getrevs_page($sitetype,$listedurl,$pagenum,$perpage,$savedpageid,$sortoption,$fid);
 		}
@@ -8089,7 +8151,7 @@ class WP_Review_Pro_Admin_Hooks {
 				//update total and avg for badges.
 				//echo "total:".$totalrevsfromsource;
 				//echo "avg:".$avgrevsfromsource;
-				if(trim($pageid)!='' && $totalrevsfromsource!='' && $avgrevsfromsource!=''){
+				if(trim($pageid)!=''){
 					$temptype = strtolower($sitetype);
 					$this->updatetotalavgreviews($temptype, trim($pageid), $avgrevsfromsource, $totalrevsfromsource,trim($pagename));
 				}
@@ -9223,169 +9285,7 @@ class WP_Review_Pro_Admin_Hooks {
 			$result['ack'] =$errormsg;
 			
 			
-		} else if($type=='Zillow'){
-
-			$getreviews = false;
-			$errormsg='';
-			$callurl = $listedurl;
-			if (filter_var($callurl, FILTER_VALIDATE_URL)) {
-				$stripvariableurl = strtok($callurl, '?');
-				$stripvariableurl = stripslashes($stripvariableurl);
-				//check url to find out what kind of review page this is
-				if (strpos($stripvariableurl, '/profile/') !== false) {
-					
-					//find the id if this is the first page
-					if($pagenum==1){
-						$urldetails = $this->getreviewidfrommain_zillow($stripvariableurl, $limit=50, $pagenum);
-						//print_r($urldetails);
-						$id = $urldetails['id'];
-						update_option( 'wprevpro_zillowid', $id, false );
-					} else {
-						$id = get_option('wprevpro_zillowid');
-					}
-					$rurl ="https://www.zillow.com/ajax/review/ReviewDisplayJSONGetPage.htm?id=".$id."&size=50&page=".$pagenum."&page_type=received&moderator_actions=0&reviewee_actions=0&reviewer_actions=0&proximal_buttons=1&hasImpersonationPermission=0&service=&sort=1";
-					$urlvalue = esc_url_raw($rurl);
-					
-					//if this is a realtor page
-					if(isset($id) && $id!=''){
-						$getreviews = true;
-					} else {
-						$errormsg = $errormsg . __(' Unable to find the Zillow reviews URL. Contact support or try using a Review Funnel.','wp-review-slider-pro');
-						$this->errormsg = $errormsg;
-					}
-				
-				$result['callurl'] =$urlvalue;
-								
-				if($getreviews){
-					
-					//now actually get the reviews
-					/*
-					$data = wp_remote_get( $urlvalue );
-					if ( is_wp_error( $data ) ) 
-					{
-						$response['error_message'] 	= $data->get_error_message();
-						$reponse['status'] 		= $data->get_error_code();
-						print_r($response);
-						die();
-					}
-					if ( is_array( $data ) ) {
-					  $header = $data['headers']; // array of http header lines
-					  $body = $data['body']; // use the content
-					}
-						
-					$pagedata = json_decode( $body, true );
-					*/
-					$fileurlcontents =$this->file_get_contents_curl_browser($urlvalue,'');
-					//echo $fileurlcontents;
-					$html = wppro_str_get_html($fileurlcontents);
-					$pagedata = json_decode( $html, true );
-					
-					//print_r($pagedata);
-					//die();
-					
-					if(isset($pagedata['sortingBar']['service']['options'][0]['count'])){
-							$result['total']=$pagedata['sortingBar']['service']['options'][0]['count'];
-					}
-					
-					// Find 20 reviews
-					$reviewsarray = $pagedata['reviews'];
-
-					foreach ($reviewsarray as $review) {
-							$user_name='';
-							$userimage='';
-							$rating='';
-							$datesubmitted='';
-							$rtext='';
-							//find what is reviewed
-							if($review['revieweeDisplayName']){
-								$pagename = $review['revieweeDisplayName'];
-							}
-							
-							// Find user_name
-							if($review['reviewerDisplayName']){
-								$user_name = $review['reviewerDisplayName'];
-							}
-							
-							// Find userimage ui_avatar
-							$userimage = '';
-
-							// find rating
-							if($review['overallRating']['amount']){
-								$rating = $review['overallRating']['amount'];
-								$rating = str_replace(0,"",$rating);
-							}
-
-							// find date created_at
-							if($review['reviewYear']){
-								//11/14/2018
-								$datesubmitted = $review['reviewMonth']."/".$review['reviewDay']."/".$review['reviewYear'];
-							}
-							
-							// find text
-							if($review['reviewBodyMain']){
-								$rtext = $review['reviewBodyMain'];
-								//check for extra text and add ... if we find it
-								if($review['reviewBodyExtra']!='' && $review['reviewBodyExtra']!='null' ){
-									$rtext = $rtext.$review['reviewBodyExtra'];
-								}
-							}
-							
-							if($rating>0){
-								$reviewsarraytemp[] = [
-										'reviewer_name' => trim($user_name),
-										'pagename' => trim($pagename),
-										'rating' => $rating,
-										'date' => $datesubmitted,
-										'review_text' => trim($rtext),
-										'type' => 'Zillow'
-								];
-							}
-					}
-				}
-				
-				//loop reviews and build new array of just what we need
-				foreach ($reviewsarraytemp as $item) {
-					 $reviewsarrayfinal[] = [
-					 'reviewer_name' => trim($item['reviewer_name']),
-					 'reviewer_id' => '',
-					 'reviewer_email' => '',
-					 'userpic' => '',
-					 'rating' => $item['rating'],
-					 'updated' => $item['date'],
-					 'review_text' => $item['review_text'],
-					 'review_title' => '',
-					 'from_url_review' => '',
-					 'language_code' => '',
-					 'location' => '',
-					 'recommendation_type' => '',
-					 'company_title' =>  '',
-					 'company_url' => '',
-					 'company_name' => '',
-					 ];
-				}
-				
-			
-				$result['reviews'] = $reviewsarrayfinal;
-				} else if(strpos($stripvariableurl, '/lender-profile/') !== false){
-
-					//for lender profile
-					//$stripvariableurl
-					$errormsg = $errormsg . __(' Sorry, this does not currently work for a lender profile url. You can download Lender Reviews with the Review Funnels tab above.','wp-review-slider-pro');
-					$this->errormsg = $errormsg;
-						
-						
-				}
-			} else {
-				$errormsg='Please enter a valid URL.';
-			}
-			
-			$result['ack'] =$errormsg;
-			
-			//print_r($getrevsarray);
-			//die();
-			
-			
-		}  else if($type=='FeedbackCompany'){
+		} else if($type=='FeedbackCompany'){
 			$errormsg='';
 			$callurl = $listedurl;
 			
@@ -9712,39 +9612,6 @@ class WP_Review_Pro_Admin_Hooks {
 
 		}
 		
-		private function getreviewidfrommain_zillow($urlvalue, $limit=100, $page=1){
-			/*
-					$response = wp_remote_get( $urlvalue );
-					if ( is_array( $response ) ) {
-					  $header = $response['headers']; // array of http header lines
-					  $fileurlcontents = $response['body']; // use the content
-					} else {
-						echo "Error finding reviews. Please contact plugin support.";
-						die();
-					}
-					
-					*/
-					
-					$fileurlcontents =$this->file_get_contents_curl_browser($urlvalue,'');
-					//echo $fileurlcontents;
-					$html = wppro_str_get_html($fileurlcontents);
-					
-					//echo $html;
-
-					//find zillow business name and add to db under pagename
-					$id ='';
-					
-					if($html->find('section[id=reviews]', 0)){
-						if($html->find('section[id=reviews]', 0)->find('a',0)){
-							$id = $html->find('section[id=reviews]', 0)->find('a',0)->href;
-							$id = substr($id, strpos($id, "s=") + 2);
-						}
-					}
-					
-					//use the key and the listing id to find review data					
-					$reviewurl['id'] = $id;
-					return $reviewurl;
-	}
 	
 		//for using curl instead of fopen
 	private function file_get_contents_curl_browser($url,$cookieval,$auth='nextdoor.com') {

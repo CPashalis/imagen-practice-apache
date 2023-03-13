@@ -13,9 +13,10 @@
  */
  
      // check user capabilities
-    if (!current_user_can('manage_options')) {
+	if (!current_user_can('manage_options') && $this->wprev_canuserseepage('templates_posts')==false) {
         return;
     }
+	
 	//check to see if they can use premium code
 	$canusepremiumcode = wrsp_fs()->can_use_premium_code();
 	//testing-tool
@@ -257,10 +258,6 @@
 		$add_profile_link = sanitize_text_field($_POST['wprevpro_t_profile_link']);
 		
 		$display_masonry = sanitize_text_field($_POST['wprevpro_t_display_masonry']);
-		if($display_num_rows==1){
-			$display_masonry = "no";
-		}
-		
 		
 		//pro settings
 		if ( $canusepremiumcode ) {
@@ -306,7 +303,7 @@
 		}
 		
 		//turn off masonry if same height set to yes
-		if($review_same_height=="yes" || $review_same_height=="cur" || $review_same_height=="yea"){
+		if($review_same_height=="yes" || $review_same_height=="cur" || $review_same_height=="yea" || $display_num=="1"){
 			$display_masonry = "no";
 		}
 			
@@ -350,6 +347,9 @@
 		$templatemiscarray['load_more_porb']=sanitize_text_field($_POST['wprevpro_t_load_more_porb']);
 		$templatemiscarray['verified']=sanitize_text_field($_POST['wprevpro_template_misc_verified']);
 		$templatemiscarray['screensize']=sanitize_text_field($_POST['wprevpro_screensize']);
+		
+		$templatemiscarray['showsourcep']=sanitize_text_field($_POST['wprevpro_t_showsourcep']);
+		$templatemiscarray['showsourceplink']=sanitize_text_field($_POST['wprevpro_t_showsourceplink']);
 		
 		if(isset($_POST['wprevpro_choosetypes'])){
 			$templatemiscarray['choosetypes']=$_POST['wprevpro_choosetypes'];
@@ -399,8 +399,10 @@
 		$templatemiscarray['header_langcodes_place']=sanitize_text_field($_POST['wprevpro_t_header_langcodes_place']);
 		$templatemiscarray['header_langcodes']=sanitize_text_field($_POST['wprevpro_t_header_langcodes']);
 		
-
-		
+		$templatemiscarray['header_source_place']=sanitize_text_field($_POST['wprevpro_t_header_source_place']);
+		$templatemiscarray['header_source']=sanitize_text_field($_POST['wprevpro_t_header_source']);
+		$templatemiscarray['header_rtypes']=sanitize_text_field($_POST['wprevpro_t_header_rtypes']);
+	
 		//for pagination button style
 		$templatemiscarray['ps_bw']=sanitize_text_field($_POST['wprevpro_t_ps_bw']);
 		$templatemiscarray['ps_br']=sanitize_text_field($_POST['wprevpro_t_ps_br']);
@@ -480,7 +482,7 @@
 		
 		//$rtype = htmlentities($_POST['wprevpro_t_rtype']);
 		$rtypearray=array();
-		
+
 		
 		//loop type and from fields to check if checked.
 		$reviews_table_name = $wpdb->prefix . 'wpfb_reviews';
@@ -490,16 +492,20 @@
 		if(count($typerows)>0){
 			foreach ( $typerows as $temptype ){
 				$typelowercase = strtolower($temptype->type);
-				if(isset($_POST['wprevpro_t_rtype_'.$typelowercase])){
-					if(!in_array(sanitize_text_field($_POST['wprevpro_t_rtype_'.$typelowercase]),$rtypearray)){
-					array_push($rtypearray, sanitize_text_field($_POST['wprevpro_t_rtype_'.$typelowercase]));
+				$typelowercasecheck = str_replace(".","",$typelowercase);
+				//echo strtolower($temptype->type).":";
+				if(isset($_POST['wprevpro_t_rtype_'.$typelowercasecheck])){
+					//echo $typelowercase."-";
+					if(!in_array(sanitize_text_field($_POST['wprevpro_t_rtype_'.$typelowercasecheck]),$rtypearray)){
+					array_push($rtypearray, sanitize_text_field($_POST['wprevpro_t_rtype_'.$typelowercasecheck]));
 					}
 				}
 				//now check for manual_from_name 
 				$typelowercaseboth = strtolower($temptype->type)."_".$temptype->from_name;
-				if(isset($_POST['wprevpro_t_rtype_'.$typelowercaseboth])){
-					if(!in_array(sanitize_text_field($_POST['wprevpro_t_rtype_'.$typelowercaseboth]),$rtypearray)){
-					array_push($rtypearray, sanitize_text_field($_POST['wprevpro_t_rtype_'.$typelowercaseboth]));
+				$typelowercasebothcheck = str_replace(".","",$typelowercaseboth);
+				if(isset($_POST['wprevpro_t_rtype_'.$typelowercasebothcheck])){
+					if(!in_array(sanitize_text_field($_POST['wprevpro_t_rtype_'.$typelowercasebothcheck]),$rtypearray)){
+					array_push($rtypearray, sanitize_text_field($_POST['wprevpro_t_rtype_'.$typelowercasebothcheck]));
 					}
 				}
 			}
@@ -1032,6 +1038,11 @@ echo $dbmsg;
 				if(!isset($template_misc_array['iconsize'])){
 					$template_misc_array['iconsize']="32";
 				}
+				if(!isset($template_misc_array['header_source'])){
+					$template_misc_array['header_source']="";
+					$template_misc_array['header_source_place']=__('Filter By Source', 'wp-review-slider-pro');
+					$template_misc_array['header_rtypes'] = "";
+				}
 
 				?>
 								<div class="wprevpre_temp_label_row">
@@ -1241,6 +1252,7 @@ echo $dbmsg;
 					
 					</div>
 					<p class="description">
+					<?php echo "masonry:".$currenttemplate->display_masonry; ?>
 					<?php _e('How many reviews to display on the page at a time. Masonry Style allows you to create a Pinterest style view. It will only work if you are not forcing reviews to be the same height on the "More Settings" tab.', 'wp-review-slider-pro'); ?></p>
 				</td>
 			</tr>
@@ -1476,6 +1488,7 @@ echo $dbmsg;
 							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 							<label for="wprevpro_t_createslider"><?php _e('Time delay between slides:', 'wp-review-slider-pro'); ?></label>
 							<select name="wprevpro_t_sliderdelay" id="wprevpro_t_sliderdelay">
+							<option value="1" <?php if($currenttemplate->sliderdelay=="1"){echo "selected";} ?>><?php _e('1 sec', 'wp-review-slider-pro'); ?></option>
 								<option value="3" <?php if($currenttemplate->sliderdelay=="3"){echo "selected";} ?>><?php _e('3 sec', 'wp-review-slider-pro'); ?></option>
 								<option value="5" <?php if($currenttemplate->sliderdelay=="5"){echo "selected";} ?>><?php _e('5 sec', 'wp-review-slider-pro'); ?></option>
 								<option value="7" <?php if($currenttemplate->sliderdelay=="7"){echo "selected";} ?>><?php _e('7 sec', 'wp-review-slider-pro'); ?></option>
@@ -1759,6 +1772,23 @@ if(count($currentforms)>0){
 			
 			<tr class="wprevpro_row searchsorttr" <?php if($currenttemplate->createslider=="yes" ){echo "style='display:none;'";} ?>>
 				<th scope="row">
+					<?php _e('Add Source Option', 'wp-review-slider-pro'); ?><a class="wprevpro_helpicon_p wprevpro_btnicononlyhelp dashicons-before dashicons-editor-help"></a>
+				</th>
+				<td>
+				<select name="wprevpro_t_header_source" id="wprevpro_t_header_source">
+						<option value="" <?php if($template_misc_array['header_source']=="" ){echo "selected";} ?>><?php _e('No', 'wp-review-slider-pro'); ?></option>
+						<option value="yes" <?php if($template_misc_array['header_source']=="yes"){echo "selected";} ?>><?php _e('Yes', 'wp-review-slider-pro'); ?></option>
+				</select>
+				&nbsp;&nbsp;
+				<?php _e('Placeholder:', 'wp-review-slider-pro'); ?>
+				<input id="wprevpro_t_header_source_place" type="text" name="wprevpro_t_header_source_place" value="<?php echo $template_misc_array['header_source_place'];?>" style="padding-top: 0px;width: 12em;height: 28px;">
+					<p class="description">
+					<?php _e('Display a filter by source dropdown field so users can show only reviews with a specific source.', 'wp-review-slider-pro'); ?></p>
+				</td>
+			</tr>
+			
+			<tr class="wprevpro_row searchsorttr" <?php if($currenttemplate->createslider=="yes" ){echo "style='display:none;'";} ?>>
+				<th scope="row">
 					<?php _e('Add Language Option', 'wp-review-slider-pro'); ?><a class="wprevpro_helpicon_p wprevpro_btnicononlyhelp dashicons-before dashicons-editor-help"></a>
 				</th>
 				<td>
@@ -1796,6 +1826,21 @@ if(count($currentforms)>0){
 				</select>
 					<p class="description">
 					<?php _e('Display tags that users can click to easily filter the reviews. Enter tags seperated by a comma.', 'wp-review-slider-pro'); ?></p>
+				</td>
+			</tr>
+			
+			<tr class="wprevpro_row searchsorttr" <?php if($currenttemplate->createslider=="yes"){echo "style='display:none;'";} ?>>
+				<th scope="row">
+					<?php _e('Add Review Type Buttons', 'wp-review-slider-pro'); ?><a class="wprevpro_helpicon_p wprevpro_btnicononlyhelp dashicons-before dashicons-editor-help"></a>
+				</th>
+				<td>
+				<select name="wprevpro_t_header_rtypes" id="wprevpro_t_header_rtypes">
+						<option value="" <?php if($template_misc_array['header_rtypes']=="" ){echo "selected";} ?>><?php _e('No', 'wp-review-slider-pro'); ?></option>
+						<option value="yes" <?php if($template_misc_array['header_rtypes']=="yes"){echo "selected";} ?>><?php _e('Yes', 'wp-review-slider-pro'); ?></option>
+				</select>
+
+					<p class="description">
+					<?php _e('Display buttons for the review type (Facebook, Google, etc..) that users can click to easily filter the reviews.', 'wp-review-slider-pro'); ?></p>
 				</td>
 			</tr>
 			
@@ -1902,8 +1947,10 @@ if(count($currentforms)>0){
 					//check if any are manual and add manual all 
 					$foundmanual = false;
 				foreach ( $typerows as $temptype ){
+						$temptype->type = 
 						$typelowercase = strtolower($temptype->type);
-						$tempid = "wprevpro_t_rtype_".$typelowercase;
+						$typelowercasecheck = str_replace(".","",$typelowercase); 
+						$tempid = "wprevpro_t_rtype_".$typelowercasecheck;
 						$tempval = $typelowercase;
 						$tempname = $temptype->type;
 						if($temptype->from_name!=''){
@@ -2139,7 +2186,7 @@ if(count($currentforms)>0){
 						<option value="theseplus" <?php if($currenttemplate->showreviewsbyid_sel=='theseplus'){echo "selected";} ?>>Show these reviews plus others.</option>
 					</select>
 					<p class="description">
-					<?php _e('Allows you to individually pick which reviews to display in this template. "Show these reviews only" will override all other filter settings. "Show these reviews plus others" will allow you to always include the selected reviews with other reviews from the filters above. Caution: If you are using this with Yelp reviews then make sure you set the Insert Rule to Only Get New Reviews or it will break your template every time new reviews are added.', 'wp-review-slider-pro'); ?></p>
+					<?php _e('Allows you to individually pick up to 100 reviews to display in this template. "Show these reviews only" will override all other filter settings. "Show these reviews plus others" will allow you to always include the selected reviews with other reviews from the filters above. It is normally better to use the "hide" icon on the Review List page to hide certain reviews.', 'wp-review-slider-pro'); ?></p>
 	
 				</td>
 			</tr>
@@ -2225,7 +2272,7 @@ if(count($currentforms)>0){
 					</select>
 					</div>
 					<p class="description">
-					<?php _e('Links the site icon to the original review page. Turn on and off the site icon above. Yelp reviews must display the icon.', 'wp-review-slider-pro'); ?></p>
+					<?php _e('Links the site icon to the original review page. Turn on and off the site icon on the Template Style tab. Yelp reviews must display the icon.', 'wp-review-slider-pro'); ?></p>
 				</td>
 			</tr>
 			<tr class="wprevpro_row ">
@@ -2269,6 +2316,39 @@ if(count($currentforms)>0){
 					$template_misc_array['showlocation']='no';
 			}
 			?>
+			
+			<?php
+			if(!isset($template_misc_array['showsourcep'])){
+					$template_misc_array['showsourcep']='no';
+			}
+			if(!isset($template_misc_array['showsourceplink'])){
+					$template_misc_array['showsourceplink']='no';
+			}
+			?>
+			<tr class="wprevpro_row">
+				<th scope="row">
+					<?php _e('Source Name/Title', 'wp-review-slider-pro'); ?><a class="wprevpro_helpicon_p wprevpro_btnicononlyhelp dashicons-before dashicons-editor-help"></a>
+				</th>
+				<td><div class="">
+					<label for="wprevpro_t_showsourcep"><?php _e('Display Review Source Page Name/Title:', 'wp-review-slider-pro'); ?></label>
+					<select name="wprevpro_t_showsourcep" id="wprevpro_t_showsourcep">
+						<option value="no" <?php if($template_misc_array['showsourcep']=='no'){echo "selected";} ?>>No</option>
+						<option value="yes" <?php if($template_misc_array['showsourcep']=='yes'){echo "selected";} ?>>Yes</option>
+					</select>
+					<label for="wprevpro_t_showsourceplink"><?php _e('Link to Page:', 'wp-review-slider-pro'); ?></label>
+					<select name="wprevpro_t_showsourceplink" id="wprevpro_t_showsourceplink">
+						<option value="no" <?php if($template_misc_array['showsourceplink']=='no'){echo "selected";} ?>>No</option>
+						<option value="yes" <?php if($template_misc_array['showsourceplink']=='yes'){echo "selected";} ?>>Yes (nofollow)</option>
+						<option value="yesf" <?php if($template_misc_array['showsourceplink']=='yesf'){echo "selected";} ?>>Yes</option>
+					</select>
+					</div>
+					<p class="description">
+					<?php _e('Whether or not to add the source page name or download form title to the review and link to the source page. Shows up below the review.', 'wp-review-slider-pro'); ?></p>
+				</td>
+			</tr>
+			
+			
+			
 			<tr class="wprevpro_row">
 				<th scope="row">
 					<?php _e('Customer Location', 'wp-review-slider-pro'); ?><a class="wprevpro_helpicon_p wprevpro_btnicononlyhelp dashicons-before dashicons-editor-help"></a>
@@ -2588,7 +2668,7 @@ if(count($currentforms)>0){
 								<?php
 								//$typearray = unserialize(WPREV_TYPE_ARRAY);
 								$reviews_table_name = $wpdb->prefix . 'wpfb_reviews';
-								$tempquery = "select type from ".$reviews_table_name." group by pageid";
+								$tempquery = "select type from ".$reviews_table_name." group by type";
 								$typearray = $wpdb->get_col($tempquery);
 								for($x=0;$x<count($typearray);$x++)
 								{

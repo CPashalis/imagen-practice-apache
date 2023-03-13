@@ -680,9 +680,13 @@ class License {
 	 * @param  string $feature     The feature name.
 	 * @return bool                The license has access to a core feature.
 	 */
-	public function hasCoreFeature( $sectionSlug, $feature ) {
+	public function hasCoreFeature( $sectionSlug, $feature = '' ) {
 		$coreFeatures = $this->getLicenseFeatures( 'core' );
 		foreach ( $coreFeatures as $section => $features ) {
+			if ( $sectionSlug === $section && empty( $feature ) ) {
+				return true;
+			}
+
 			if ( $sectionSlug === $section && in_array( $feature, $features, true ) ) {
 				return true;
 			}

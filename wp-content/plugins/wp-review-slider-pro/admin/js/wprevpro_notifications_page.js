@@ -32,6 +32,13 @@
 	 //document ready
 	 $(function(){
 		 
+		//role select box.
+		$(".roleselect").select2({
+			width: '35%',
+			placeholder: adminjs_script_vars.Role_Filter
+		});
+		
+		
 		//page select box
 		$("#wprevpro_source_page").select2({
 			width: '50%',
@@ -159,9 +166,10 @@
 								  if(value.decoderresult.code && value.decoderresult.code==200){
 									numdetectedsuccess = numdetectedsuccess + 1;
 								  } else {
-									  if(value.decoderresult.error.message){
-										$('#lang_progress_div_error').append("<br><b>"+adminjs_script_vars.Error+": "+value.decoderresult.error.message+"</b>");
-									  }							
+									  
+									  //if(value.decoderresult.error.message){
+									//	$('#lang_progress_div_error').append("<br><b>"+adminjs_script_vars.Error+": "+value.decoderresult.error.message+"</b>");
+									 // }							
 									$('#lang_progress_div_error').append("<br>"+adminjs_script_vars.msg4+" <i>"+value.strdetect+"...</i>"); 
 								  }
 							  }

@@ -16,7 +16,7 @@
  add_thickbox();
 
      // check user capabilities
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('manage_options') && $this->wprev_canuserseepage('get_twitter')==false) {
         return;
     }
 		
@@ -303,18 +303,15 @@ include("getrevs_sidemenu.php");
 ?>	
 </div>
 <div class="w3-col m10">
+<div class="headertype wprevpro_margin10">
+<img id="reviewtypelogo" src="<?php echo WPREV_PLUGIN_URL . '/public/partials/imgs/twitter_small_icon.png'; ?>">
+ <span id="headertypetext">Twitter Reviews</span>
+</div>
 <div class="wprevpro_margin10">
 	<a id="wprevpro_helpicon_posts" class="wprevpro_btnicononly button dashicons-before dashicons-editor-help"></a>
 	<a id="wprevpro_addnewapikey" class="button dashicons-before dashicons-plus-alt"><?php _e('Enter/Modify API Keys', 'wp-review-slider-pro'); ?></a>
 	<a id="wprevpro_addnewtemplate" keycheck="<?php echo $keystatus['ack']; ?>" class="button dashicons-before dashicons-plus-alt"><?php _e('Add New Twitter Source', 'wp-review-slider-pro'); ?></a>
 
-<?php
-
-/*
-	<a href="<?php echo $url_tempdownload;?>" id="wprevpro_exporttemplates" class="button dashicons-before dashicons-download"><?php _e('Export Review Funnels', 'wp-review-slider-pro'); ?></a>
-	<a id="wprevpro_importtemplates" class="button dashicons-before dashicons-upload"><?php _e('Import Review Funnels', 'wp-review-slider-pro'); ?></a>
-	*/
-?>
 </div>
 
 <div id="apikeyformdiv" class="<?php echo $keyformhideshow; ?> wprevpro_margin10 bordered_form" id="login_cookie">
@@ -524,8 +521,7 @@ echo $dbmsg;
 			</tr>';
 	}
 	} else {
-		//$html .= '<tr><td colspan="5">You can create a Review Form to download tweets from Twitter! Once downloaded, they will show up on the Review List page of the plugin and you can display them on your website with a Review Template. Click the "Add New Twitter Source Page" button above to get started.</td></tr>';
-		
+
 		$html .= '<tr><td colspan="5">'.__( 'You can create a Review Form to download tweets from Twitter! Once downloaded, they will show up on the Review List page of the plugin and you can display them on your website with a Review Template. Click the "Add New Twitter Source Page" button above to get started.' ).'</td></tr>';
 		
 		

@@ -507,7 +507,8 @@
 				}else{
 					if(isset($options->wpFastestCachePreload_restart)){
 						foreach ($pre_load as $pre_load_key => &$pre_load_value) {
-							if($pre_load_key != "number" && $pre_load_key != "order"){
+							//if($pre_load_key != "number" && $pre_load_key != "order"){
+							if($pre_load_key != "number"){
 								$pre_load_value = 0;
 							}
 						}
@@ -515,6 +516,11 @@
 						update_option("WpFastestCachePreLoad", json_encode($pre_load));
 
 						echo "Preload Restarted";
+
+						if($varnish_datas = get_option("WpFastestCacheVarnish")){
+							include_once('inc/varnish.php');
+							VarnishWPFC::purge_cache($varnish_datas);
+						}
 
 						include_once('cdn.php');
 						CdnWPFC::cloudflare_clear_cache();

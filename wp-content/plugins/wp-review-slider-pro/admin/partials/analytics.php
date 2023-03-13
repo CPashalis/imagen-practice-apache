@@ -12,7 +12,7 @@
  */
  
      // check user capabilities
-    if (!current_user_can('edit_pages')) {
+	if (!current_user_can('edit_pages') && $this->wprev_canuserseepage('analytics')==false) {
         return;
     }
 

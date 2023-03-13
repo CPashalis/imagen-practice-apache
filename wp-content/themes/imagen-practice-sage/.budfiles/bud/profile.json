@@ -1,7 +1,7 @@
 {
   "context": {
     "name": "bud",
-    "dir": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage",
+    "dir": "/var/www/html/wp-content/themes/imagen-practice-sage",
     "manifest": {
       "name": "sage",
       "private": true,
@@ -39,17 +39,17 @@
     },
     "disk": {
       "config": {
-        "package.json": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/package.json",
-        ".editorconfig": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/.editorconfig",
-        "bud.config.mjs": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/bud.config.mjs",
-        "composer.json": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/composer.json",
-        "jsconfig.json": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/jsconfig.json",
-        "tailwind.config.cjs": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/tailwind.config.cjs",
-        "theme.json": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/theme.json"
+        "package.json": "/var/www/html/wp-content/themes/imagen-practice-sage/package.json",
+        ".editorconfig": "/var/www/html/wp-content/themes/imagen-practice-sage/.editorconfig",
+        "bud.config.mjs": "/var/www/html/wp-content/themes/imagen-practice-sage/bud.config.mjs",
+        "composer.json": "/var/www/html/wp-content/themes/imagen-practice-sage/composer.json",
+        "jsconfig.json": "/var/www/html/wp-content/themes/imagen-practice-sage/jsconfig.json",
+        "tailwind.config.cjs": "/var/www/html/wp-content/themes/imagen-practice-sage/tailwind.config.cjs",
+        "theme.json": "/var/www/html/wp-content/themes/imagen-practice-sage/theme.json"
       }
     },
     "application": {
-      "manifestPath": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/@roots/bud/package.json",
+      "manifestPath": "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/@roots/bud/package.json",
       "name": "@roots/bud",
       "version": "6.3.5",
       "description": "Frontend build tools combining the best parts of Symfony Encore and Laravel Mix",
@@ -295,7 +295,7 @@
     "base": {
       "bud.config.mjs": {
         "name": "bud.config.mjs",
-        "path": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/bud.config.mjs"
+        "path": "/var/www/html/wp-content/themes/imagen-practice-sage/bud.config.mjs"
       }
     }
   },

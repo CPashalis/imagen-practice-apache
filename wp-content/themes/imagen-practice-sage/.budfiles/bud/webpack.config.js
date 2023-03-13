@@ -17,24 +17,24 @@ module.exports = {
   "cache": {
     "name": "bud.production",
     "type": "filesystem",
-    "version": "sqcruhspiilt9iyfhtqphlfbc4m_",
-    "cacheDirectory": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/.budfiles/cache/webpack",
+    "version": "cunizgflbvqfzmn9867i_3mp2l8_",
+    "cacheDirectory": "/var/www/html/wp-content/themes/imagen-practice-sage/.budfiles/cache/webpack",
     "managedPaths": [
-      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules"
+      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules"
     ],
     "buildDependencies": {
       "bud": [
-        "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/package.json",
-        "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/.editorconfig",
-        "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/bud.config.mjs",
-        "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/composer.json",
-        "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/jsconfig.json",
-        "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/tailwind.config.cjs",
-        "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/theme.json"
+        "/var/www/html/wp-content/themes/imagen-practice-sage/package.json",
+        "/var/www/html/wp-content/themes/imagen-practice-sage/.editorconfig",
+        "/var/www/html/wp-content/themes/imagen-practice-sage/bud.config.mjs",
+        "/var/www/html/wp-content/themes/imagen-practice-sage/composer.json",
+        "/var/www/html/wp-content/themes/imagen-practice-sage/jsconfig.json",
+        "/var/www/html/wp-content/themes/imagen-practice-sage/tailwind.config.cjs",
+        "/var/www/html/wp-content/themes/imagen-practice-sage/theme.json"
       ]
     }
   },
-  "context": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage",
+  "context": "/var/www/html/wp-content/themes/imagen-practice-sage",
   "experiments": {
     "buildHttp": {
       "allowedUris": [
@@ -43,9 +43,9 @@ module.exports = {
         "https://unpkg.com/",
         "https://cdn.skypack.dev/"
       ],
-      "cacheLocation": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/.budfiles/bud/modules",
+      "cacheLocation": "/var/www/html/wp-content/themes/imagen-practice-sage/.budfiles/bud/modules",
       "frozen": false,
-      "lockfileLocation": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/.budfiles/bud/bud.lock",
+      "lockfileLocation": "/var/www/html/wp-content/themes/imagen-practice-sage/.budfiles/bud/bud.lock",
       "upgrade": true
     }
   },
@@ -70,17 +70,17 @@ module.exports = {
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/resources"
             ],
             "use": [
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/mini-css-extract-plugin/dist/loader.js",
+                "loader": "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/mini-css-extract-plugin/dist/loader.js",
                 "options": {
                   "publicPath": "/wp-content/themes/imagen-practice-sage/public/"
                 }
               },
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/css-loader/dist/cjs.js",
+                "loader": "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/css-loader/dist/cjs.js",
                 "options": {
                   "importLoaders": 1,
                   "modules": false,
@@ -88,16 +88,16 @@ module.exports = {
                 }
               },
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/postcss-loader/dist/cjs.js",
+                "loader": "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/postcss-loader/dist/cjs.js",
                 "options": {
                   "sourceMap": true,
                   "postcssOptions": {
                     "plugins": [
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/postcss-import/index.js",
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/tailwindcss/nesting/index.js",
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/tailwindcss/lib/index.js",
+                      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/postcss-import/index.js",
+                      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/tailwindcss/nesting/index.js",
+                      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/tailwindcss/lib/index.js",
                       [
-                        "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/postcss-preset-env/dist/index.cjs",
+                        "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/postcss-preset-env/dist/index.cjs",
                         {
                           "stage": 1,
                           "features": {
@@ -114,17 +114,17 @@ module.exports = {
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/resources"
             ],
             "use": [
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/mini-css-extract-plugin/dist/loader.js",
+                "loader": "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/mini-css-extract-plugin/dist/loader.js",
                 "options": {
                   "publicPath": "/wp-content/themes/imagen-practice-sage/public/"
                 }
               },
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/css-loader/dist/cjs.js",
+                "loader": "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/css-loader/dist/cjs.js",
                 "options": {
                   "esModule": true,
                   "importLoaders": 1,
@@ -134,16 +134,16 @@ module.exports = {
                 }
               },
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/postcss-loader/dist/cjs.js",
+                "loader": "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/postcss-loader/dist/cjs.js",
                 "options": {
                   "sourceMap": true,
                   "postcssOptions": {
                     "plugins": [
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/postcss-import/index.js",
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/tailwindcss/nesting/index.js",
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/tailwindcss/lib/index.js",
+                      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/postcss-import/index.js",
+                      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/tailwindcss/nesting/index.js",
+                      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/tailwindcss/lib/index.js",
                       [
-                        "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/postcss-preset-env/dist/index.cjs",
+                        "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/postcss-preset-env/dist/index.cjs",
                         {
                           "stage": 1,
                           "features": {
@@ -160,21 +160,21 @@ module.exports = {
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage"
+              "/var/www/html/wp-content/themes/imagen-practice-sage"
             ],
             "exclude": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules"
             ],
             "use": [
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/csv-loader/index.js"
+                "loader": "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/csv-loader/index.js"
               }
             ]
           },
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/resources"
             ],
             "type": "asset",
             "generator": {
@@ -184,21 +184,21 @@ module.exports = {
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage"
+              "/var/www/html/wp-content/themes/imagen-practice-sage"
             ],
             "exclude": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules"
             ],
             "use": [
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/html-loader/dist/cjs.js"
+                "loader": "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/html-loader/dist/cjs.js"
               }
             ]
           },
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/resources"
             ],
             "type": "asset/resource",
             "generator": {
@@ -208,36 +208,36 @@ module.exports = {
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/resources"
             ],
             "use": [
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/babel-loader/lib/index.js",
+                "loader": "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/babel-loader/lib/index.js",
                 "options": {
-                  "cacheDirectory": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/.budfiles/cache/babel",
+                  "cacheDirectory": "/var/www/html/wp-content/themes/imagen-practice-sage/.budfiles/cache/babel",
                   "presets": [
                     [
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/@babel/preset-env/lib/index.js"
+                      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/@babel/preset-env/lib/index.js"
                     ],
                     [
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/@babel/preset-react/lib/index.js"
+                      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/@babel/preset-react/lib/index.js"
                     ]
                   ],
                   "plugins": [
                     [
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/@babel/plugin-transform-runtime/lib/index.js",
+                      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/@babel/plugin-transform-runtime/lib/index.js",
                       {
                         "helpers": false
                       }
                     ],
                     [
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/@babel/plugin-proposal-object-rest-spread/lib/index.js"
+                      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/@babel/plugin-proposal-object-rest-spread/lib/index.js"
                     ],
                     [
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/@babel/plugin-proposal-class-properties/lib/index.js"
+                      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/@babel/plugin-proposal-class-properties/lib/index.js"
                     ],
                     [
-                      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/@babel/plugin-syntax-dynamic-import/lib/index.js"
+                      "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/@babel/plugin-syntax-dynamic-import/lib/index.js"
                     ]
                   ],
                   "env": {
@@ -245,7 +245,7 @@ module.exports = {
                       "compact": false
                     }
                   },
-                  "root": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage"
+                  "root": "/var/www/html/wp-content/themes/imagen-practice-sage"
                 }
               }
             ]
@@ -253,10 +253,10 @@ module.exports = {
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage"
+              "/var/www/html/wp-content/themes/imagen-practice-sage"
             ],
             "exclude": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules"
             ],
             "type": "json",
             "parser": {}
@@ -264,7 +264,7 @@ module.exports = {
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/resources"
             ],
             "type": "asset/resource",
             "generator": {
@@ -274,10 +274,10 @@ module.exports = {
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage"
+              "/var/www/html/wp-content/themes/imagen-practice-sage"
             ],
             "exclude": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules"
             ],
             "type": "json",
             "parser": {}
@@ -285,7 +285,7 @@ module.exports = {
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/resources"
             ],
             "type": "asset/resource",
             "generator": {
@@ -295,28 +295,28 @@ module.exports = {
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage"
+              "/var/www/html/wp-content/themes/imagen-practice-sage"
             ],
             "exclude": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules"
             ],
             "use": [
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/xml-loader/index.js"
+                "loader": "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/xml-loader/index.js"
               }
             ]
           },
           {
             "test": {},
             "include": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage"
+              "/var/www/html/wp-content/themes/imagen-practice-sage"
             ],
             "exclude": [
-              "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules"
+              "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules"
             ],
             "use": [
               {
-                "loader": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/node_modules/yml-loader/index.js"
+                "loader": "/var/www/html/wp-content/themes/imagen-practice-sage/node_modules/yml-loader/index.js"
               }
             ]
           }
@@ -331,7 +331,7 @@ module.exports = {
     "assetModuleFilename": "[name].[contenthash:6][ext]",
     "chunkFilename": "js/dynamic/[id].js",
     "filename": "js/[name].[contenthash:6].js",
-    "path": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/public",
+    "path": "/var/www/html/wp-content/themes/imagen-practice-sage/public",
     "publicPath": "/wp-content/themes/imagen-practice-sage/public/"
   },
   "optimization": {
@@ -399,11 +399,11 @@ module.exports = {
   "performance": {
     "hints": false
   },
-  "recordsPath": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/.budfiles/bud/modules.json",
+  "recordsPath": "/var/www/html/wp-content/themes/imagen-practice-sage/.budfiles/bud/modules.json",
   "stats": {
     "preset": "errors-warnings"
   },
-  "target": "browserslist:/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/package.json",
+  "target": "browserslist:/var/www/html/wp-content/themes/imagen-practice-sage/package.json",
   "plugins": [
     {
       "definitions": {
@@ -428,9 +428,9 @@ module.exports = {
     {
       "patterns": [
         {
-          "from": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources/images",
-          "to": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/public/images/[path][name].[contenthash:6][ext]",
-          "context": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources",
+          "from": "/var/www/html/wp-content/themes/imagen-practice-sage/resources/images",
+          "to": "/var/www/html/wp-content/themes/imagen-practice-sage/public/images/[path][name].[contenthash:6][ext]",
+          "context": "/var/www/html/wp-content/themes/imagen-practice-sage/resources",
           "noErrorOnMissing": true,
           "toType": "template"
         }
@@ -526,12 +526,12 @@ module.exports = {
   ],
   "resolve": {
     "alias": {
-      "@src": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources",
-      "@dist": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/public",
-      "@fonts": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources/fonts",
-      "@images": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources/images",
-      "@scripts": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources/scripts",
-      "@styles": "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources/styles"
+      "@src": "/var/www/html/wp-content/themes/imagen-practice-sage/resources",
+      "@dist": "/var/www/html/wp-content/themes/imagen-practice-sage/public",
+      "@fonts": "/var/www/html/wp-content/themes/imagen-practice-sage/resources/fonts",
+      "@images": "/var/www/html/wp-content/themes/imagen-practice-sage/resources/images",
+      "@scripts": "/var/www/html/wp-content/themes/imagen-practice-sage/resources/scripts",
+      "@styles": "/var/www/html/wp-content/themes/imagen-practice-sage/resources/styles"
     },
     "extensions": [
       ".mjs",
@@ -545,7 +545,7 @@ module.exports = {
       ".toml"
     ],
     "modules": [
-      "/home/chrisp/imagen-practice-apache/wp-content/themes/imagen-practice-sage/resources",
+      "/var/www/html/wp-content/themes/imagen-practice-sage/resources",
       "node_modules"
     ]
   }

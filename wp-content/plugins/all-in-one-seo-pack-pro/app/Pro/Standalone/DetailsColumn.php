@@ -76,7 +76,7 @@ class DetailsColumn extends CommonDetailsColumn {
 		$taxonomy = $term->taxonomy;
 
 		add_filter( "manage_edit-{$taxonomy}_columns", [ $this, 'addColumn' ] );
-		add_action( "manage_{$taxonomy}_custom_column", [ $this, 'renderTaxonomyColumn' ], 10, 3 );
+		add_filter( "manage_{$taxonomy}_custom_column", [ $this, 'renderTaxonomyColumn' ], 10, 3 );
 	}
 
 	/**

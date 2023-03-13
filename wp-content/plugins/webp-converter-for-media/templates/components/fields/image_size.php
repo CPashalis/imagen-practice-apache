@@ -8,6 +8,10 @@
  * @package Converter for Media
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 ?>
 <div class="webpcField">
 	<input type="checkbox"
@@ -15,7 +19,7 @@
 		value="yes"
 		id="<?php echo esc_attr( $option['name'] ); ?>[0]"
 		class="webpcField__input webpcField__input--checkbox"
-		data-inputs-group-toggle="<?php echo esc_attr( $option['name'] ); ?>"
+		data-toggle-trigger="<?php echo esc_attr( $option['name'] ); ?>[0]"
 		<?php echo ( ( $option['value'][0] ?? '' ) === 'yes' ) ? 'checked' : ''; ?>
 		<?php echo ( in_array( 'yes', $option['disabled'] ) ) ? 'disabled' : ''; ?>
 	>
@@ -33,7 +37,9 @@
 			value="<?php echo esc_attr( $option['value'][1] ?? '' ); ?>"
 			id="<?php echo esc_attr( $option['name'] ); ?>[1]"
 			class="webpcInput__field webpcInput__field--small"
-			data-inputs-group-input="<?php echo esc_attr( $option['name'] ); ?>"
+			data-toggle-output="<?php echo esc_attr( $option['name'] ); ?>[0]"
+			data-toggle-output-values="yes"
+			data-toggle-output-attr="readonly"
 			<?php echo ( in_array( 'yes', $option['disabled'] ) || ( $option['value'][0] ?? '' ) !== 'yes' ) ? 'readonly' : ''; ?>
 		>
 	</div>
@@ -46,7 +52,9 @@
 			value="<?php echo esc_attr( $option['value'][2] ?? '' ); ?>"
 			id="<?php echo esc_attr( $option['name'] ); ?>[2]"
 			class="webpcInput__field webpcInput__field--small"
-			data-inputs-group-input="<?php echo esc_attr( $option['name'] ); ?>"
+			data-toggle-output="<?php echo esc_attr( $option['name'] ); ?>[0]"
+			data-toggle-output-values="yes"
+			data-toggle-output-attr="readonly"
 			<?php echo ( in_array( 'yes', $option['disabled'] ) || ( $option['value'][0] ?? '' ) !== 'yes' ) ? 'readonly' : ''; ?>
 		>
 	</div>

@@ -412,6 +412,7 @@
 		$( "#wprevpro_float_misc_slidelocation" ).on("change",function() {
 			changeslideoutstyle();
 			//hide inputs based on value
+			
 			if($(this).val()=="top" || $(this).val()=="bottom"){
 				$( ".slwidthdiv" ).hide();
 				$( ".slheightdiv" ).show();
@@ -419,6 +420,7 @@
 				$( ".slheightdiv" ).hide();
 				$( ".slwidthdiv" ).show();
 			}
+			
 		});
 		$( ".updatesliderinput" ).on("change",function() {
 			changeslideoutstyle();

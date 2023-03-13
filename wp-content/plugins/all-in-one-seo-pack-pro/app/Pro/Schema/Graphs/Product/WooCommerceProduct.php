@@ -311,7 +311,13 @@ class WooCommerceProduct extends Product {
 	 * @return array The shipping details.
 	 */
 	public function getShippingDetails() {
-		if ( $this->product->is_virtual() || apply_filters( 'aioseo_schema_woocommerce_shipping_disable', false ) ) {
+		if (
+			is_admin() ||
+			wp_doing_ajax() ||
+			wp_doing_cron() ||
+			$this->product->is_virtual() ||
+			apply_filters( 'aioseo_schema_woocommerce_shipping_disable', false )
+		) {
 			return [];
 		}
 
@@ -321,9 +327,6 @@ class WooCommerceProduct extends Product {
 		// We also only want to continue generating the shipping details schema if the cart is currently empty.
 		// That way, we don't get in the way of any visitors that are actively shopping.
 		if (
-			is_admin() ||
-			wp_doing_ajax() ||
-			wp_doing_cron() ||
 			! is_object( $woocommerce->customer ) ||
 			! is_object( $woocommerce->cart ) ||
 			! empty( $woocommerce->cart->cart_contents )
@@ -332,6 +335,15 @@ class WooCommerceProduct extends Product {
 		}
 
 		$originalCustomer = clone $woocommerce->customer;
+
+		if (
+			class_exists( '\MonsterInsights_eCommerce_WooCommerce_Integration' ) &&
+			method_exists( '\MonsterInsights_eCommerce_WooCommerce_Integration', 'get_instance' ) &&
+			method_exists( '\MonsterInsights_eCommerce_WooCommerce_Integration', 'add_to_cart' )
+		) {
+			// Prevent MonsterInsights from tracking the add_to_cart event.
+			remove_action( 'woocommerce_add_to_cart', [ \MonsterInsights_eCommerce_WooCommerce_Integration::get_instance(), 'add_to_cart' ] );
+		}
 
 		// First, clear the cart so that we can simulate the order.
 		$woocommerce->cart->add_to_cart( $this->product->get_id() );

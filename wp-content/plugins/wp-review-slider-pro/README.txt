@@ -3,8 +3,8 @@ Contributors: jgwhite33, freemius
 Donate link: http://ljapps.com/
 Tags: reviews, slider, facebook, yelp
 Requires at least: 3.0.1
-Tested up to: 6.0
-Stable tag: 11.5.0
+Tested up to: 6.1
+Stable tag: 11.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,24 @@ e.g.
 
 
 == Changelog ==
+=11.6.1=
+Fixed Get Reviews > Zillow download. Added Yotpo review support.
+
+=11.6.0=
+Fix deprecated warnings for php 8.2. Added Birdeye support. 
+
+=11.5.9=
+Bug fix for badges page jquery error on complex page names/ids.  Review list: fix sorting bug when changing page. Fixed airbnb experience reviews download.  Fixed Deprecated PHP 8.1 warning for add sub menu page.
+
+=11.5.8=
+Bug fix for Badge main image size. Fix for Badge style 6. Badge Total and Averages now show on preview. Added feature to redirect user on review form submission to another page. Added option to display the review source page name/download form title on the review. Added review type filter option to review template public facing header options. Added a custom filter hook to the review text to allow users to be able to create custom filters to modify review text.
+
+=11.5.4=
+Updated Facebook download method. Small bug fixes.
+
+=11.5.3=
+Updated moment.js to latest, used for date picker in Analytics page. Google Crawl download of images. Review Template changes so that same height setting also picks up media. Yelp download fix. Analytics page fix. Badge out of 10 option. Added duplicate review check for 100 characters. Custom field values added to sent email on form submission. Tools tab has show pages based on Role feature. Trustpilot icons removed. Updated Freemius SDK for licensing. Other small bug fixes.
+
 =11.5.0=
 Added another badge style. Fixed badge style 3. Fixed issue with Advanced slider autoplay on read more click.
 

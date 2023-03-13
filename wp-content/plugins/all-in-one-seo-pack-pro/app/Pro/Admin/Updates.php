@@ -102,7 +102,7 @@ class Updates {
 
 		// Load the updater hooks and filters.
 		add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'updatePluginsFilter' ], 1000 );
-		add_filter( 'http_request_args', [ $this, 'httpRequestArgs' ], 10, 2 );
+		add_filter( 'http_request_args', [ $this, 'httpRequestArgs' ] );
 		add_filter( 'plugins_api', [ $this, 'pluginsApi' ], 10, 3 );
 	}
 
@@ -115,8 +115,8 @@ class Updates {
 	 * @return object        Amended WordPress update object on success, default if object is empty.
 	 */
 	public function updatePluginsFilter( $value ) {
-		// If no update object exists, return early.
-		if ( empty( $value ) ) {
+		// If no update object exists, bail to prevent errors.
+		if ( empty( $value ) || ! is_object( $value ) ) {
 			return $value;
 		}
 
@@ -238,7 +238,7 @@ class Updates {
 		}
 
 		// Create a new stdClass object and populate it with our plugin information.
-		$api                        = new \stdClass;
+		$api                        = new \stdClass();
 		$api->name                  = isset( $this->info->name ) ? $this->info->name : '';
 		$api->slug                  = isset( $this->info->slug ) ? $this->info->slug : '';
 		$api->version               = isset( $this->info->version ) ? $this->info->version : '';

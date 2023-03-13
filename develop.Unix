@@ -3,7 +3,7 @@
 # Decide which docker-compose file to use
 COMPOSE_FILE=${environment:-development}
 
-COMPOSE="docker-compose -f docker-compose.yml"
+COMPOSE="docker-compose -f docker-compose.development.yml"
 
 if [ $# -gt 0 ]; then
   # If "composer" is used, pass-thru to "composer"

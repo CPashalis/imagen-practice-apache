@@ -243,6 +243,10 @@
 		$( "#wprevpro_badge_misc_shadow" ).on("change",function() {
 				changepreviewhtml();
 		});
+		$( "#wprevpro_badge_misc_customratingfrom" ).on("change",function() {
+				changepreviewhtml();
+		});
+		
 
 		
 		//for small images
@@ -279,6 +283,13 @@
 		$('#wprevpro_badge_misc_roundavg').on("change",function() {
 			changepreviewhtml();
 		});
+		$('#wprevpro_badge_misc_outof').on("change",function() {
+			changepreviewhtml();
+		});
+		$('#wprevpro_badge_misc_liconurl').on("change",function() {
+			changepreviewhtml();
+		});
+		
 	
 		
 		//upload large icon button----------------------------------
@@ -296,6 +307,8 @@
 				tb_remove();
 				//restore old send to editor function
 				 window.send_to_editor = window.restore_send_to_editor;
+				//update preview.
+				changepreviewhtml();
 			}
 		
 			return false;
@@ -361,6 +374,9 @@
 			var bwidtht = $( "#wprevpro_badge_misc_widtht" ).val();
 			
 			var avgdecimals = $( "#wprevpro_badge_misc_roundavg" ).val();
+			//out of 5 or 10. 
+			var outof = $( "#wprevpro_badge_misc_outof" ).val();
+			
 			
 			if(bwidth=='' || bwidth==0){
 				bwidth = '100';
@@ -403,6 +419,18 @@
 				if(templatenum=='5'){
 					sourceicon = '<img src="'+sourceiconurl+'" alt="'+badgeorgin+' logo" class="wppro_badge5_IMG" />';
 				}
+				//check image size and save with badge so we can add it to html instead of using php.
+				const img = new Image();
+				img.onload = function() {
+				  //console.log(this.width + 'x' + this.height);
+				  if(this.width>0){
+					  $( "#wprevpro_badge_misc_liconwidth" ).val(this.width);
+				  }
+				  if(this.height>0){
+					  $( "#wprevpro_badge_misc_liconheight" ).val(this.height);
+				  }
+				}
+				img.src = sourceiconurl;
 				
 			} else {
 				var sourceiconurl = '';
@@ -468,12 +496,6 @@
 					smallhtmlicon = '<div class="wppro_badge1_DIV_13">'+smallhtmlicon+'</div>';
 				}
 			}
-			//yelp warning
-			if(syelp){
-					$('#yelpwarningmsg').show();
-			} else {
-				$('#yelpwarningmsg').hide();
-			}
 			
 			//----------------
 			
@@ -507,15 +529,134 @@
 			
 			//remove total for google style
 			var temptotalrevs = "17";
-			//if(badgeorgin=='google'){
-			//	temptotalrevs ="";
-			//}
 			var tempavgrevs = "4.5";
+			if(outof==10){
+				var tempavgrevs = "9.0";
+			}
 			if(avgdecimals==2){
 				tempavgrevs = "4.53";
-			}else if(avgdecimals==3){
+				if(outof==10){
+				tempavgrevs = "9.06";	
+				}
+			} else if(avgdecimals==3){
 				tempavgrevs = "4.531";
+				if(outof==10){
+					tempavgrevs = "9.062";
+				}
 			}
+			//get average and total based on pages selected and type. Pulling from Badge Data table
+			if(badgeorgin!='submitted' && badgeorgin!='postid'){
+				$( "#totalavgwarningmsg" ).hide('slow');
+				//then we get total from selected pages.
+				//if none selected and custom then total and average of all pages.
+				//if non selected and some other type then we match types.
+				
+				//find if anything selected first.
+				var checkedpages = $('input.pageselectclass:checked');
+				//console.log('ts:'+checkedpages.length);
+				var allpages = $('input.pageselectclass');
+				//console.log('as:'+allpages.length);
+				
+				//find source site or table
+				var sourceordb = 'total';
+				var sourceordbavg = 'avg';
+				var sourcecount = 0;
+				if($( "#wprevpro_badge_misc_customratingfrom" ).val()=="table"){
+					sourceordb = 'total';
+					sourceordbavg = 'avg';
+				} else if($( "#wprevpro_badge_misc_customratingfrom" ).val()=="db"){
+					sourceordb = 'total_indb';
+					sourceordbavg = 'avg_indb';
+				}
+				//console.log('sourceordb:'+sourceordb);
+				//console.log('badgeorgin:'+badgeorgin);
+				//$('#' + $.escapeSelector(my_id_with_special_chars))
+				var rtot=0;
+				var ravg=0;
+				if(checkedpages.length==0){
+					if(badgeorgin=='custom'){
+						//get all pages
+						$.each(allpages, function() {
+							var $this = $(this);
+							var pageid = $this.val();
+							rtot = Number(rtot) + Number($('#'+$.escapeSelector(pageid)).find('.'+sourceordb).text());
+							if(Number($('#'+$.escapeSelector(pageid)).find('.'+sourceordbavg).text())>0){
+								ravg = Number(ravg) + Number($('#'+$.escapeSelector(pageid)).find('.'+sourceordbavg).text());
+								sourcecount = sourcecount + 1;
+							}
+						}); 
+						//ravg = (ravg/sourcecount);
+					
+					} else if(badgeorgin!='submitted' && badgeorgin!='postid' ){
+						//get all pages of certain type that is selected.
+						$.each(allpages, function() {
+							var $this = $(this);
+							//console.log($this.val());
+							var pageid = $this.val();
+							var rtype =  $this.attr( "data-rtype" );
+							//console.log('rtype:'+rtype);
+							if(badgeorgin==rtype){
+								//console.log('num:'+Number($('#'+pageid).find('.'+sourceordb).text()));
+								rtot = Number(rtot) + Number($('#'+$.escapeSelector(pageid)).find('.'+sourceordb).text());
+								if(Number($('#'+$.escapeSelector(pageid)).find('.'+sourceordbavg).text())>0){
+									ravg = Number(ravg) + Number($('#'+$.escapeSelector(pageid)).find('.'+sourceordbavg).text());
+									sourcecount = sourcecount + 1;
+								}
+							}
+						});
+						//ravg = (ravg/sourcecount);
+					}
+				} else {
+					//must have a page selected, get values based on selected pages.
+					$.each(checkedpages, function() {
+						var $this = $(this);
+						var pageid = $this.val();
+						rtot = Number(rtot) + Number($('#'+$.escapeSelector(pageid)).find('.'+sourceordb).text());
+						if(Number($('#'+$.escapeSelector(pageid)).find('.'+sourceordbavg).text())>0){
+							ravg = Number(ravg) + Number($('#'+$.escapeSelector(pageid)).find('.'+sourceordbavg).text());
+							sourcecount = sourcecount + 1;
+						}
+					}); 
+					//ravg = (ravg/sourcecount);
+				}
+				if(sourcecount>0 && ravg>0){
+					ravg = (ravg/sourcecount);
+				} else {
+					ravg = 0;
+				}
+				console.log('sourcecount:'+sourcecount);
+				console.log('rtot:'+rtot);
+				console.log('ravg:'+ravg);
+				temptotalrevs = rtot;
+				if(ravg>0){
+					tempavgrevs = ravg.toFixed(1);
+					if(outof==10){
+						tempavgrevs = ravg*2;
+						tempavgrevs = tempavgrevs.toFixed(1);						
+					}
+					if(avgdecimals==2){
+						tempavgrevs = ravg.toFixed(2);
+						if(outof==10){
+							tempavgrevs = ravg*2;
+							tempavgrevs = tempavgrevs.toFixed(2);						
+						}
+					} else if(avgdecimals==3){
+						tempavgrevs = ravg.toFixed(3);
+						if(outof==10){
+							tempavgrevs = ravg*2;
+							tempavgrevs = tempavgrevs.toFixed(3);						
+						}
+					}
+				} else {
+					tempavgrevs = 0;
+				}
+			} else {
+				$( "#totalavgwarningmsg" ).show('slow');
+			}
+
+			
+			
+
 			if($( "#wprevpro_badge_misc_customratingfrom" ).val()=="input"){
 				temptotalrevs = $( "#wprevpro_badge_misc_cratingtotal" ).val();
 				tempavgrevs = $( "#wprevpro_badge_misc_cratingavg" ).val();
@@ -574,14 +715,14 @@
 				
 			var smallicont2 = smallhtmlicon;
 			if(smallicont2==''){
-				smallicont2 = '20 <span>'+tempvalctextb2+'</span>';
+				smallicont2 = ''+temptotalrevs+' <span>'+tempvalctextb2+'</span>';
 			}
 
 			var style2html = '<div class="wprevpro_badge wppro_badge1_DIV_1" id="wprev-badge-">\
 <div class="wppro_dashboardReviewSummary">\
       <div class="wppro_dashboardReviewSummary__left">\
-        <div class="wppro_dashboardReviewSummary__avgRating">4.4</div>\
-		<div class="wppro_b2__rating" data-rating-value="4.4">\
+        <div class="wppro_dashboardReviewSummary__avgRating">'+tempavgrevs+'</div>\
+		<div class="wppro_b2__rating" data-rating-value="'+tempavgrevs+'">\
 			<div class="wppro_badge1_DIV_stars bigstar" style="width:max-content;">'+starhtmldiv+'	</div>	\
 		</div>\
         <div class="wppro_dashboardReviewSummary__avgReviews">'+smallicont2+'</div>\
@@ -647,6 +788,8 @@
 			$( ".wprevpre_tcolor2" ).show();
 			$( ".badgewidth" ).show();
 			$( "#wprevpro_badge_misc_ctext" ).show();
+			$( ".t2onlysource" ).hide();
+			
 			if(templatenum=='1'){
 				$( "#wprevpro_template_preview" ).html(prestyle+style1html);
 				$( ".t1oneonly" ).show();
@@ -656,6 +799,10 @@
 				//hide stuff if this is template 2
 				$( ".t1oneonly" ).hide();
 				$( ".t2oneonly" ).show();
+				if($( "#wprevpro_badge_misc_customratingfrom" ).val()=="table"){
+					$( ".t2onlysource" ).show();
+				}
+				
 			} else if(templatenum=='3'){
 				$( "#wprevpro_template_preview" ).html(prestyle+style3html);
 				$( ".t1oneonly" ).show();
@@ -708,6 +855,12 @@
 					$( ".customratingsrow" ).show('slow');
 				} else {
 					$( ".customratingsrow" ).hide('slow');
+				}
+				
+				if($( "#wprevpro_badge_misc_customratingfrom" ).val()=='table' && $( "#wprevpro_badge_orgin" ).val()=='facebook'){
+					$( ".fbsourcewarning" ).show('slow');
+				} else {
+					$( ".fbsourcewarning" ).hide('slow');
 				}
 		}
 		
@@ -867,7 +1020,7 @@
 		  if(ttype=="widget"){
 			openpopup(adminjs_script_vars.popuptitle1, '<p>'+adminjs_script_vars.popupmsg1+'</p>', '');
 		  } else {
-			openpopup(adminjs_script_vars.popuptitle2, '<p>'+adminjs_script_vars.popupmsg2+' </br></br><code>[wprevpro_usebadge tid="'+tid+'"] </code></br></br>'+adminjs_script_vars.popupmsg6+' <a href="https://wpreviewslider.userecho.com/en/knowledge-bases/2/articles/1644-parameters-in-shortcodes-for-badges" target="_blank">'+adminjs_script_vars.popupmsg5+'</a>.</br></br>'+adminjs_script_vars.popupmsg3+'</br></br> <code>echo do_shortcode( \'[wprevpro_usebadge tid="'+tid+'"]\' ); </code></br></br> <code>do_action( \'wprev_pro_plugin_action_badge\', '+tid+' ); </code></br></br>'+adminjs_script_vars.popupmsg4+' <a href="https://wpreviewslider.userecho.com/knowledge-bases/2/articles/1334-access-total-and-averages-with-shortcode-or-function" target="_blank">'+adminjs_script_vars.popupmsg5+'</a>. </p>', '');
+			openpopup(adminjs_script_vars.popuptitle2, '<p>'+adminjs_script_vars.popupmsg2+' </br></br>[wprevpro_usebadge tid="'+tid+'"] </br></br>'+adminjs_script_vars.popupmsg6+' <a href="https://wpreviewslider.userecho.com/en/knowledge-bases/2/articles/1644-parameters-in-shortcodes-for-badges" target="_blank">'+adminjs_script_vars.popupmsg5+'</a>.</br></br>'+adminjs_script_vars.popupmsg3+'</br></br> echo do_shortcode( \'[wprevpro_usebadge tid="'+tid+'"]\' ); </br></br> do_action( \'wprev_pro_plugin_action_badge\', '+tid+' ); </br></br>'+adminjs_script_vars.popupmsg4+' <a href="https://wpreviewslider.userecho.com/knowledge-bases/2/articles/1334-access-total-and-averages-with-shortcode-or-function" target="_blank">'+adminjs_script_vars.popupmsg5+'</a>. </p>', '');
 		  }
 		  
 		});
@@ -995,10 +1148,10 @@
 		
 		//wprevpro_btn_pickpages open thickbox----------------
 		$( "#wprevpro_btn_pickpages" ).on("click",function() {
-			var url = "#TB_inline?width=600&height=600&inlineId=tb_content_page_select";
+			var url = "#TB_inline?width=600&height=700&inlineId=tb_content_page_select";
 			tb_show(adminjs_script_vars.msg4, url);
 			$( "#selectrevstable" ).focus();
-			$( "#TB_window" ).css({ "width":"730px","height":"700px","margin-left": "-415px" });
+			$( "#TB_window" ).css({ "width":"650px","height":"700px","margin-left": "-350px" });
 			$( "#TB_ajaxContent" ).css({ "width":"auto","height":"650px" });
 		});
 		//when checking a page check box. update number selected
@@ -1010,6 +1163,7 @@
 				var newhtml = " ("+totalselected+" Pages Selected)";
 			}
 			$('#wprevpro_selectedpagesspan').html(newhtml);
+			changepreviewhtml();
 		});
 		
 		//when changing custom text  wppro_badge1_DIV_12

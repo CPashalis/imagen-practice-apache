@@ -30,6 +30,7 @@ $finaltotalhtml ='';
 	$finaltotal = $totalavgarray['finaltotal'];
 	$finalavg = $totalavgarray['finalavg'];
 
+
 $finaltotalhtml = trim($finaltotal).'&nbsp;';
 
 //get the large logo html
@@ -60,7 +61,14 @@ if(isset($template_misc_array['liconurllink_attr'])){
 if($show_licon=="yes"){
 	//find icon width and height to use in html
 
-	$wh_html = $badgetools->getimgheightwidthhtml($logourl);
+	//$wh_html = $badgetools->getimgheightwidthhtml($logourl);
+	
+	$wh_html = '';
+	if(isset($template_misc_array['liconwidth']) && isset($template_misc_array['liconheight'])){
+		if($template_misc_array['liconwidth']>0 && $template_misc_array['liconheight']>0){
+			$wh_html = 'width="'.intval($template_misc_array['liconwidth']).'" height="'.intval($template_misc_array['liconheight']).'"';
+		}
+	}
 	
 	if($logourllink!=''){
 		$logohtml = '<a href="'.$logourllink.'" '.$logourllinktargethtml.' '.$followorno.'><img src='.$logourl.' '.$wh_html.' alt="'.$logoalt.'" class="wppro_badge1_IMG_3"></a>';

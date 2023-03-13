@@ -1527,6 +1527,8 @@
 										<option value="startwith"><?php _e("Starts With", "wp-fastest-cache"); ?></option>
 										<option value="contain"><?php _e("Contains", "wp-fastest-cache"); ?></option>
 										<option value="exact"><?php _e("Is Equal To", "wp-fastest-cache"); ?></option>
+
+										<option value="regex">Regular Expression</option>
 								</select>
 							</div>
 							<div class="wpfc-timeout-rule-line-middle">
@@ -1641,6 +1643,30 @@
 				    	<?php
 				    		include(WPFC_MAIN_PATH."templates/clearing_specific_pages.php");
 				    	?>
+
+
+
+
+				    	<div class="exclude_section_clear" style=" margin-left: 3%; width: 95%; margin-bottom: 12px; margin-top: 0;"><div></div></div>
+
+				    	<h2 style="padding-bottom:10px;padding-left:20px;float:left;">Reverse Proxy Cache</h2>
+
+				    	<div class="varnish-cache-list" style="display: block;width:98%;float:left;">
+				    		<div class="int-item int-item-left" style="width: 94%;margin-left: 20px;">
+			    				<img style="border-radius: 50px;" src="<?php echo plugins_url("wp-fastest-cache/images/varnish.jpg"); ?>">
+			    				<div class="app">
+			    					<div style="font-weight:bold;font-size:14px;">Varnish Cache</div>
+			    					<p>Varnish Cache is a web application accelerator also known as a caching HTTP reverse proxy.</p>
+			    				</div>
+			    				<div class="meta <?php echo $this->wpfc_status_varnish(); ?>"></div>
+				    		</div>
+				    	</div>
+
+				    	<?php
+				    		include(WPFC_MAIN_PATH."templates/varnish.php");
+				    	?>
+
+	
 
 
 
@@ -1820,7 +1846,11 @@
 										<option value="startwith"><?php _e("Starts With", "wp-fastest-cache"); ?></option>
 										<option value="contain"><?php _e("Contains", "wp-fastest-cache"); ?></option>
 										<option value="exact"><?php _e("Is Equal To", "wp-fastest-cache"); ?></option>
+
+										<option value="regex">Regular Expression</option>
+
 										<option value="googleanalytics"><?php _e("has Google Analytics Parameters", "wp-fastest-cache"); ?></option>
+										<option value="yandexclickid"><?php _e("has Yandex Click ID Parameters", "wp-fastest-cache"); ?></option>
 										<option value="woocommerce_items_in_cart"><?php _e("has Woocommerce Items in Cart", "wp-fastest-cache"); ?></option>
 								</select>
 							</div>

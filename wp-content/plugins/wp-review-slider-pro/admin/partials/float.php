@@ -13,7 +13,7 @@
  */
  
      // check user capabilities
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('manage_options') && $this->wprev_canuserseepage('float')==false) {
         return;
     }
 	$dbmsg = "";
@@ -886,7 +886,7 @@ echo $dbmsg;
 								<div class="wprevpre_temp_label_row">
 								<?php _e('Background Border:', 'wp-review-slider-pro'); ?>
 								</div>
-								<div class="wprevpre_temp_label_row">
+								<div class="wprevpre_temp_label_row slwidthdiv">
 								<?php _e('Border Width:', 'wp-review-slider-pro'); ?>
 								</div>
 								<div class="wprevpre_temp_label_row slwidthdiv" <?php if($float_misc_array['slidelocation']=='top' ||$float_misc_array['slidelocation']=='bottom'){echo "style='display:none;'";} ?> <?php if($float_misc_array['onclickaction']=='popup'){echo "style='display:none;'";} ?>>

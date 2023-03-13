@@ -22,7 +22,7 @@
 	//$frsiteurl = get_option( 'wprev_fr_url' );
  
      // check user capabilities
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('manage_options') && $this->wprev_canuserseepage('get_apps')==false) {
         return;
     }
 	
@@ -41,6 +41,7 @@
 	$currentgetappform->profile_img="";
 	$currentgetappform->categories="";
 	$currentgetappform->posts="";
+	$currentgetappform->rectostar="";
 	$maxnumcandownload = "";
 	$hidelastnameoption = false;
 	$hideimageoption = false;
@@ -101,8 +102,10 @@
 			$hidenumtodownload = true;
 			$exurls = ' Ex:<br><i>https://nextdoor.com/pages/tortoras-owens-cross-roads-al/</i>';
 		} else if($rtype=='Zillow'){
+			$currentgetappform->blocks="20";
 			$hideimageoption = true;
-			$exurls = ' Ex:<br><i>https://www.zillow.com/profile/ahoward3/</i><br>'.__('This should be your Profile URL.', 'wp-review-slider-pro').'<br>'.__('<b>Use the Get Reviews > Review Funnel to download Lender Reviews.</b>', 'wp-review-slider-pro');
+			$exdesc='';
+			$exurls = ' Ex: <i>https://www.zillow.com/reviews/write/?s=X1-ZUvu3i2bzw4m4p_46au8</i><br>'.__('This is the Write Review link address.', 'wp-review-slider-pro').'  <a href="https://wpreviewslider.com/wp-content/uploads/2023/02/zillow_instr.mp4" target="_blank" style="text-decoration: none;">'.__('Video Instructions', 'wp-review-slider-pro').'</a> <br>'.__('<b>Use the Get Reviews > Review Funnel to download Lender Reviews.</b>', 'wp-review-slider-pro');
 		}  else if($rtype=='AngiesList'){
 			$exurls = ' Ex:<br><i>https://www.angieslist.com/companylist/us/nj/belleville/visentin-plumbing-and-heating-reviews-228768.htm</i>'.'<br>'.__('<b>AngiesList download is limited to 30 reviews.</b>', 'wp-review-slider-pro');
 			$currentgetappform->blocks="30";
@@ -191,6 +194,30 @@
 			$allwithrf = "";
 			$exdesc= __('The URL of the page where the reviews or recommendations are located.', 'wp-review-slider-pro');
 			$exurls = ' Ex:<br><i>https://www.yelp.com/biz/earth-and-stone-wood-fired-pizza-huntsville-2</i>';
+		} else if($rtype=='Facebook'){
+			$hideimageoption = true;
+			$hidenumtodownload = true;
+			$maxnumcandownload = "";
+			$currentgetappform->blocks="20";
+			$allwithrf = "";
+			$exdesc= __('Select Facebook Source Page', 'wp-review-slider-pro');
+			$exurls = '';
+		} else if($rtype=='Birdeye'){
+			$hideimageoption = false;
+			$hidenumtodownload = false;
+			$maxnumcandownload = "";
+			$currentgetappform->blocks="20";
+			$allwithrf = "";
+			$exdesc= __('Enter your Birdeye business ID. Example: 12345678', 'wp-review-slider-pro');
+			$exurls = '';
+		} else if($rtype=='Yotpo'){
+			$hideimageoption = false;
+			$hidenumtodownload = false;
+			$maxnumcandownload = "";
+			$currentgetappform->blocks="50";
+			$allwithrf = "";
+			$exdesc= __('Enter Yotpo App Key or Store ID.', 'wp-review-slider-pro').' <a href="https://support.yotpo.com/en/article/finding-your-yotpo-app-key-and-secret-key" target="_blank" id="instr" name="instr">'.__('More Info', 'wp-review-slider-pro').'</a>';
+			$exurls = '';
 		}
 	
 	
@@ -289,6 +316,34 @@
 		update_option( 'wprevpro_cookieval', $cookieval );
 	}
 	
+	//birdeye save api key
+	if (isset($_POST['wprevpro_birdeyeapikey']) && $rtype=="Birdeye"){
+		//verify nonce wp_nonce_field( 'wprevpro_save_template');
+		check_admin_referer( 'wprevpro_birdeye_api_key');
+		$apival = sanitize_textarea_field($_POST['wprevpro_birdeyeapikey']);
+		update_option( 'wprevpro_birdeyeapikey_val', $apival );
+		//echo "here";
+		//echo get_option('wprevpro_birdeyeapikey_val');
+	}
+	
+	//yotpo save secret key yotposecretkey
+	if (isset($_POST['wprevpro_yotposecretkey']) && $rtype=="Yotpo"){
+		//verify nonce wp_nonce_field( 'wprevpro_save_template');
+		check_admin_referer( 'wprevpro_yotpo_api_key');
+		$apival = sanitize_textarea_field($_POST['wprevpro_yotposecretkey']);
+		update_option( 'wprevpro_yotposecretkey_val', $apival );
+		//echo "here";
+		//echo get_option('wprevpro_yotposecretkey_val');
+	}
+	
+	//saving FB access code
+	if (isset($_POST['wprevpro_fb_secret_code']) && $rtype=="Facebook"){
+		//verify nonce wp_nonce_field( 'wprevpro_save_template');
+		check_admin_referer( 'wprevpro_save_fb_secret_code');
+		$fb_secret_code = sanitize_text_field($_POST['fb_secret_code']);
+		update_option( 'wprevpro_fb_secret_code', $fb_secret_code );
+	}
+	
 
 	//check to see if form has been posted.
 	//if template id present then update database if not then insert as new.
@@ -317,7 +372,18 @@
 			$page_id= sanitize_text_field($_POST['wprevpro_google_page_id']);
 		}
 		
-		if($rtype=='Freemius' || $rtype=='Qualitelis' || $rtype=='Feefo' || $rtype=='Google'){
+		$rectostar ='';
+		if($rtype=='Facebook'){
+			//135558838733_The Ridge Adventure & Off Road Riding Park
+			$page_info= sanitize_text_field($_POST['wprevpro_fb_page']);
+			$page_id = strtok($page_info, '_');
+			$reviewlistpageid=$page_id;
+			$title = substr($page_info, strpos($page_info, "_") + 1); 
+			$rectostar= sanitize_text_field($_POST['wprevpro_template_fbrecommendations']);
+		}
+		
+		
+		if($rtype=='Freemius' || $rtype=='Qualitelis' || $rtype=='Feefo' || $rtype=='Google' || $rtype=='Birdeye' || $rtype=='Yotpo'){
 		$url = sanitize_text_field($_POST['wprevpro_url']);
 		} else {
 		$url = sanitize_url($_POST['wprevpro_url']);
@@ -372,6 +438,7 @@
 				'profile_img' => "$profile_img",
 				'categories' => "$catidsarrayjson",
 				'posts' => "$postidsarrayjson",
+				'rectostar' => "$rectostar",
 				'sortoption' => "$sortoption"
 				);
 				//print_r($data);
@@ -443,15 +510,72 @@ include("getrevs_sidemenu.php");
 ?>	
 </div>
 <div class="w3-col m10">
+<div class="headertype wprevpro_margin10">
+<img id="reviewtypelogo" src="<?php echo WPREV_PLUGIN_URL . '/public/partials/imgs/'.strtolower($rtype).'_small_icon.png?temp='.time(); ?>">
+<span id="headertypetext"><?php echo $rtype; ?> Reviews</span>
+</div>
 <div class="wprevpro_margin10">
+
+
 	<a id="wprevpro_helpicon_posts" class="wprevpro_btnicononly button dashicons-before dashicons-editor-help"></a>
 	<a id="wprevpro_addnewtemplate" class="button dashicons-before dashicons-plus-alt"><?php _e('Add New Source Page', 'wp-review-slider-pro'); ?></a>
+<?php
+if($rtype=='Facebook'){
+?>
+	<a id="wprevpro_addfbcode" class="button dashicons-before dashicons-plus-alt"><?php _e('Enter/Modify Access Code', 'wp-review-slider-pro'); ?></a>
+<?php
+}	
+?>
 
 <?php
 	//$previouscheck = json_decode(get_option('wprev_google_crawl_check'),true);
 	//print_r($previouscheck);
 ?>
 </div>
+<?php
+if($rtype=='Facebook'){
+	$wprevpro_fb_secret_code = get_option('wprevpro_fb_secret_code');
+	if(isset($wprevpro_fb_secret_code) && $wprevpro_fb_secret_code!=''){
+		$acesscode = $wprevpro_fb_secret_code;
+	} else {
+		$acesscode ='';
+	}
+?>
+<div class="wprevpro_margin10 bordered_form" id="fb_secret_code_div" <?php if($acesscode!=''){echo "style='display:none;'";} ?>>
+	    <form  action="?page=wp_pro-get_apps&rtype=Facebook" method="post" name="fbsecretcode" enctype="multipart/form-data">
+		<b>Secret Access Code:</b>
+		<table class="wprevpro_margin10 ">
+		<tbody>
+			<tr class="wprevpro_row">
+			<td scope="row" style="">
+			<p class="description">
+			<?php _e('The first thing you need to do is grant our Facebook app permission to read your Facebook Page reviews and then copy the access code from our app and paste it in to the field below.', 'wp-review-slider-pro'); ?></p>
+			<p class="description">
+			<?php _e('Designers/Developers: If you are setting this up for a client, it is recommended that you delete your Secret Access Code from the plugin after you download the reviews.', 'wp-review-slider-pro'); ?></p>
+			<a href="https://fbapp.ljapps.com/login.php?ut=pd" target="_blank" id="instr" name="instr" class="button-secondary "><?php _e('Get Access Code Here', 'wp-review-slider-pro'); ?></a>
+&nbsp;&nbsp;<a href="https://wpreviewslider.com/wp-content/uploads/2022/08/fbapiinstructions.mp4" target="_blank" id="instr" name="instr" class="button-secondary "><?php _e('Video Instructions', 'wp-review-slider-pro'); ?></a>
+			</td>
+			</tr>
+			<tr class="wprevpro_row">
+				<td scope="row">
+				<br>
+				<b>Enter Access Code:</b> <input name="fb_secret_code" id="fb_secret_code" spellcheck="false" value="<?php echo $acesscode; ?>">
+				</td>
+			</tr>
+			</tbody>
+			</table>
+				<?php 
+	//security nonce
+	wp_nonce_field( 'wprevpro_save_fb_secret_code');
+	?>
+			<input type="submit" name="wprevpro_fb_secret_code" id="wprevpro_fb_secret_code" class="button button-primary" value="<?php _e('Save', 'wp-review-slider-pro'); ?>">
+			&nbsp;&nbsp;
+        </form>
+</div>
+<?php
+}
+?>
+
 <?php
 if($rtype=='Nextdoor'){
 ?>
@@ -478,13 +602,71 @@ if($rtype=='Nextdoor'){
 	wp_nonce_field( 'wprevpro_save_cookie');
 	?>
 			<input type="submit" name="wprevpro_savecookie" id="wprevpro_savecookie" class="button button-primary" value="<?php _e('Save', 'wp-review-slider-pro'); ?>">
-&nbsp;&nbsp;<a href="https://ljapps.com/wp-content/uploads/2021/11/nextdoor_cookie_11-2-21.mp4" target="_blank" id="instr" name="instr" class="button-secondary "><?php _e('Video Instructions', 'wp-review-slider-pro'); ?></a>
+&nbsp;&nbsp;<a href="https://wpreviewslider.com/wp-content/uploads/2022/12/Nextdoor_cookie_12-2-2022.mp4" target="_blank" id="instr" name="instr" class="button-secondary "><?php _e('Video Instructions', 'wp-review-slider-pro'); ?></a>
         </form>
 </div>
 <?php
 }
 ?>
 
+<?php
+if($rtype=='Birdeye'){
+?>
+<div class="wprevpro_margin10 bordered_form" id="login_cookie">
+	    <form  action="?page=wp_pro-get_apps&rtype=Birdeye" method="post" name="logincookie" enctype="multipart/form-data">
+		<b>Birdeye API Key:</b>
+		<table class="wprevpro_margin10 ">
+		<tbody>
+			<tr class="wprevpro_row">
+				<td scope="row">
+				<input name="wprevpro_birdeyeapikey" id="wprevpro_birdeyeapikey" value="<?php echo get_option('wprevpro_birdeyeapikey_val'); ?>" type="text">
+				</td>
+				<td scope="row" style="padding-left:10px;">
+			<p class="description">
+			<?php _e('Get your API Key from Birdeye and enter it here to use their API.', 'wp-review-slider-pro'); ?> <a href="https://support.birdeye.com/setup-locations/1205154-where-can-i-find-my-account-s-unique-business-id" target="_blank" id="instr" name="instr"><?php _e('API info on Birdeye', 'wp-review-slider-pro'); ?></a></p>
+			</td>
+			</tr>
+			</tbody>
+			</table>
+				<?php 
+	//security nonce
+	wp_nonce_field( 'wprevpro_birdeye_api_key');
+	?>
+<input type="submit" name="wprevpro_savecookie" id="wprevpro_savecookie" class="button button-primary" value="<?php _e('Save', 'wp-review-slider-pro'); ?>">
+        </form>
+</div>
+<?php
+}
+?>
+<?php
+if($rtype=='Yotpo'){
+?>
+<div class="wprevpro_margin10 bordered_form" id="login_cookie">
+	    <form  action="?page=wp_pro-get_apps&rtype=Yotpo" method="post" name="logincookie" enctype="multipart/form-data">
+		<b>Yotpo Secret Key:</b>
+		<table class="wprevpro_margin10 ">
+		<tbody>
+			<tr class="wprevpro_row">
+				<td scope="row">
+				<input name="wprevpro_yotposecretkey" id="wprevpro_yotposecretkey" value="<?php echo get_option('wprevpro_yotposecretkey_val'); ?>" type="text">
+				</td>
+				<td scope="row" style="padding-left:10px;">
+			<p class="description">
+			<?php _e('Get your Secret Key from Yotpo and enter it here to use their API.', 'wp-review-slider-pro'); ?> <a href="https://support.yotpo.com/en/article/finding-your-yotpo-app-key-and-secret-key#retrieving-your-secret-key" target="_blank" id="instr" name="instr"><?php _e('How to find it.', 'wp-review-slider-pro'); ?></a></p>
+			</td>
+			</tr>
+			</tbody>
+			</table>
+				<?php 
+	//security nonce
+	wp_nonce_field( 'wprevpro_yotpo_api_key');
+	?>
+<input type="submit" name="wprevpro_savecookie" id="wprevpro_savecookie" class="button button-primary" value="<?php _e('Save', 'wp-review-slider-pro'); ?>">
+        </form>
+</div>
+<?php
+}
+?>
 
 <?php
 
@@ -504,6 +686,38 @@ if($rtype=='Nextdoor'){
 <form name="newtemplateform" id="newtemplateform" action="?page=wp_pro-get_apps&rtype=<?php echo $rtype; ?>" method="post">
 	<table class="wprevpro_margin10 form-table ">
 		<tbody>
+			<?php
+			if($rtype=='Facebook'){
+			?>
+			<tr class="wprevpro_row">
+				<th scope="row">
+					<?php 
+						_e('Select Facebook Page:', 'wp-review-slider-pro'); 
+					?>
+				</th>
+				<td>
+				<?php
+				//print_r($currentgetappform);
+				$temppageval = '';
+				if($currentgetappform->page_id!=''){
+					$temppageval = $currentgetappform->page_id."_".$currentgetappform->title;
+				}
+				?>
+					<select name="wprevpro_fb_page" id="wprevpro_fb_page">
+					<option value="<?php echo $temppageval; ?>"><?php echo $currentgetappform->title; ?></option>
+					</select>
+					<p class="description">
+					<?php
+					printf( __( 'The Facebook page to download reviews from.', 'wp-review-slider-pro' ), $rtype );
+					?>
+					</p>
+					<div id="pageslisterror"></div>
+				</td>
+			</tr>
+			<?php
+			}
+			if($rtype!='Facebook'){
+			?>
 			<tr class="wprevpro_row">
 				<th scope="row">
 				
@@ -524,6 +738,7 @@ if($rtype=='Nextdoor'){
 				</td>
 			</tr>
 			<?php
+			}
 			if($rtype=='Nextdoor'){
 			?>
 			<tr class="wprevpro_row">
@@ -531,7 +746,7 @@ if($rtype=='Nextdoor'){
 					<?php _e('Nextdoor Page_ID:', 'wp-review-slider-pro'); ?>
 				</th>
 				<td>
-					<input id="wprevpro_template_page_id" data-custom="custom" type="text" name="wprevpro_template_page_id" placeholder="" value="<?php echo $currentgetappform->page_id; ?>" required>&nbsp;&nbsp;<a href="https://ljapps.com/wp-content/uploads/2021/11/nextdoor_pageid_11-2-21.mp4" target="_blank" id="instr" name="instr" class="button-secondary "><?php _e('Video Instructions', 'wp-review-slider-pro'); ?></a>
+					<input id="wprevpro_template_page_id" data-custom="custom" type="text" name="wprevpro_template_page_id" placeholder="" value="<?php echo $currentgetappform->page_id; ?>" required>&nbsp;&nbsp;<a href="https://wpreviewslider.com/wp-content/uploads/2022/12/Nextdoor_business_ID_12-2-2022.mp4" target="_blank" id="instr" name="instr" class="button-secondary "><?php _e('Video Instructions', 'wp-review-slider-pro'); ?></a>
 					<p class="description">
 					<?php
 					printf( __( 'Follow the video instructions to find the Page_ID.', 'wp-review-slider-pro' ), $rtype );
@@ -554,7 +769,7 @@ if($rtype=='Nextdoor'){
 					<?php _e('This is the app store you are downloading the reviews from.', 'wp-review-slider-pro'); ?></p>
 				</td>
 			</tr>
-			<tr class="wprevpro_row">
+			<tr class="wprevpro_row" <?php if($rtype=='Facebook'){echo "style='display:none;'"; } ?> >
 				<th scope="row">
 					<?php 
 					if($rtype=='Freemius'){
@@ -563,8 +778,12 @@ if($rtype=='Nextdoor'){
 						_e('Token, IdContractor, CycleId, SurveyId, Langue', 'wp-review-slider-pro');
 					} else if($rtype=='Feefo'){
 						_e('Merchant Identifier', 'wp-review-slider-pro');
-					}  else if($rtype=='Google'){
+					} else if($rtype=='Google'){
 						_e('Place ID or Search Terms', 'wp-review-slider-pro');
+					} else if($rtype=='Birdeye'){
+						_e('Business ID', 'wp-review-slider-pro');
+					} else if($rtype=='Yotpo'){
+						_e('App Key or Store ID', 'wp-review-slider-pro');
 					} else {
 						_e('Review URL', 'wp-review-slider-pro'); 
 					}
@@ -572,7 +791,16 @@ if($rtype=='Nextdoor'){
 				</th>
 				<td>
 					<?php
-					if($rtype=='Freemius'){
+					if($rtype=='Birdeye' || $rtype=='Yotpo' ){
+					?>
+						<input class="yelp_business_url" id="wprevpro_url" data-custom="custom" type="text" name="wprevpro_url" placeholder="" value="<?php echo $currentgetappform->url; ?>" required>
+						<p class="description">
+					
+					<?php
+						//_e('Enter your Birdeye business ID. Example: 12345678', 'wp-review-slider-pro');
+						_e($exdesc.$exurls, 'wp-review-slider-pro'); 
+						
+					} else if($rtype=='Freemius'){
 					?>
 						<input class="yelp_business_url" id="wprevpro_url" data-custom="custom" type="text" name="wprevpro_url" placeholder="" value="<?php echo $currentgetappform->url; ?>" required>
 						<p class="description">
@@ -607,7 +835,7 @@ if($rtype=='Nextdoor'){
 						<p class="description">
 					<?php	
 						_e($exdesc.$exurls, 'wp-review-slider-pro'); 
-					}else {
+					} else if($rtype!='Facebook'){
 					?>
 						<input class="yelp_business_url" id="wprevpro_url" data-custom="custom" type="url" name="wprevpro_url" placeholder="<?php echo $exurlsplaceholder;?>" value="<?php echo $currentgetappform->url; ?>" required>
 						<p class="description">
@@ -661,6 +889,24 @@ if($rtype=='Nextdoor'){
 					?>
 				</td>
 			</tr>
+			<?php
+			if($rtype=='Facebook'){
+			?>
+			<tr class="wprevpro_row">
+				<th scope="row">
+					<?php _e('Recommendations:', 'wp-review-slider-pro'); ?>
+				</th>
+				<td>
+				<input type="checkbox" id="wprevpro_template_fbrecommendations" name="wprevpro_template_fbrecommendations" value="1" <?php if($currentgetappform->rectostar=="1"){echo "checked"; }?>>
+				&nbsp;<?php _e('Save Positive Recommendations as 5 Star and Negative as 2 Star.', 'wp-review-slider-pro'); ?>
+				<p class="description">
+					<?php _e('This will allow you to display the stars with the review.', 'wp-review-slider-pro'); ?>
+				</p>
+				</td>
+			</tr>
+			<?php
+			}
+			?>
 			<?php
 			if($rtype=='StyleSeat'){
 			?>
@@ -856,6 +1102,7 @@ echo $dbmsg;
 	if(count($currentforms)>0){
 	foreach ( $currentforms as $currentform ) 
 	{
+		//print_r($currentform);
 	//remove query args we just used
 	$urltrimmed = remove_query_arg( array('taction', 'id') );
 		$tempeditbtn =  add_query_arg(  array(
@@ -892,13 +1139,19 @@ echo $dbmsg;
 		}
 		$lastranon = '';
 		if($currentform->last_ran>0){$lastranon = date("M j, Y",$currentform->last_ran);}
+		
+		$getreviewsbtn = '<span class="rfbtn button button-primary dashicons-before dashicons-star-filled retreviewsbtn"> '.__('Get Reviews', 'wp-review-slider-pro').'</span>';
+		
+		if($rtype=='Facebook'){
+			$getreviewsbtn = '<span data-pageid="'.$currentform->page_id .'" data-pagename="'.$currentform->title .'" id="getreviews_'.$currentform->page_id .'" type="button" class="getfbreviews button button-primary dashicons-before dashicons-star-filled"> '.__('Get Reviews', 'wp-review-slider-pro').'</span>';
+		}
 			
 		$html .= '<tr id="'.$currentform->id.'" class="locationrow" data-blocks="'.$tempblocks.'">
 				<th scope="col" class=" manage-column">'.$currentform->id.'</th>
 				<th scope="col" class=" manage-column" style="min-width: 200px;"><b><span class="titlespan">'.stripslashes($currentform->title).'</span></b><br><span style="font-size:10px;">'.stripslashes($tempurlhtml).'</span></th>
 				<th scope="col" class=" manage-column"><b>'.$currentform->cron.'</b></th>
 				<th scope="col" class=" manage-column">'.$lastranon.'</th>
-				<th scope="col" class="manage-column" templateid="'.$currentform->id.'" templatetype="'.$currentform->site_type.'"><a href="'.$url_tempeditbtn.'" class="rfbtn button button-secondary dashicons-before dashicons-admin-generic">'.__('Edit', 'wp-review-slider-pro').'</a> <a href="'.$url_tempdelbtn.'" class="rfbtn button button-secondary dashicons-before dashicons-trash">'.__('Delete', 'wp-review-slider-pro').'</a> <a href="'.$url_tempcopybtn.'" class="rfbtn button button-secondary dashicons-before dashicons-admin-page">'.__('Copy', 'wp-review-slider-pro').'</a> <span class="rfbtn button button-primary dashicons-before dashicons-star-filled retreviewsbtn"> '.__('Get Reviews', 'wp-review-slider-pro').'</span></th>
+				<th scope="col" class="manage-column" templateid="'.$currentform->id.'" templatetype="'.$currentform->site_type.'"><a href="'.$url_tempeditbtn.'" class="rfbtn button button-secondary dashicons-before dashicons-admin-generic">'.__('Edit', 'wp-review-slider-pro').'</a> <a href="'.$url_tempdelbtn.'" class="rfbtn button button-secondary dashicons-before dashicons-trash">'.__('Delete', 'wp-review-slider-pro').'</a> <a href="'.$url_tempcopybtn.'" class="rfbtn button button-secondary dashicons-before dashicons-admin-page">'.__('Copy', 'wp-review-slider-pro').'</a> '.$getreviewsbtn.'</th>
 			</tr>';
 	}
 	} else {

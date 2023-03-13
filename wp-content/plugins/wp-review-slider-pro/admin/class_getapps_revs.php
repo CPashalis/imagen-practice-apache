@@ -74,7 +74,7 @@
 			if($serverresponse==false || $serverresponse==''){
 			//try remote_get if we dont' have serverresponse yet
 				$args = array(
-					'timeout'     => 30,
+					'timeout'     => 50,
 					'sslverify' => false
 				); 
 				$response = wp_remote_get( $tempurlvalue, $args );
@@ -84,7 +84,7 @@
 				} else {
 					//must have been an error
 					$results['ack'] ='error';
-					$results['ackmsg'] ='Error 0001a: trouble contacting crawling server with remote_get. Please try again or contact support. CMD: '.$tempurlvalue.' : '.$response->get_error_message();
+					$results['ackmsg'] ='Error 0001ag: trouble contacting crawling server with remote_get. Please try again or contact support. CMD: '.$tempurlvalue.' : '.$response->get_error_message();
 					$results = json_encode($results);
 					echo $results;
 					die();
@@ -177,6 +177,10 @@
 				//find review text
 				$results[$x]['review_text']=$review['review_text'];
 				$results[$x]['reviewlength']=$review['reviewlength'];
+				
+				//find mediajson
+				$results[$x]['mediaurlsarrayjson']=$review['mediaurlsarrayjson'];
+				
 								
 				//find user image
 				$results['userpic'] = $review['userpic'];
@@ -202,6 +206,7 @@
 					 'company_title' =>  '',
 					 'company_url' => '',
 					 'company_name' => '',
+					 'mediaurlsarrayjson' => $results[$x]['mediaurlsarrayjson'],
 					 ];
 				
 				
@@ -241,6 +246,9 @@
 				
 				//scrapeurl
 				$tempurlval = 'https://crawl.ljapps.com/crawlrevs?rip='.$ip_server.'&surl='.$siteurl.'&scrapeurl='.$listedurl.'&stype=tripadvisor&sfp=pro&nhful='.$nhful.'&locationtype=&scrapequery=&tempbusinessname=&pagenum='.$pagenum.'&nextpageurl='.$nextpageurl;
+				
+				//echo $tempurlval;
+				//die();
 				
 				$serverresponse='';
 				
@@ -321,6 +329,10 @@
 				//pass back next URL used
 				if(isset($crawlerresultarray['nextpageurl'])){
 					$result['nextpageurl']=$crawlerresultarray['nextpageurl'];
+				}
+				//pass back stoploop if set
+				if(isset($crawlerresultarray['stoploop'])){
+					$result['stoploop']=$crawlerresultarray['stoploop'];
 				}
 				
 				$x=0;
@@ -525,6 +537,233 @@
 		return $result;
 	}
 	
+	//for calling remote get and returning array of reviews to insert
+	public function wprp_getapps_getrevs_page_birdeye($type,$listedurl,$pagenum,$perpage,$savedpageid,$nhful,$fid,$blockstoinsert){
+		$result['ack']='success';
+		$errormsg='';
+		$reviewsarray = Array();
+		
+		$businessId = $listedurl;
+		$sindex = 0;
+		$apikey = get_option('wprevpro_birdeyeapikey_val');
+		$result['avg']='';
+		$result['total']='';
+			
+		if($businessId=='' || $apikey==''){
+			//must have been an error
+			$results['ack'] ='error';
+			$results['ackmsg'] ='Error 0001: Make sure to enter your API Key and Business ID from Birdeye.';
+			$results = json_encode($results);
+			echo $results;
+			die();
+		}
+
+		if($pagenum >1){
+			$sindex = $pagenum*100;
+		}
+		
+		//get the total and avg first
+		if($pagenum <2){
+			//https://api.birdeye.com/resources/v1/review/businessid/businessId/summary?api_key=abcdefgh&statuses=ad
+			$callurl = "https://api.birdeye.com/resources/v1/review/businessid/".$businessId."/summary?api_key=".$apikey."&statuses=ad";
+			$response = wp_remote_get( $callurl, array( 'timeout' => 10,
+					'headers' => array( 'Content-Type' => 'application/json',
+                               'Accept'=> 'application/json' ) 
+					));
+			if ( is_array( $response ) && ! is_wp_error( $response ) ) {
+				$headers = $response['headers']; // array of http header lines
+				$body    = $response['body']; // use the content
+			} else {
+				$result['ack']=esc_html__('Error: Can not use remote get on this url:', 'wp-review-slider-pro').' '.$callurl;
+			}
+			$reviewsummary = json_decode($body,true);
+			
+			//print_r($reviewsummary);
+			//die();
+			foreach($reviewsummary['sources'] as $x => $val) {
+				if($val['sourceName']=="Birdeye"){
+					$result['avg']=$val['avgRating'];
+					$result['total']=$val['reviewCount'];
+				}
+
+			}
+		}
+		
+		//$result = $type.':'.$listedurl.':'.$pagenum.':'.$perpage.':'.$savedpageid.':'.$nhful.':'.$fid.':'.$blockstoinsert;
+		//Birdeye:158025200485823:1:100:::324:20
+		//https://api.birdeye.com/resources/v1/review/businessId/158025200485823?sindex=0&count=100&api_key=EW36B9hWVECe05pBB96p8WDtNwQktKnx&includeNonAggregatedReviews=false&businessId=158025200485823
+			
+		$endpoint = 'https://api.birdeye.com/resources/v1/review/businessId/'.$businessId.'?sindex='.$sindex.'&count=100&api_key=EW36B9hWVECe05pBB96p8WDtNwQktKnx&includeNonAggregatedReviews=false&businessId=158025200485823';
+
+		$body = '{
+			"sources":["our_website","direct_feedback","birdeye"],
+			"allChild":"true",
+			"fetchExtraParams":false,
+			"needCustomerInfo":false
+		}';
+
+		$options = [
+			'body'        => $body,
+			'headers'     => [
+				'Content-Type' => 'application/json',
+			],
+			'timeout'     => 60,
+			'redirection' => 5,
+			'blocking'    => true,
+			'httpversion' => '1.0',
+			'sslverify'   => false,
+			'data_format' => 'body',
+		];
+
+		$response = wp_remote_post( $endpoint, $options );
+		if ( is_wp_error( $response ) ) {
+			$error_message = $response->get_error_message();
+			$results['ack'] ='error';
+			$results['ackmsg'] ='Error 0002: Something went wrong. '.$error_message;
+			$results = json_encode($results);
+			echo $results;
+			die();
+		}
+		
+		$fileurlcontents = $response['body'];	
+			
+		$reviewcontainerdiv = json_decode($fileurlcontents,true);
+		
+		foreach ($reviewcontainerdiv as $review) {
+				$user_name='';
+				$userimage='';
+				$rating='';
+				$datesubmitted='';
+				$rtext='';
+				$from_url_review='';
+				$company_title='';
+				$unique_id='';
+				$reviewer_id='';
+				$title='';
+				$reviewer_email='';
+				$userpic='';
+				$from_url_review='';
+				$from_url='';
+				$location='';
+			
+			// Find unique id
+			if($review['reviewId']){
+				$unique_id=$review['reviewId'];
+			}
+			
+			// Find user_name
+			if($review['reviewer']['nickName']){
+				$user_name=$review['reviewer']['nickName'];
+			}
+			if($review['reviewer']['customerId']){
+				$reviewer_id=$review['reviewer']['customerId'];
+			}
+			if($review['reviewer']['emailId']){
+				$reviewer_email=$review['reviewer']['emailId'];
+			}
+			if($review['reviewer']['thumbnailUrl']){
+				$userpic=$review['reviewer']['thumbnailUrl'];
+			}
+
+			//find rating
+			if($review['rating']){
+				$rating=$review['rating'];
+			}
+			
+			//find date created_at
+			if($review['reviewDate']){
+				$datesubmitted=$review['reviewDate'];
+			}
+			
+			//find title
+			if($review['title']){
+				$title=$review['title'];
+			}
+			
+			//find text
+			if($review['comments']){
+				$rtext=$review['comments'];
+			}
+			
+			if($review['reviewUrl']){
+				$from_url=$review['reviewUrl'];
+			}
+			
+			if($review['uniqueReviewUrl']){
+				$from_url_review=$review['uniqueReviewUrl'];
+			}
+			$citylocation ='';
+			$statelocation='';
+			if($review['reviewer']['city']){
+				$citylocation = $review['reviewer']['city'];
+			}
+			if($review['reviewer']['state']){
+				$statelocation = $review['reviewer']['state'];
+			}
+			if($citylocation !='' && $statelocation !=''){
+				$location = $citylocation.', '.$statelocation;
+			} else if($citylocation !='' && $statelocation ==''){
+				$location = $citylocation;
+			} else if($citylocation =='' && $statelocation !=''){
+				$location = $statelocation;
+			}
+			
+			//owner_response
+			$owner_response_encode ='';
+			$owner['id'] = '';
+			$owner['name'] = '';
+			$owner['comment'] = '';
+			$owner['date'] = '';
+			//mgrRspnInline
+			if($review['response']){
+				//must be a response
+				$owner['name'] = 'Business Response';
+
+				//responseDate
+				if(isset($review['responseDate'])){
+				 $tempdate = strtotime($review['responseDate']);	
+				} else {
+				 $tempdate = strtotime($datesubmitted);
+				}
+				$owner['date'] = date('Y-m-d', $tempdate);
+				$owner['comment'] = $review['response'];
+			}
+			if($owner['comment']!=''){
+				$owner_response_encode = json_encode($owner);
+			}
+
+			if($rating>0){
+				$reviewsarray[] = [
+					 'reviewer_name' => trim($user_name),
+					 'reviewer_id' => trim($reviewer_id),
+					 'reviewer_email' => $reviewer_email,
+					 'userpic' => $userpic,
+					 'rating' => $rating,
+					 'updated' => $datesubmitted,
+					 'review_text' => trim($rtext),
+					 'review_title' => trim($title),
+					 'from_url' => $from_url,
+					 'from_url_review' => $from_url_review,
+					 'language_code' => '',
+					 'unique_id' => $unique_id,
+					 'location' => $location,
+					 'recommendation_type' => '',
+					 'company_title' =>  '',
+					 'company_url' => '',
+					 'company_name' => '',
+					 'mediaurlsarrayjson' => '',
+					 'owner_response' => $owner_response_encode,
+					 ];
+			}
+		}
+
+		$result['reviews'] = $reviewsarray;
+				
+		//die();
+
+		return $result;
+	}
+		
 
 	//for calling remote get and returning array of reviews to insert
 	public function wprp_getapps_getrevs_page_reviewsio($type,$listedurl,$pagenum,$perpage,$savedpageid,$nhful,$fid,$blockstoinsert){
@@ -629,7 +868,6 @@
 					$meta_json ="";
 					$meta_data = Array();
 					
-
 					if($rating>0){
 						$reviewsarraytemp[] = [
 								'reviewer_name' => trim($user_name),
@@ -848,7 +1086,7 @@
 		return $result;
 	}
 	
-	//for calling remote get and returning array of reviews to insert, used for itunes, Zillow...
+	//for calling remote get and returning array of reviews to insert
 	public function wprp_getapps_getrevs_page_sourceforge($type,$listedurl,$pagenum,$perpage,$savedpageid,$nhful,$fid){
 		$result['ack']='success';
 		
@@ -1018,7 +1256,7 @@
 		
 		return $result;
 	}
-	//for calling remote get and returning array of reviews to insert, used for itunes, Zillow...
+	//for calling remote get and returning array of reviews to insert
 	public function wprp_getapps_getrevs_page_guildquality($type,$listedurl,$pagenum,$perpage,$savedpageid,$nhful,$fid){
 		$result['ack']='success';
 		
@@ -1189,7 +1427,7 @@
 		return $result;
 	}
 	
-	//for calling remote get and returning array of reviews to insert, used for itunes, Zillow...
+	//for calling remote get and returning array of reviews to insert
 	public function wprp_getapps_getrevs_page_airbnb($type,$listedurl,$pagenum,$perpage,$savedpageid,$nhful,$fid,$blockstoinsert,$nextpageurl){
 		$result['ack']='success';
 		
@@ -1212,46 +1450,72 @@
 					if(strpos($listedurl, '/experiences/') !== false){		
 						//experiences, get different api key stuff
 						$isexperience = true;
-						$urldetails = $this->getreviewurl_airbnb($stripvariableurl, $listing_id, 'experience');
+						$limit=50;
+						if($blockstoinsert<50){
+							$limit=$blockstoinsert;
+						}
+						
+						$urldetails = $this->getreviewurl_airbnb($stripvariableurl, $listing_id, 'experience', $limit);
+						$callurl = $urldetails['url'];
+						
+						//print_r($urldetails);
+						
 					} else {
 						$isexperience = false;
 						$urldetails = $this->getreviewurl_airbnb($stripvariableurl, $listing_id, 'room');
+						
+						if($blockstoinsert<100){
+							$callurl =$urldetails['url']."&_limit=".$blockstoinsert."&_offset=0";
+						} else {
+							$callurl =$urldetails['url']."&_limit=100&_offset=0";
+						}
+						$result['nextpageurl']= $urldetails['url'];
 					}
-					if($blockstoinsert<100){
-						$callurl =$urldetails['url']."&_limit=".$blockstoinsert."&_offset=0";
-					} else {
-						$callurl =$urldetails['url']."&_limit=100&_offset=0";
-					}
-					$result['nextpageurl']= $urldetails['url'];
+
 				} else {
-					//need to set nextpageurl
-					$result['nextpageurl']= $nextpageurl;
-					
-					$offset = ($pagenum - 1)*100;
-					$callurl = $nextpageurl."&_limit=100&_offset=".$offset;
+					//for pages after first page.
+					if(strpos($listedurl, '/experiences/') !== false){		
+						//experiences, get different api key stuff
+						$isexperience = true;
+						$limit=50;
+						if($blockstoinsert<50){
+							$limit=$blockstoinsert;
+						}
+						$offset = ($pagenum - 1)*50;
+						
+						$urldetails = $this->getreviewurl_airbnb($stripvariableurl, $listing_id, 'experience', $limit,$offset);
+						$callurl = $urldetails['url'];
+
+					} else {
+						//need to set nextpageurl
+						$result['nextpageurl']= $nextpageurl;
+						
+						$offset = ($pagenum - 1)*100;
+						$callurl = $nextpageurl."&_limit=100&_offset=".$offset;
+					}
+
 				}
 				//pass back next URL used
 				if(isset($crawlerresultarray['nextpageurl'])){
 					$result['nextpageurl']=$crawlerresultarray['nextpageurl'];
 				}
 			
-				//use blocks to figure out how many times to loop
-				/*
-				$limit=100;
-				$offset=0;
-				$airbnburl[1] =$urldetails['url']."&_limit=".$limit."&_offset=".$offset."";
-				$airbnburl[2] =$urldetails['url']."&_limit=".$limit."&_offset=100";
-				$airbnburl[3] =$urldetails['url']."&_limit=".$limit."&_offset=200";
-				$airbnburl[4] =$urldetails['url']."&_limit=".$limit."&_offset=300";
-				https://www.airbnb.com/api/v2/reviews?key=d306zoyjsyarp7ifhu67rjxn52tv0t20&locale=en&listing_id=5337141&role=guest&_format=for_p3&_order=recent
-				*/
 
 				$result['callurl'] =$callurl;
 				$args = array(
-					'timeout'     => 15,
+					'timeout'     => 20,
 					'sslverify' => false
 				); 
-				$response = wp_remote_get($callurl,$args);
+				
+				if($isexperience){
+					$response = wp_remote_get( $callurl ,
+						 array( 'timeout' => 30,
+						'headers' => array( 'X-Airbnb-API-Key' => $urldetails['key']) 
+						 ));
+				} else {
+					$response = wp_remote_get( $callurl );
+				}
+
 				if ( is_array( $response ) && ! is_wp_error( $response ) ) {
 					$headers = $response['headers']; // array of http header lines
 					$body    = $response['body']; // use the content
@@ -1261,7 +1525,7 @@
 				
 				$pagedata = json_decode( $response['body'], true );
 				
-				$reviewsarray = $pagedata['reviews'];
+				//print_r($pagedata);
 				
 				if($pagenum==1){
 					$result['avg']='';
@@ -1269,9 +1533,18 @@
 					if(isset($pagedata['metadata']['reviews_count'])){
 						$result['total']= $pagedata['metadata']['reviews_count'];
 					}
+					if(isset($pagedata['metadata']['reviewsCount'])){
+						$result['total']= $pagedata['metadata']['reviewsCount'];
+					}
 					if($urldetails['avg']){
 							$result['avg']= $urldetails['avg'];
 					}
+				}
+				
+				if($isexperience){
+					$reviewsarray = $pagedata['data']['merlin']['pdpReviews']['reviews'];
+				} else {
+					$reviewsarray = $pagedata['reviews'];
 				}
 
 
@@ -1286,36 +1559,38 @@
 						$location='';
 						$language_code='';
 						
-					//find reviewer_id
-					if(isset($review['reviewer']['id'])){
-						$reviewer_id = $review['reviewer']['id'];
-					}
+						if($isexperience){
+							// Find user_name
+							if($review['reviewer']['firstName']){
+								$user_name = $review['reviewer']['firstName'];
+							}
+							
+							// Find userimage ui_avatar
+							if($review['reviewer']['pictureUrl']){
+								$userimage = $review['reviewer']['pictureUrl'];
+							}
+							
+							// find date created_at
+							if($review['createdAt']){
+								$datesubmitted = $review['createdAt'];
+							}
 
-					// Find user_name
-					if(isset($review['author'])){
-						if($review['author']['first_name']){
-							$user_name = $review['author']['first_name'];
+						} else {
+							// Find user_name
+							if($review['reviewer']['first_name']){
+								$user_name = $review['reviewer']['first_name'];
+							}
+							
+							// Find userimage ui_avatar
+							if($review['reviewer']['picture_url']){
+								$userimage = $review['reviewer']['picture_url'];
+							}
+							
+							// find date created_at
+							if($review['created_at']){
+								$datesubmitted = $review['created_at'];
+							}
 						}
-						
-						// Find userimage ui_avatar
-						if($review['author']['picture_url']){
-							$userimage = $review['author']['picture_url'];
-						}
-					}
-
-					if($user_name==''){
-						// Find user_name
-						if($review['reviewer']['first_name']){
-							$user_name = $review['reviewer']['first_name'];
-						}
-					}
-					
-					if($userimage==''){
-						// Find userimage ui_avatar
-						if($review['reviewer']['picture_url']){
-							$userimage = $review['reviewer']['picture_url'];
-						}
-					}
 
 
 					// find rating
@@ -1323,10 +1598,6 @@
 						$rating = $review['rating'];
 					}
 
-					// find date created_at
-					if($review['created_at']){
-						$datesubmitted = $review['created_at'];
-					}
 					
 					// find text
 					if($review['comments']){
@@ -1335,8 +1606,11 @@
 					
 					//user profile who left review
 					if(isset($review['reviewer'])){
-						if($review['reviewer']['profile_path']){
+						if(isset($review['reviewer']['profile_path'])){
 							$from_url_review = $baseurl.$review['reviewer']['profile_path'];
+						}
+						if(isset($review['reviewer']['profilePath'])){
+							$from_url_review = $baseurl.$review['reviewer']['profilePath'];
 						}
 					}
 					if(isset($review['author'])){
@@ -1358,13 +1632,19 @@
 					//mgrRspnInline
 					if($review['response']){
 						//must be a response
-						if($review['reviewee']['host_name']){
+						if(isset($review['reviewee']['host_name'])){
 							$owner['name']= $review['reviewee']['host_name'];
+						} if(isset($review['reviewee']['hostName'])){
+							$owner['name']= $review['reviewee']['hostName'];
 						} else {
 							$owner['name'] = 'Response from the owner';
 						}
 						//responseDate
-						$tempdate = strtotime($datesubmitted);
+						if(isset($review['localizedRespondedDate'])){
+						 $tempdate = strtotime($review['localizedRespondedDate']);	
+						} else {
+						 $tempdate = strtotime($datesubmitted);
+						}
 						$owner['date'] = date('Y-m-d', $tempdate);
 						$owner['comment'] = $review['response'];
 					}
@@ -1423,7 +1703,7 @@
 		return $result;
 	}
 	
-	//for calling remote get and returning array of reviews to insert, used for itunes, Zillow...
+	//for calling remote get and returning array of reviews to insert
 	public function wprp_getapps_getrevs_page_vrbo($type,$listedurl,$pagenum,$perpage,$savedpageid,$nhful,$fid,$blockstoinsert,$nextpageurl){
 		$result['ack']='success';
 		$stripvariableurl = strtok($listedurl, '?');
@@ -1592,265 +1872,437 @@
   
  		return $result;
 	}
-	
-	public function wprp_getapps_getrevs_page_yelp_OLD($type,$listedurl,$pagenum,$perpage,$savedpageid,$nhful,$fid,$blockstoinsert,$nextpageurl){
+		//for calling remote get and returning array of reviews to insert
+	public function wprp_getapps_getrevs_page_zillow($type,$listedurl,$pagenum,$perpage,$savedpageid,$nhful,$fid,$blockstoinsert){
 		$result['ack']='success';
-		$stripvariableurl = strtok($listedurl, '?');
+		$errormsg='';
+		$reviewsarray = Array();
+		
+		$businessId = $listedurl;
+		$sindex = 0;
+		//$apikey = get_option('wprevpro_birdeyeapikey_val');
+		$result['avg']='';
+		$result['total']='';
+			
+
+		//https://www.zillow.com/reviews/write/?s=X1-ZUvu3i2bzw4m4p_46au8
+		//https://www.zillow.com/profile-page/api/public/v1/reviews?encodedZuid=X1-ZUvu3i2bzw4m4p_46au8&profileTypeIds=1%2C2%2C12%2C16&page=1&size=5&sortType=2&sortOrder=2
+
+
+		$getreviews = false;
+		$errormsg='';
+		$callurl = $listedurl;
 		$reviewsarraytemp = Array();
-		$parseurl = parse_url($listedurl);
-		$baseurl = $parseurl['scheme'].'://'.$parseurl['host'];
-		
-		//create page url based on pagenum.
-		if($pagenum==1){
-			$tempurlvalue = $stripvariableurl.'?sort_by=date_desc';
+		if (filter_var($callurl, FILTER_VALIDATE_URL)) {
+			$stripvariableurl = strtok($callurl, '?');
+			$stripvariableurl = stripslashes($stripvariableurl);
+			//check url to find out what kind of review page this is
+			if (strpos($stripvariableurl, '/write/') !== false) {
+				
+				//find the id if this is the first page
+				if($pagenum==1){
+					$url_components = parse_url($callurl);
+					parse_str($url_components['query'], $urldetails);
+					
+					//print_r($urldetails);
+					$id = $urldetails['s'];
+					update_option( 'wprevpro_zillowid', $id, false );
+				} else {
+					$id = get_option('wprevpro_zillowid');
+				}
+				//$rurl ="https://www.zillow.com/ajax/review/ReviewDisplayJSONGetPage.htm?id=".$id."&size=50&page=".$pagenum."&page_type=received&moderator_actions=0&reviewee_actions=0&reviewer_actions=0&proximal_buttons=1&hasImpersonationPermission=0&service=&sort=1";
+				
+				
+				$rurl ="https://www.zillow.com/profile-page/api/public/v1/reviews?encodedZuid=".$id."&profileTypeIds=1%2C2%2C12%2C16&page=".$pagenum."&size=10&sortType=2&sortOrder=2";
+				
+				$urlvalue = esc_url_raw($rurl);
+				
+				//if this is a realtor page
+				if(isset($id) && $id!=''){
+					$getreviews = true;
+				} else {
+					$errormsg = $errormsg . __(' Unable to find the Zillow reviews URL. Contact support or try using a Review Funnel.','wp-review-slider-pro');
+					$this->errormsg = $errormsg;
+				}
+			
+			$result['callurl'] =$urlvalue;
+							
+			if($getreviews){
+				
+				//now actually get the reviews
+				
+				$data = wp_remote_get( $urlvalue );
+				if ( is_wp_error( $data ) ) 
+				{
+					$response['error_message'] 	= $data->get_error_message();
+					$reponse['status'] 		= $data->get_error_code();
+					print_r($response);
+					die();
+				}
+				if ( is_array( $data ) ) {
+				  $header = $data['headers']; // array of http header lines
+				  $body = $data['body']; // use the content
+				}
+					
+				$pagedata = json_decode( $body, true );
+				if(!is_array($pagedata) || count($pagedata)<1){
+					$fileurlcontents =$this->file_get_contents_curl_browser($urlvalue,'');
+					//echo $fileurlcontents;
+					$html = wppro_str_get_html($fileurlcontents);
+					$pagedata = json_decode( $html, true );
+				}
+				
+				//print_r($pagedata);
+				//die();
+				
+				if(isset($pagedata['filters'][0]['count'])){
+						$result['total']=$pagedata['filters'][0]['count'];
+				}
+				
+				// Find reviews
+				$reviewsarray = $pagedata['reviews'];
+
+				foreach ($reviewsarray as $review) {
+						$user_name='';
+						$userimage='';
+						$rating='';
+						$datesubmitted='';
+						$rtext='';
+
+						$from_url_review='';
+						$company_title='';
+						$unique_id='';
+						$reviewer_id='';
+						$title='';
+						$reviewer_email='';
+						$userpic='';
+						$from_url_review='';
+						$from_url='';
+						$location='';
+						
+						// Find user_name
+						if($review['reviewer']['screenName']){
+							$user_name = $review['reviewer']['screenName'];
+						}
+						
+						// Find userimage ui_avatar
+						$userimage = '';
+
+						// find rating
+						if($review['rating']){
+							$rating = intval($review['rating']);
+						}
+
+						// find date created_at
+						if($review['createDate']){
+							//11/14/2018
+							$datesubmitted = $review['createDate'];
+						}
+						
+						// find text
+						if($review['reviewComment']){
+							$rtext = $review['reviewComment'];
+						}
+						
+						// find reviewer_id
+						if($review['reviewer']['encodedZuid']){
+							$unique_id = $review['reviewer']['encodedZuid'];
+						}
+						
+						// find text
+						if($review['reviewId']){
+							$unique_id = $review['reviewId'];
+						}
+						
+						$meta_json ="";
+						$meta_data = Array();
+						if($review['subRatings']){
+							$meta_data['subRatings'] = json_encode($review['subRatings']);
+						}
+						if($review['workDescription']){
+							$meta_data['workDescription'] = $review['workDescription'];
+						}
+						if(count($meta_data)>0){
+							$meta_json = json_encode($meta_data);
+						}
+					
+						if($rating>0){
+							$reviewsarraytemp[] = [
+									'reviewer_name' => trim($user_name),
+									'rating' => $rating,
+									'date' => $datesubmitted,
+									'review_text' => trim($rtext),
+									'reviewer_id' => trim($reviewer_id),
+									'unique_id' => trim($unique_id),
+									'meta_data' => $meta_json,
+									'type' => 'Zillow'
+							];
+						}
+				}
+			}
+			//print_r($reviewsarraytemp);
+			//die();
+			//loop reviews and build new array of just what we need
+			$reviewsarrayfinal = Array();
+			foreach ($reviewsarraytemp as $item) {
+				 $reviewsarrayfinal[] = [
+				 'reviewer_name' => trim($item['reviewer_name']),
+				 'reviewer_id' => $item['reviewer_id'],
+				 'reviewer_email' => '',
+				 'userpic' => '',
+				 'rating' => $item['rating'],
+				 'updated' => $item['date'],
+				 'review_text' => $item['review_text'],
+				 'review_title' => '',
+				 'from_url_review' => '',
+				 'language_code' => '',
+				 'unique_id' => $item['unique_id'],
+				 'location' => '',
+				 'recommendation_type' => '',
+				 'company_title' =>  '',
+				 'company_url' => '',
+				 'company_name' => '',
+				 'meta_data' => $item['meta_data'],
+				 ];
+			}
+
+			//print_r($reviewsarrayfinal);
+			//die();
+			
+			$result['reviews'] = $reviewsarrayfinal;
+			} else if(strpos($stripvariableurl, '/lender-profile/') !== false){
+
+				//for lender profile
+				//$stripvariableurl
+				$errormsg = $errormsg . __(' Sorry, this does not currently work for a lender profile url. You can download Lender Reviews with the Review Funnels tab above.','wp-review-slider-pro');
+				$this->errormsg = $errormsg;
+					
+					
+			}
 		} else {
-			$tempnum = $pagenum*10 - 10;
-			$tempurlvalue = $stripvariableurl.'?start='.$tempnum .'&sort_by=date_desc';
+			$errormsg='Please enter a valid URL.';
 		}
 		
-		//build phantomjs url here.
-		$phantomtempurlvalue = "https://phantomjscloud.com/api/browser/v2/a-demo-key-with-low-quota-per-ip-address/?request={url:%22".urlencode($tempurlvalue)."%22,renderType:%22html%22,requestSettings:{doneWhen:[{event:%22domReady%22}]}}";
-
-//echo $phantomtempurlvalue;
-//die();
-
-		if (ini_get('allow_url_fopen') == true) {
-			$fileurlcontents=file_get_contents($phantomtempurlvalue);
-		} else if (function_exists('curl_init')) {
-			$fileurlcontents=$this->file_get_contents_curl($phantomtempurlvalue);
-		} else {
-			$fileurlcontents='<html><body>'.esc_html__('fopen is not allowed on this host.', 'wp-google-reviews').'</body></html>';
-			$errormsg = $errormsg . '<p style="color: #A00;">'.esc_html__('fopen is not allowed on this host and cURL did not work either. Ask your web host to turn fopen on or fix cURL.', 'wp-google-reviews').'</p>';
-			$this->errormsg = $errormsg;
-			$result['ack'] ='error';
-			$result['ackmsg'] =$errormsg;
-			$result = json_encode($results);
-			echo $result;
-			die();
+		$result['ack'] =$errormsg;
+		if(count($reviewsarrayfinal)<10){
+			//no need to loop again.
+			$result['stoploop'] = "stop";
 		}
-		//echo $fileurlcontents;
-		//die();
-		/*
-		$args = array(
-			'timeout'     => 30,
-			'sslverify' => false
-		); 
-		$response = wp_remote_get( $phantomtempurlvalue, $args );
-		if ( is_array( $response ) && ! is_wp_error( $response ) ) {
-			$headers = $response['headers']; // array of http header lines
-			$fileurlcontents = $response['body']; // use the content
-		} else {
+		
+
+		return $result;
+	}
+	
+	//for calling remote get and returning array of reviews to insert
+	public function wprp_getapps_getrevs_page_yotpo($type,$listedurl,$pagenum,$perpage,$savedpageid,$nhful,$fid,$blockstoinsert){
+		$result['ack']='success';
+		$errormsg='';
+		$reviewsarray = Array();
+		
+		$client_id = $listedurl;
+		$sindex = 0;
+		$clientsecret = get_option('wprevpro_yotposecretkey_val');
+		$usertoken = get_option('wprevpro_yotpousertoken');
+		$result['avg']='';
+		$result['total']='';
+			
+		if($client_id=='' || $clientsecret==''){
 			//must have been an error
 			$results['ack'] ='error';
-			$results['ackmsg'] ='Error 0001a: trouble contacting crawling server with remote_get. Please try again or contact support. Error: '.var_dump($http_response_header).' - CMD: '.$phantomtempurlvalue.' : '.$response->get_error_message();
+			$results['ackmsg'] ='Error 0001: Make sure to enter your API Key and Business ID from Birdeye.';
 			$results = json_encode($results);
 			echo $results;
 			die();
 		}
-		*/
 
-		if($fileurlcontents === FALSE) {
-			$result['ack']=esc_html__('Error: Getting blocked by Yelp. Please contact support with the URL you are using.', 'wp-review-slider-pro'). ' Error: '.$http_response_header[0];
-			$result = json_encode($result);
-			echo $result;
+		if($pagenum >1){
+			$sindex = $pagenum*100;
+		}
+		
+		//first make call to get user token if on page 1 or if not set yet.
+		if($pagenum<2 || $usertoken==''){
+			//https://api.yotpo.com/oauth/token?grant_type=client_credentials&client_id=2396MKzUZbAPHI0daFTEmeMfIa8hpLgu7e899k4l&client_secret=3iD4fxhnXZwhgIjztEyVxniBOM25pSQw36AIHfYE
+			
+			$callurl = "https://api.yotpo.com/oauth/token?grant_type=client_credentials&client_id=".$client_id."&client_secret=".$clientsecret;
+			
+			$response = wp_remote_post( $callurl, array(
+					'method'      => 'POST',
+					'timeout'     => 45,
+					'redirection' => 5,
+					'httpversion' => '1.0',
+					'blocking'    => true,
+					'headers'     => array(),
+					'body'        => array(),
+					'cookies'     => array()
+					)
+				);
+			if ( is_array( $response ) && ! is_wp_error( $response ) ) {
+				$headers = $response['headers']; // array of http header lines
+				$body    = $response['body']; // use the content
+			} else {
+				$result['ack']=esc_html__('Error: Can not use remote post on this url:', 'wp-review-slider-pro').' '.$callurl;
+			}
+			$usertokenarray = json_decode($body,true);
+			
+			if(isset($usertokenarray['access_token'])){
+				$usertoken = $usertokenarray['access_token'];
+				update_option('wprevpro_yotpousertoken',$usertoken);
+			}
+			
+			//also need to find avg and total here since this is first page.
+			$callurl = "https://api.yotpo.com/products/".$client_id."/yotpo_site_reviews/bottomline";
+			$response = wp_remote_get( $callurl, array( 'timeout' => 10,
+					'headers' => array( 'Content-Type' => 'application/json',
+                               'Accept'=> 'application/json' ) 
+					));
+			if ( is_array( $response ) && ! is_wp_error( $response ) ) {
+				$headers = $response['headers']; // array of http header lines
+				$body    = $response['body']; // use the content
+			} else {
+				$result['ack']=esc_html__('Error: Can not use remote get on this url:', 'wp-review-slider-pro').' '.$callurl;
+			}
+			$reviewsummary = json_decode($body,true);
+
+			if($reviewsummary['response']['bottomline']){
+				$result['avg']=$reviewsummary['response']['bottomline']['average_score'];
+				$result['total']=$reviewsummary['response']['bottomline']['total_reviews'];
+			}
+			
+		}
+		if ( $usertoken=='') {
+			$results['ack'] ='error';
+			$results['ackmsg'] ='Error 0001: Can not find user token. ';
+			$results = json_encode($results);
+			echo $results;
 			die();
 		}
 		
-		$html = wppro_str_get_html($fileurlcontents);
-		
-		//look for total and avg.
-		if($pagenum==1){
-			$result['total'] = intval($this->get_string_between($fileurlcontents, '"reviewCount":', '}'));
-			$result['avg'] = '';
-			if($html->find('div[class=five-stars__09f24__mBKym five-stars--large__09f24__Waiqf display--inline-block__09f24__fEDiJ border-color--default__09f24__NPAKY]', 0)){
-				$result['avg'] = $html->find('div[class=five-stars__09f24__mBKym five-stars--large__09f24__Waiqf display--inline-block__09f24__fEDiJ border-color--default__09f24__NPAKY]', 0)->{'aria-label'};
-				$result['avg'] = preg_replace("/[^0-9\.]/", "",$result['avg']);
-			}
+		$endpoint = "https://api.yotpo.com/v1/apps/".$client_id."/reviews?utoken=".$usertoken."&count=50&page=".$pagenum;
+
+		$args = array(
+					'timeout'     => 50,
+					'sslverify' => false
+				); 
+		$response = wp_remote_get( $endpoint, $args );
+				
+		if ( is_wp_error( $response ) ) {
+			$error_message = $response->get_error_message();
+			$results['ack'] ='error';
+			$results['ackmsg'] ='Error 0002: Something went wrong. '.$error_message;
+			$results = json_encode($results);
+			echo $results;
+			die();
 		}
 		
-
-		$reviewdivs = new stdClass();
-		if($html->find('div[class=review__09f24__oHr9V]')){
-			$reviewdivs = $html->find('div[class=review__09f24__oHr9V]');
-		}
+		$fileurlcontents = $response['body'];	
+			
+		$reviewcontainerdiv = json_decode($fileurlcontents,true);
 		
-
-		foreach ($reviewdivs as $review) {
+		foreach ($reviewcontainerdiv['reviews'] as $review) {
+				$user_name='';
+				$userimage='';
+				$rating='';
+				$datesubmitted='';
+				$rtext='';
+				$from_url_review='';
+				$company_title='';
+				$unique_id='';
+				$reviewer_id='';
+				$title='';
+				$reviewer_email='';
+				$userpic='';
+				$from_url_review='';
+				$from_url='';
+				$location='';
 			
-			$user_name='';
-			$userimage='';
-			$rating='';
-			$datesubmitted='';
-			$rtext='';
-			$reviewer_id='';
-			$from_url_review='';
-			$location='';
-			$language_code='';
-
-			if($review->find('div.user-passport-info', 0)){
-				$user_name = $review->find('div.user-passport-info', 0)->find('a', 0)->plaintext;
-			}
-			
-			if($review->find('img[class=css-1pz4y59]', 0)){
-				$userimage = $review->find('img[class=css-1pz4y59]', 0)->src;
-			}
-			
-			if($review->find("div[class=five-stars__09f24__mBKym]", 0)){
-				$rating = $review->find("div[class=five-stars__09f24__mBKym]", 0)->{'aria-label'};
-				$rating = intval($rating);
+			// Find unique id
+			if($review['id']){
+				$unique_id=$review['id'];
 			}
 			
-			if($review->find('span[class=css-chan6m]', 0)){
-				$datesubmitted = $review->find('span[class=css-chan6m]', 0)->plaintext;
-			}
-			
-			if($review->find('p[class=comment__09f24__gu0rG]', 0)){
-				$rtext = $review->find('p[class=comment__09f24__gu0rG]', 0)->plaintext;
-			}
-			if($review->find('div[class=responsive-hidden-small__09f24__qQFtj]', 0)){
-				$location = $review->find('div[class=responsive-hidden-small__09f24__qQFtj]', 0)->plaintext;
-			}
-			//find user profile link if we can. this link is for the linking the avatar on the review.
-			if($review->find('a[class=css-1fkqezt]', 0)){
-				$from_url_review = $baseurl.$review->find('a[class=css-1fkqezt]', 0)->href;
-			}
-			
-
-			//look for owner comments.
-			$ownerresponsearrayjson ='';
-			if($review->find('div[class=block-quote__09f24__nMk2G padding-l3__09f24__IOjKY border-color--default__09f24__NPAKY]', 0)){
-				
-				$ownerresponsediv = $review->find('div[class=block-quote__09f24__nMk2G padding-l3__09f24__IOjKY border-color--default__09f24__NPAKY]', 0);
-				
-				//make sure this isn't a previous review, must not have the stars.
-				if($ownerresponsediv->find('div[class=five-stars__09f24__mBKym]', 0)){
-					//could be previous review so we skip.
-					$ownerresponsearray ='';
-				} else {
-					$ownerresponsearray = [];
-					$ownerresponsearray['id']='';
-					
-					$ownerresponsearray['name']='';
-					if($ownerresponsediv->find('p[class=css-ux5mu6"]', 0)){
-						$ownerresponsearray['name']=$ownerresponsediv->find('p[class=css-ux5mu6"]', 0)->plaintext;
-					}
-					if($ownerresponsediv->find('p[class=css-chan6m"]', 0)){
-						$ownerresponsearray['name']=$ownerresponsearray['name'].', '.$ownerresponsediv->find('p[class=css-chan6m"]', 0)->plaintext;
-					}
-					if($ownerresponsearray['name']==''){
-						$ownerresponsearray['name']='Owner';
-					}
-					$ownerresponsearray['date']='';
-					if($ownerresponsediv->find('p[class=css-chan6m"]', 1)){
-						$ownerresponsearray['date']=$ownerresponsediv->find('p[class=css-chan6m"]', 1)->plaintext;
-					}
-					
-					$ownerresponsearray['comment']='';
-					if($ownerresponsediv->find('span[class=raw__09f24__T4Ezm]', 0)){
-						$ownerresponsearray['comment']=$ownerresponsediv->find('span[class=raw__09f24__T4Ezm]', 0)->plaintext;
-					}
-					if($ownerresponsearray['comment']!=''){
-					$ownerresponsearrayjson = json_encode($ownerresponsearray);
-					}
-				}
+			// Find user_name
+			if($review['name']){
+				$user_name=$review['name'];
 			}
 
-			
-			//----------------
-			//add review images here, like google and tripadvisor   ->find('img[class=css-xlzvdl]')
-			//mediaurlsarrayjson, max of 8 images
-			//--------------
-			$mediaurlsarrayjson='';
-			$mediaurlsarray = Array();
-			if($review->find('a[class=css-8dlaw4]')){
-				//have at least one image
-				$ahrefimagesobject = $review->find('a[class=css-8dlaw4]');
-				foreach ($ahrefimagesobject as $imageobj) {
-					if($imageobj->find('img[class=css-xlzvdl]')){
-						$mediaimg = $imageobj->find('img[class=css-xlzvdl]', 0)->src;
-						if($mediaimg!=''){
-						$mediaurlsarray[]=$mediaimg;
-						}
-						if(count($mediaurlsarray)>7){
-							break;
-						}
-					}
-					$mediaimg='';
-				}
-				if(count($mediaurlsarray)>0){
-					$mediaurlsarrayjson = json_encode($mediaurlsarray);
-				}
-				unset($mediaurlsarray);
+			if($review['email']){
+				$reviewer_email=$review['email'];
 			}
-			//========loop to find all media links up to 8.
 
+			//find rating
+			if($review['score']){
+				$rating=$review['score'];
+			}
 			
+			//find date created_at
+			if($review['created_at']){
+				$datesubmitted=$review['created_at'];
+			}
+			
+			//find title
+			if($review['title']){
+				$title=$review['title'];
+			}
+			
+			//find text
+			if($review['content']){
+				$rtext=$review['content'];
+			}
+			
+			$meta_json ="";
+			$meta_data = Array();
+			if($review['votes_up']){
+				$meta_data['votes_up'] = json_encode($review['votes_up']);
+			}
+			if($review['votes_down']){
+				$meta_data['votes_down'] = json_encode($review['votes_down']);
+			}
+			if($review['sentiment']){
+				$meta_data['sentiment'] = json_encode($review['sentiment']);
+			}
+			if($review['sku']){
+				$meta_data['sku'] = json_encode($review['sku']);
+			}
+			if($review['reviewer_type']){
+				$meta_data['reviewer_type'] = json_encode($review['reviewer_type']);
+			}
+			if(count($meta_data)>0){
+				$meta_json = json_encode($meta_data);
+			}
+
+
 			if($rating>0){
-				$review_length = str_word_count($rtext);
-				if (extension_loaded('mbstring')) {
-					$review_length_char = mb_strlen($rtext);
-				} else {
-					$review_length_char = strlen($rtext);
-				}
-				if($review_length_char>0 && $review_length<1){
-								$review_length = 1;
-							}
-
-				$reviewsarraytemp[] = [
-							'reviewer_name' => trim($user_name),
-							'reviewer_id' => trim($reviewer_id),
-							'userpic' => $userimage,
-							'rating' => $rating,
-							'date' => $datesubmitted,
-							'review_text' => trim($rtext),
-							'type' => $type,
-							'language_code' => $language_code,
-							'location' => $location,
-							'from_url_review' => $from_url_review,
-							'owner_response' => $ownerresponsearrayjson,
-							'mediaurlsarrayjson' => $mediaurlsarrayjson,
-				];
-	
-				
-				$review_length ='';
-				$review_length_char='';
-			}
-		}
-		
-				
-				//loop reviews and build new array of just what we need
-				$reviewsarrayfinal = Array();
-				foreach ($reviewsarraytemp as $item) {
-					 $reviewsarrayfinal[] = [
-					 'reviewer_name' => trim($item['reviewer_name']),
-					 'reviewer_id' => trim($item['reviewer_id']),
-					 'reviewer_email' => '',
-					 'userpic' => $item['userpic'],
-					 'rating' => $item['rating'],
-					 'updated' => $item['date'],
-					 'review_text' => $item['review_text'],
-					 'review_title' => '',
-					 'from_url' => $listedurl,
-					 'from_url_review' => $item['from_url_review'],
-					 'language_code' =>$item['language_code'],
-					 'location' => $item['location'],
+				$reviewsarray[] = [
+					 'reviewer_name' => trim($user_name),
+					 'reviewer_id' => trim($reviewer_id),
+					 'reviewer_email' => $reviewer_email,
+					 'userpic' => $userpic,
+					 'rating' => $rating,
+					 'updated' => $datesubmitted,
+					 'review_text' => trim($rtext),
+					 'review_title' => trim($title),
+					 'from_url' => $from_url,
+					 'from_url_review' => $from_url_review,
+					 'language_code' => '',
+					 'unique_id' => $unique_id,
+					 'location' => $location,
 					 'recommendation_type' => '',
 					 'company_title' =>  '',
 					 'company_url' => '',
 					 'company_name' => '',
-					 'meta_data' => '',
-					 'mediaurlsarrayjson' => $item['mediaurlsarrayjson'],
-					 'owner_response' => $item['owner_response'],
+					 'mediaurlsarrayjson' => '',
+					 'owner_response' => '',
+					 'meta_data' => $meta_json,
 					 ];
-				}
-				//print_r($reviewsarrayfinal);
-				//die();
-				$result['reviews'] = $reviewsarrayfinal;
-		
-  
- 		return $result;
+			}
+		}
+
+		$result['reviews'] = $reviewsarray;
+				
+		//die();
+
+		return $result;
 	}
-	
 	
 	
 	//==========helper functions================
@@ -1906,7 +2358,7 @@
 		return $result;
 	}
 	//for returning api URL for Airbnb
-	private function getreviewurl_airbnb($urlvalue, $listing_id, $listtype){
+	private function getreviewurl_airbnb($urlvalue, $listing_id, $listtype, $limit=50, $offset=0){
 		
 		//echo "testhere<br>";
 		//echo $urlvalue."<br>";
@@ -1997,7 +2449,7 @@
 		}
 
 		if($key==""){
-			die( __('Error 2: No key found. This could be a temporary error, please try a few more times.', 'wp-review-slider-pro') );
+			die( __('Error 2: No key found. This could be a temporary error or an incorrectly input URL. Please check your Airbnb URL.', 'wp-review-slider-pro') );
 		}
 		//print_r($nodearray);
 		//die();
@@ -2005,9 +2457,15 @@
 		//use the key and the listing id to find review data					
 		$rurl = "https://www.airbnb.com/api/v2/reviews?key=".$key."&locale=".$locale."&listing_id=".$listing_id."&role=guest&_format=for_p3&_order=recent";
 		
+		$reviewurl['url'] = esc_url_raw($rurl);
+		
 		if($listtype=='experience'){
-			$rurl = "https://www.airbnb.com/api/v2/reviews?key=".$key."&locale=".$locale."&reviewable_id=".$listing_id."&reviewable_type=MtTemplate&role=guest&_format=for_experiences_guest_flow&_order=recent";
+			//$rurl = "https://www.airbnb.com/api/v2/reviews?key=".$key."&locale=".$locale."&reviewable_id=".$listing_id."&reviewable_type=MtTemplate&role=guest&_format=for_experiences_guest_flow&_order=recent";
+			//$rurl = "https://www.airbnb.com/api/v2/reviews?key=".$key."&locale=".$locale."&reviewable_id=".$listing_id."&reviewable_type=MtTemplate&role=guest&_order=recent";
+			
+			$rurl ='https://www.airbnb.com/api/v3/ExperiencesPdpReviews?operationName=ExperiencesPdpReviews&variables={"request":{"fieldSelector":"for_p3_translation_only","entityId":"ExperienceListing:'.$listing_id.'","offset":"'.$offset.'","limit":'.$limit.',"first":'.$limit.',"showingTranslationButton":false}}&extensions={"persistedQuery":{"version":1,"sha256Hash":"c2e483a512971b1e4a3b324039d1706bd8591ea1589f2c4e93534479fdd7c582"}}';
 						
+			$reviewurl['url'] = $rurl;
 		}
 		
 		$avg = $this->get_string_between($fileurlcontents, 'Rated ', ' out of 5 from');
@@ -2017,8 +2475,8 @@
 			$avg ='';
 		}
 
-		$reviewurl['url'] = esc_url_raw($rurl);
 		$reviewurl['avg'] = $avg;
+		$reviewurl['key'] = $key;
 		
 		//print_r($reviewurl);
 		

@@ -63,7 +63,7 @@
 
 										if($jsContent = $this->file_get_contents_curl($minifiedJs["url"]."/".$jsFiles[0]."?v=".time())){
 
-											if(preg_match("/^[\"\']use strict[\"\']/i", $jsContent)){
+											if($key > 0 && preg_match("/^[\"\']use strict[\"\']/i", $jsContent)){
 												$this->mergeJs($prev_content, $this->jsLinks[$key - 1]);
 												$prev_content = "";
 											}else{

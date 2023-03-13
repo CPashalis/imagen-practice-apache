@@ -102,7 +102,7 @@ foreach ( $rowarray[$x] as $review )
 		}
 		
 		//link to author url if turned on in template, use reviewer_id from db and create url for different types
-		$profilelink = $templateclass->wprevpro_get_profilelink($review,$currentform,$userpic,$tempreviewername,$template_misc_array,$burl);
+		$profilelink = $templateclass->wprevpro_get_profilelink($review,$currentform[0],$userpic,$tempreviewername,$template_misc_array,$burl);
 
 		//userpic html, this could change to nothing if userpic turned off.
 		//$userpichtml = $profilelink['userpichtml'];
@@ -198,7 +198,7 @@ foreach ( $rowarray[$x] as $review )
 		}
 		
 		//starhtlm
-		$starhtmlarray = $templateclass->wprevpro_get_starhtml($review,$template_misc_array,$currentform,$starfile);
+		$starhtmlarray = $templateclass->wprevpro_get_starhtml($review,$template_misc_array,$currentform[0],$starfile);
 		$starhtml = $starhtmlarray[0];
 		$starhtml2 = $starhtmlarray[1];
 
@@ -209,7 +209,11 @@ foreach ( $rowarray[$x] as $review )
 		$media = $templateclass->wprevpro_get_media($review,$template_misc_array);
 		
 		//verifiedstarhtlm
-		$verifiedstarhtmlarray = $templateclass->wprevpro_get_verifiedstarhtml($review,$template_misc_array,$currentform);
+		$verifiedstarhtmlarray = $templateclass->wprevpro_get_verifiedstarhtml($review,$template_misc_array,$currentform[0]);
+		
+		//source pagename or form title
+		$sourcepagenamehtml = $templateclass->wprevpro_get_sourcepagename($review,$currentform[0],$template_misc_array);
+
 		
 		
 		//load template from child theme if found
@@ -223,13 +227,15 @@ foreach ( $rowarray[$x] as $review )
 	<div class="wpproslider_t5_DIV_2 wprev_preview_bg1_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?> wprev_preview_bradius_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>">
 	<div class="wpproslider_t5_DIV_3L" <?php echo $picdisplaynone; ?>><?php echo $userpichtml; ?><span class="wpproslider_t5_STRONG_5 wprev_preview_tcolor2_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><?php echo $tempreviewername; ?></span><?php echo $companyhtml;?></div>
 	<div class="indrevdiv wpproslider_t5_DIV_3">
-		<p class="wpproslider_t5_P_4 wprev_preview_tcolor1_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>">
+		<div class="wpproslider_t5_P_4 wprev_preview_tcolor1_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>">
 			<span class="wprevpro_star_imgs_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><?php echo $starhtml; ?><?php echo $verifiedstarhtmlarray[0]; ?></span>
 			<?php echo $title; ?><?php echo stripslashes($reviewtext); ?><?php echo $verifiedstarhtmlarray[1]; ?>
 		<span class="wpproslider_t5_SPAN_6 wprev_preview_tcolor2_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><span class="wprev_showdate_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><?php echo $datestring; ?></span></span>
-		</p>
 		<?php echo $media; ?>
+		</div>
+		
 		<?php echo $miscpichtml; ?>
+		<?php echo $sourcepagenamehtml; ?>
 	</div>
 	
 	<div class="wpproslider_t5_DIV_3_logo"><?php echo $logo; ?></div>

@@ -2,6 +2,7 @@
 namespace AIOSEO\Plugin\Pro\Traits\Helpers;
 
 use AIOSEO\Plugin\Pro\Models;
+use AIOSEO\Plugin\Common\Models as CommonModels;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -130,13 +131,23 @@ trait Vue {
 				}
 			}
 
-			$clonedSchema = json_decode( wp_json_encode( $data['currentPost']['schema'] ) );
-			$data['schema']['output'] = aioseo()->schema->getValidatorOutput(
-				$postId,
-				$clonedSchema->graphs,
-				$clonedSchema->blockGraphs,
-				$clonedSchema->default
-			);
+			static $validatorSchema = null;
+			if ( null !== $validatorSchema ) {
+				$clonedSchema    = json_decode( wp_json_encode( $data['currentPost']['schema'] ) );
+				$validatorSchema = aioseo()->schema->getValidatorOutput(
+					$postId,
+					$clonedSchema->graphs,
+					$clonedSchema->blockGraphs,
+					$clonedSchema->default
+				);
+			}
+
+			$data['schema']['output'] = $validatorSchema;
+
+			$aioseoPost                     = CommonModels\Post::getPost( $postId );
+			$data['currentPost']['open_ai'] = ! empty( $aioseoPost->open_ai )
+				? CommonModels\Post::getDefaultOpenAiOptions( $aioseoPost->open_ai )
+				: CommonModels\Post::getDefaultOpenAiOptions();
 		}
 
 		$wpPost = $this->getPost();
@@ -202,6 +213,8 @@ trait Vue {
 				$data['breadcrumbs']['defaultTemplates']['archives']['postTypes'][ $archive['name'] ] =
 					aioseo()->helpers->encodeOutputHtml( aioseo()->breadcrumbs->frontend->getDefaultTemplate( 'postTypeArchive', $archive ) );
 			}
+
+			$data['searchStatistics']['isConnected'] = aioseo()->searchStatistics->api->auth->isConnected();
 		}
 
 		if ( is_multisite() && is_network_admin() ) {

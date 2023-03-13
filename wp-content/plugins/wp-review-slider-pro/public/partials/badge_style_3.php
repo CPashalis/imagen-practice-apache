@@ -110,9 +110,9 @@ if($ctext=='' && $ctext2==''){
 } else if($ctext=='' && $ctext2!=''){
 	$div12html = '<div class="wppro_badge1_DIV_12 b4s12">'.$ctext_url_start.'<span class="wppro_badge1_SPAN_15">'.$finaltotal.'</span>&nbsp;'.$ctext2.$ctext_url_end.'</div>';
 } else if($ctext!='' && $ctext2==''){
-	$div12html = '<span class="wppro_badge1_DIV_12 b4s12"><span class="wppro_badge1_SPAN_13 b3s13">'.$ctext_url_start.$finalavg.'</span>&nbsp;'.$ctext.$ctext_url_end.'</span>';
+	$div12html = '<span class="wppro_badge1_DIV_12 b4s12"><span class="wppro_badge1_SPAN_15">'.$ctext_url_start.$finalavg.'</span>&nbsp;'.$ctext.$ctext_url_end.'</span>';
 } else if($ctext!='' && $ctext2!=''){
-	$div12html = '<span class="wppro_badge1_DIV_12 b4s12"><span class="wppro_badge1_SPAN_13 b3s13">'.$finalavg.'</span>&nbsp;'.$ctext.'&nbsp;'.$ctext_url_start.'<span class="wppro_badge1_SPAN_15">'.$finaltotal.'</span>&nbsp;'.$ctext2.$ctext_url_end.'</span>';
+	$div12html = '<span class="wppro_badge1_DIV_12 b4s12"><span class="wppro_badge1_SPAN_15">'.$finalavg.'</span>&nbsp;'.$ctext.'&nbsp;'.$ctext_url_start.'<span class="wppro_badge1_SPAN_15">'.$finaltotal.'</span>&nbsp;'.$ctext2.$ctext_url_end.'</span>';
 }
 
 

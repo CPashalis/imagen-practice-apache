@@ -31,8 +31,8 @@ class Meta extends CommonMeta\Meta {
 		new CommonMeta\Amp();
 		new CommonMeta\Links();
 
-		add_action( 'delete_post', [ $this, 'deletePostMeta' ], 1000, 2 );
-		add_filter( 'delete_term', [ $this, 'deleteTermMeta' ], 1000, 2 );
+		add_action( 'delete_post', [ $this, 'deletePostMeta' ], 1000 );
+		add_action( 'delete_term', [ $this, 'deleteTermMeta' ], 1000 );
 	}
 
 	/**

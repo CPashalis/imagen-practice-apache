@@ -16,7 +16,7 @@
  * Plugin Name: WP Review Slider Pro (Premium)
  * Plugin URI:        http://ljapps.com/wp-review-slider-pro/
  * Description:       Pro Version - Allows you to easily display your Facebook Page, Yelp, Google, Manually Input, and 80+ other site reviews in your Posts, Pages, and Widget areas.
- * Version:           11.5.0
+ * Version:           11.6.1
  * Update URI: https://api.freemius.com
  * Author:            LJ Apps
  * Author URI:        http://ljapps.com/
@@ -31,7 +31,7 @@ if ( !defined( 'WPINC' ) ) {
 }
 //--------------------
 //constants for plugin version and token
-define( 'WPREVPRO_PLUGIN_VERSION', '11.5.0' );
+define( 'WPREVPRO_PLUGIN_VERSION', '11.6.1' );
 define( 'WPREVPRO_PLUGIN_TOKEN', 'wp-review-slider-pro' );
 //define plugin location constant ex: /home/94285.cloudwaysapps.com/fzamfatyjq/public_html/wp-content/plugins/wp-review-slider-pro-premium/
 define( 'WPREV_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -121,6 +121,7 @@ function run_WP_Review_Pro()
         "Submitted",
         "Airbnb",
         "AngiesList",
+        "Birdeye",
         "Experience",
         "Facebook",
         "FeedbackCompany",
@@ -144,7 +145,8 @@ function run_WP_Review_Pro()
         "VRBO",
         "WooCommerce",
         "WordPress",
-        "Yelp"
+        "Yelp",
+        "Yotpo"
     );
     $typearrayserial = serialize( $typearray );
     define( 'WPREV_TYPE_ARRAY', $typearrayserial );
@@ -227,6 +229,7 @@ function run_WP_Review_Pro()
         "Yelp",
         "Zillow",
         "ZocDoc",
+        "ZocDoc2",
         "Zomato"
     );
     $typearrayserialrf = serialize( $typearrayrf );
@@ -238,6 +241,7 @@ function run_WP_Review_Pro()
     $user = $wrspfs->get_user();
     $site = $wrspfs->get_site();
     $license = $wrspfs->_get_license();
+    //print_r($site);
     
     if ( is_admin() ) {
         //for passing to funnel.ljapps.com to check license and number of calls
@@ -248,6 +252,9 @@ function run_WP_Review_Pro()
         }
         if ( isset( $site->url ) ) {
             update_option( 'wprev_fr_url', $site->url );
+        }
+        if ( isset( $site->id ) ) {
+            update_option( 'wprev_fr_id', $site->id );
         }
     }
     
@@ -301,6 +308,10 @@ function wrsp_uninstall_cleanup()
     $option6 = 'wprevpro_cookieval';
     $option7 = 'wprevpro_zillowid';
     $option8 = 'wprev_google_crawl_check';
+    $option9 = 'wprevpro_birdeyeapikey_val';
+    $option10 = 'wprevpro_yotposecretkey_val';
+    $option11 = 'wprevpro_yotpousertoken';
+    $option12 = 'wprevpro_fb_secret_code';
     
     if ( !is_multisite() ) {
         delete_option( $option1 );
@@ -311,6 +322,10 @@ function wrsp_uninstall_cleanup()
         delete_option( $option6 );
         delete_option( $option7 );
         delete_option( $option8 );
+        delete_option( $option9 );
+        delete_option( $option10 );
+        delete_option( $option11 );
+        delete_option( $option12 );
         //delete review table in database
         global  $wpdb ;
         $table_name = $wpdb->prefix . 'wpfb_reviews';
@@ -356,6 +371,10 @@ function wrsp_uninstall_cleanup()
             delete_option( $option6 );
             delete_option( $option7 );
             delete_option( $option8 );
+            delete_option( $option9 );
+            delete_option( $option10 );
+            delete_option( $option11 );
+            delete_option( $option12 );
             $table_name = $wpdb->prefix . 'wpfb_reviews';
             $wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
             //drop review template table
@@ -464,13 +483,15 @@ function wprevpro_do_this_daily()
     $plugin_admin = new WP_Review_Pro_Admin_Hooks( 'wp-review-slider-pro', WPREVPRO_PLUGIN_VERSION );
     $atleastone = false;
     //download yelp reviews if option settings
-    $yelpoptions = get_option( 'wprevpro_yelp_settings' );
-    
-    if ( isset( $yelpoptions['yelp_radio'] ) && $yelpoptions['yelp_radio'] == 'yes' ) {
-        $atleastone = true;
-        $plugin_admin->wprevpro_download_yelp_master( 'all', 1 );
-    }
-    
+    //we are now using get_apps for yelp.
+    /*
+        $yelpoptions = get_option( 'wprevpro_yelp_settings' );
+        
+        if ( isset( $yelpoptions['yelp_radio'] ) && $yelpoptions['yelp_radio'] == 'yes' ) {
+            $atleastone = true;
+            $plugin_admin->wprevpro_download_yelp_master( 'all', 1 );
+        }
+    */
     //=======we are now use get_apps for tripadvisor
     //download trip reviews if option settings
     /*
@@ -510,18 +531,19 @@ function wprevpro_do_this_daily()
     
     }
     //download facebook reviews if cron check box selected
-    $fbcronpagesarray = get_option( 'wpfb_cron_pages' );
-    
-    if ( isset( $fbcronpagesarray ) ) {
-        $fbcronpagesarray = json_decode( $fbcronpagesarray, true );
+    /*
+        $fbcronpagesarray = get_option( 'wpfb_cron_pages' );
         
-        if ( count( (array) $fbcronpagesarray ) > 0 ) {
-            $atleastone = true;
-            $plugin_admin->wprevpro_get_fb_reviews_cron();
+        if ( isset( $fbcronpagesarray ) ) {
+            $fbcronpagesarray = json_decode( $fbcronpagesarray, true );
+            
+            if ( count( (array) $fbcronpagesarray ) > 0 ) {
+                $atleastone = true;
+                $plugin_admin->wprevpro_get_fb_reviews_cron();
+            }
+        
         }
-    
-    }
-    
+    */
     //------------------------------------------
     if ( $atleastone ) {
         $plugin_admin->wprevpro_download_img_tolocal();
@@ -568,14 +590,20 @@ function wpprorev_rf_getapps_cron()
                 $count = $count + 1;
                 //echo "--request ne job fid:".$currentform->id;
                 //download reviews
-                $newjobresults = $plugin_admin->wprp_getapps_getrevs_ajax_go(
-                    $currentform->id,
-                    1,
-                    100,
-                    0,
-                    '',
-                    'yes'
-                );
+                
+                if ( $currentform->site_type == 'Facebook' ) {
+                    $plugin_admin->wprevpro_get_fb_reviews_cron( $currentform->page_id, $currentform->id );
+                } else {
+                    $newjobresults = $plugin_admin->wprp_getapps_getrevs_ajax_go(
+                        $currentform->id,
+                        1,
+                        100,
+                        0,
+                        '',
+                        'yes'
+                    );
+                }
+            
             }
         
         }
@@ -666,7 +694,7 @@ function wpprorev_rf_funnel_cron()
         if ( $newfunneljob == true && wrsp_fs()->can_use_premium_code() ) {
             //echo "--request ne job fid:".$currentfunnel->id;
             //request a new scrape job
-            $newjobresults = $plugin_admin->wprp_revfunnel_addprofile_ajax_go( $currentfunnel->id, 'usediff' );
+            $newjobresults = $plugin_admin->wprp_revfunnel_addprofile_ajax_go( $currentfunnel->id, 'usediff', $currentfunnel->cron );
             //print_r($newjobresults);
             
             if ( isset( $newjobresults['job_id'] ) && $newjobresults['job_id'] != '' ) {

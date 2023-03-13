@@ -5,7 +5,7 @@ Tags: history, log, changes, changelog, audit, audit log, event log, user tracki
 Requires at least: 5.2
 Tested up to: 6.1
 Requires PHP: 5.6
-Stable tag: 3.3.1
+Stable tag: 3.4.0
 
 View changes made by users within WordPress. See who created a page, uploaded an attachment or approved an comment, and more.
 
@@ -192,6 +192,14 @@ Events in the log are stored for 60 days by default. Events older than this will
    A simple way to see any uncommon activity, for example an increased number of logins or similar.
 
 == Changelog ==
+
+= 3.4.0 (February 2023) =
+
+- Changed: When exporting a CSV file of the history, each cell is escaped to reduce the risk of "CSV injection" in spreadsheet applications when importing the exported CSV. Reported here: https://patchstack.com/database/vulnerability/simple-history/wordpress-simple-history-plugin-3-3-1-csv-injection-vulnerability.
+
+= 3.3.1 (October 2022) =
+
+- Tested up to WordPress 6.1.
 
 = 3.3.0 (May 2022) =
 

@@ -23,6 +23,11 @@
 			return;
 		}
 	}
+	
+	//if there is problem with color picker they quit
+	if (typeof Color.fn === "undefined") {
+		return;
+	}
 
 	// Prevent multiple initiations
 	if ( Color.fn.hasOwnProperty( 'to_s' ) ) {

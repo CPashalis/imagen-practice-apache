@@ -1,4 +1,4 @@
-FROM wordpress:6.1.1-php8.1-apache
+FROM wordpress:6.1.1-php8.2-apache
 
 LABEL Chris Pashalis <cpashalis@imagendentalpartners.com>
 
@@ -44,19 +44,37 @@ RUN apt-get install -y nodejs
 RUN npm install --global yarn
 
 #COPY docker/uploads.ini /usr/local/etc/php/8.1/conf.d/uploads.ini
-COPY  docker/php.ini 	/usr/local/etc/php/conf.d/
-COPY  docker/memcached.conf /usr/local/etc/memcached.conf
 
-EXPOSE 80
+# Install OpenSSH and set the password for root to "Docker!". In this example, "apk add" is the install instruction for an Alpine Linux-based image.
+RUN apt-get update && apt-get install -y openssh-server \
+     && echo "root:Docker!" | chpasswd 
 
+# Copy the sshd_config file to the /etc/ssh/ directory
+COPY docker/sshd_config /etc/ssh/
+COPY docker/php.ini 	/usr/local/etc/php/conf.d/
+COPY docker/memcached.conf /usr/local/etc/memcached.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-COPY ./ /var/www/html/
+# Copy and configure the ssh_setup file
+RUN mkdir -p /tmp
+COPY docker/ssh_setup.sh /tmp
+RUN chmod +x /tmp/ssh_setup.sh \
+    && (sleep 1;/tmp/ssh_setup.sh 2>&1 > /dev/null)
+
+# Open port 2222 for SSH access
+EXPOSE 80 2222
+
+#EXPOSE 80
+
+
+
+COPY ./wp-content /var/www/html/wp-content
+COPY ./wp-config.php /var/www/html
 #RUN chown -R www-data:www-data /var/www/html
-RUN chmod -R 777 /var/www/html/wp-content/plugins
-RUN chmod -R 777 /var/www/html/wp-content/upgrade
-RUN chmod -R 777 /var/www/html/wp-content/uploads
-RUN chmod -R 777 /var/www/html/wp-content/uploads-webpc
+#RUN chmod -R 777 /var/www/html/wp-content/plugins
+#RUN chmod -R 777 /var/www/html/wp-content/upgrade
+#RUN chmod -R 777 /var/www/html/wp-content/uploads
+#RUN chmod -R 777 /var/www/html/wp-content/uploads-webpc
 #WORKDIR /var/www/html/
 #RUN php /usr/bin/composer install --no-interaction && ls
 
@@ -69,5 +87,6 @@ RUN yarn && yarn build
 #RUN chown $(whoami):www-data -R /var/www/html/wp-content/plugins/all-in-one-wp-migration/storage && chmod -R 777 /var/www/html/web/app/plugins/all-in-one-wp-migration/storage
 
 # RUN mkdir /var/www/html/web/app/uploads
+#CMD ["/usr/sbin/sshd"]
 CMD ["/usr/bin/supervisord"]
 

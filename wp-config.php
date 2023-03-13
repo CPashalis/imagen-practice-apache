@@ -56,7 +56,7 @@ define( 'DB_PASSWORD', getenv_docker('WORDPRESS_DB_PASSWORD', 'Fqp3ATzFG65YNq8E'
  */
 
 /** Database hostname */
-define( 'DB_HOST', getenv_docker('WORDPRESS_DB_HOST', 'imagen-practice-database-development') );
+define( 'DB_HOST', getenv_docker('WORDPRESS_DB_HOST', 'imagen-wus-mariadb-server.mariadb.database.azure.com') );
 
 /** Database charset to use in creating database tables. */
 define( 'DB_CHARSET', getenv_docker('WORDPRESS_DB_CHARSET', 'utf8') );

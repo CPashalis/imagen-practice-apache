@@ -28,7 +28,14 @@ class Dashboard extends CommonAdmin\Dashboard {
 			return true;
 		}
 
+		// If it's a boolean, return it early.
+		// https://github.com/awesomemotive/aioseo/issues/4280
+		$dashboardWidgets = aioseo()->options->advanced->dashboardWidgets;
+		if ( is_bool( $dashboardWidgets ) ) {
+			return $dashboardWidgets;
+		}
+
 		// Check if the widget is displayable.
-		return in_array( $widget, aioseo()->options->advanced->dashboardWidgets, true );
+		return in_array( $widget, $dashboardWidgets, true );
 	}
 }

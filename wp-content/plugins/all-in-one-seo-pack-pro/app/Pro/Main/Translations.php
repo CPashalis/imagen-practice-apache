@@ -109,6 +109,11 @@ class Translations {
 					$value = new \stdClass();
 				}
 
+				if ( ! is_object( $value ) ) {
+					// If the value isn't an object at this point, bail in order to prevent errors.
+					return $value;
+				}
+
 				if ( ! isset( $value->translations ) ) {
 					$value->translations = [];
 				}
@@ -119,11 +124,11 @@ class Translations {
 					return $value;
 				}
 
-				if ( null === self::$installedTranslations ) {
+				if ( empty( self::$installedTranslations ) ) {
 					self::$installedTranslations = wp_get_installed_translations( $this->type . 's' );
 				}
 
-				if ( null === self::$availableLanguages ) {
+				if ( empty( self::$availableLanguages ) ) {
 					self::$availableLanguages = get_available_languages();
 				}
 
@@ -215,7 +220,7 @@ class Translations {
 		$transientKey = 'translations_' . $slug . '_' . $type;
 		$translations = aioseo()->core->networkCache->get( $transientKey );
 
-		if ( false !== $translations ) {
+		if ( null !== $translations ) {
 			return $translations;
 		}
 

@@ -20,12 +20,15 @@
  //global variables for using freemius api
 	$frlicenseid = get_option( 'wprev_fr_siteid' );
 	$frsiteurl = get_option( 'wprev_fr_url' );
+	$frsiteid = get_option( 'wprev_fr_id' );
 	$wpsiteurl = get_site_url();
+	
  
      // check user capabilities
-    if (!current_user_can('manage_options')) {
+    if (!current_user_can('manage_options') && $this->wprev_canuserseepage('reviewfunnel')==false) {
         return;
     }
+	
 	$dbmsg = "";
 	$html="";
 	$currentreviewfunnel= new stdClass();
@@ -310,13 +313,14 @@ $url_tempdownload = admin_url( 'admin-post.php?action=print_reviewfunnel.csv' );
 if ( wrsp_fs()->can_use_premium_code() ) {
 	
 // make a call to http://funnel.ljapps.com/frstats with the variables to get stats, or insert if new
+//echo $frsiteid."<br>" ;
 //echo $frlicenseid."<br>" ;
 //echo $frsiteurl."<br>" ;
 //echo $wpsiteurl."<br>" ;
 
-$response = wp_remote_get( 'https://funnel.ljapps.com/frstats?frlicenseid='.$frlicenseid.'&frsiteurl='.$frsiteurl.'&wpsiteurl='.$wpsiteurl );
+$response = wp_remote_get( 'https://funnel.ljapps.com/frstats?frlicenseid='.$frlicenseid.'&frsiteurl='.$frsiteurl.'&wpsiteurl='.$wpsiteurl.'&frsiteid='.$frsiteid );
 
-//echo 'https://funnel.ljapps.com/frstats?frlicenseid='.$frlicenseid.'&frsiteurl='.$frsiteurl.'&wpsiteurl='.$wpsiteurl;
+//echo 'https://funnel.ljapps.com/frstats?frlicenseid='.$frlicenseid.'&frsiteurl='.$frsiteurl.'&wpsiteurl='.$wpsiteurl.'&frsiteid='.$frsiteid;
  
  
  //print_r($response);
@@ -393,6 +397,7 @@ include("getrevs_sidemenu.php");
 <div id="moreinfoaccountpopup" class="wprevpro_hide">
 <div>
 <p><?php _e('Your website automatically gets 2,000 review credits every year it has an active license.', 'wp-review-slider-pro'); ?></p>
+<p><?php _e('When you make a request to scrape a site it will cost (10 review credits + the # of reviews scraped) against your Review Credits, even if you don\'t download them. Take care if you are Automatically checking for new reviews not to set it to often.', 'wp-review-slider-pro'); ?></p>
 <p><a href="https://funnel.ljapps.com/buycredits/<?php echo $statsarray['id']; ?>" target="_blank"><?php _e('Buy more credits here.', 'wp-review-slider-pro'); ?></a></p>
 <?php
 foreach ($statsarray as $k => $v) {
@@ -463,7 +468,9 @@ foreach ($statsarray as $k => $v) {
 						</select>
 					</div>
 					<p class="description">
-					<?php _e('This is the site you are downloading the reviews from. More sites coming soon.', 'wp-review-slider-pro'); ?></p>
+					<?php _e('This is the site you are downloading the reviews from.', 'wp-review-slider-pro'); ?>
+					<div id="sitetypenote" class="description"></div>
+					</p>
 				</td>
 			</tr>
 			<tr class="wprevpro_row notforgoogle">
@@ -495,8 +502,9 @@ foreach ($statsarray as $k => $v) {
 				</th>
 				<td>
 					<select name="wprevpro_placeidorterms" id="wprevpro_placeidorterms">
-						<option value="terms" <?php if($currentreviewfunnel->gplaceorsearch=='' || $currentreviewfunnel->gplaceorsearch=='terms'){echo "selected";} ?>><?php _e('Search Terms', 'wp-review-slider-pro'); ?></option>
-						<option value="placeid" <?php if($currentreviewfunnel->gplaceorsearch=='placeid'){echo "selected";} ?>><?php _e('Place ID', 'wp-review-slider-pro'); ?></option>
+						<option value="placeid" <?php if($currentreviewfunnel->gplaceorsearch=='' || $currentreviewfunnel->gplaceorsearch=='placeid'){echo "selected";} ?>><?php _e('Place ID', 'wp-review-slider-pro'); ?></option>
+						<option value="terms" <?php if($currentreviewfunnel->gplaceorsearch=='terms'){echo "selected";} ?>><?php _e('Search Terms', 'wp-review-slider-pro'); ?></option>
+						
 					</select>
 					
 					<input class="yelp_business_url gsearch" id="wprevpro_query" data-custom="custom" type="text" name="wprevpro_query" placeholder="<?php _e('Enter Google search terms.', 'wp-review-slider-pro'); ?>" value="<?php echo stripslashes($currentreviewfunnel->query); ?>">

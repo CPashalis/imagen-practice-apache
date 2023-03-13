@@ -124,15 +124,17 @@ class Schema extends CommonSchema\Schema {
 			'@graph'   => $this->getUserDefinedGraphs( $graphs, $customGraphs, $default )
 		];
 
-		foreach ( $this->graphs as $graph ) {
-			$namespace = $this->getGraphNamespace( $graph );
+		// By determining the length of the array after every iteration, we are able to add additional graphs during runtime.
+		// e.g. The Article graph may require a Person graph to be output for the author.
+		for ( $i = 0; $i < count( $this->graphs ); $i++ ) {
+			$namespace = $this->getGraphNamespace( $this->graphs[ $i ] );
 			if ( $namespace ) {
-				$schema['@graph'][] = ( new $namespace )->get();
+				$schema['@graph'][] = ( new $namespace() )->get();
 				continue;
 			}
 
 			// If we still haven't found a graph, check the addons (e.g. Local Business).
-			$graphData = $this->getAddonGraphData( $graph );
+			$graphData = $this->getAddonGraphData( $this->graphs[ $i ] );
 			if ( ! empty( $graphData ) ) {
 				$schema['@graph'][] = $graphData;
 				continue;
@@ -221,7 +223,7 @@ class Schema extends CommonSchema\Schema {
 			switch ( $graphData->graphName ) {
 				case 'FAQPage':
 					if ( null === $this->faqPageInstance ) {
-						$this->faqPageInstance = new Graphs\FAQPage;
+						$this->faqPageInstance = new Graphs\FAQPage();
 					}
 
 					// FAQ pages need to be collected first and added later because they should be nested under a parent graph.
@@ -232,7 +234,7 @@ class Schema extends CommonSchema\Schema {
 				default:
 					$namespace = $this->getGraphNamespace( $graphData->graphName );
 					if ( $namespace ) {
-						$userDefinedGraphs[] = ( new $namespace )->get( $graphData );
+						$userDefinedGraphs[] = ( new $namespace() )->get( $graphData );
 					}
 					break;
 			}
@@ -266,7 +268,7 @@ class Schema extends CommonSchema\Schema {
 			switch ( $default->graphName ) {
 				case 'FAQPage':
 					if ( null === $this->faqPageInstance ) {
-						$this->faqPageInstance = new Graphs\FAQPage;
+						$this->faqPageInstance = new Graphs\FAQPage();
 					}
 
 					// FAQ pages need to be collected first and added later because they should be nested under a parent graph.
@@ -278,7 +280,7 @@ class Schema extends CommonSchema\Schema {
 				default:
 					$namespace = $this->getGraphNamespace( $default->graphName );
 					if ( $namespace ) {
-						$userDefinedGraphs[] = ( new $namespace )->get( $graphData );
+						$userDefinedGraphs[] = ( new $namespace() )->get( $graphData );
 					}
 					break;
 			}
@@ -323,7 +325,7 @@ class Schema extends CommonSchema\Schema {
 			switch ( $type ) {
 				case 'aioseo/faq':
 					if ( null === $this->faqPageInstance ) {
-						$this->faqPageInstance = new Graphs\FAQPage;
+						$this->faqPageInstance = new Graphs\FAQPage();
 					}
 
 					// FAQ pages need to be collected first and added later because they should be nested under a parent graph.
@@ -358,7 +360,7 @@ class Schema extends CommonSchema\Schema {
 		// Check if our addons need to register graphs.
 		foreach ( $loadedAddons as $loadedAddon ) {
 			if ( ! empty( $loadedAddon->schema ) && method_exists( $loadedAddon->schema, 'determineGraphsAndContext' ) ) {
-				$this->graphs = array_merge( $this->graphs, $loadedAddon->schema->determineGraphsAndContext() );
+				$this->graphs = array_values( array_merge( $this->graphs, $loadedAddon->schema->determineGraphsAndContext() ) );
 			}
 		}
 	}
@@ -390,8 +392,8 @@ class Schema extends CommonSchema\Schema {
 	 */
 	public function getDefaultPostGraph() {
 		$metaData = aioseo()->meta->metaData->getMetaData();
-		if ( isset( $metaData->schema->defaultGraph ) ) {
-			return $metaData->schema->defaultGraph;
+		if ( isset( $metaData->schema->default->graphName ) ) {
+			return $metaData->schema->default->graphName;
 		}
 
 		return $this->getDefaultPostTypeGraph();

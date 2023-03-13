@@ -13,9 +13,10 @@
  */
  
      // check user capabilities
-    if (!current_user_can('edit_pages')) {
+    if (!current_user_can('edit_pages') && $this->wprev_canuserseepage('reviews')==false) {
         return;
     }
+
 //db function variables
 global $wpdb;
 $table_name = $wpdb->prefix . 'wpfb_reviews';
@@ -24,6 +25,13 @@ $table_name = $wpdb->prefix . 'wpfb_reviews';
 	//template importing from CSV file--------------------
 	$importmes="";
 	 if(isset($_POST["Import"])){
+		 //security
+		$nonce = $_REQUEST['_wpnonce'];
+		if ( ! wp_verify_nonce( $nonce, 'my-nonce' ) ) {
+			// This nonce is not valid.
+			die( __( 'Failed security check.', 'wp-review-slider-pro' ) ); 
+		}
+		 
 		//print_r($_FILES);
 		$filename=$_FILES["file"]["tmp_name"];		
 		 if($_FILES["file"]["size"] > 0)
@@ -31,6 +39,7 @@ $table_name = $wpdb->prefix . 'wpfb_reviews';
 		  	$file = fopen($filename, "r");
 			$c = 0; //use line one for column names
 			$skippedlines = 0;
+			$reviewsimported = 0;
 	        while (($getData = fgetcsv($file, 10000, ",")) !== FALSE)
 	         {
 				$c++;
@@ -39,6 +48,9 @@ $table_name = $wpdb->prefix . 'wpfb_reviews';
 					$colarray = $getData;
 				} else {
 					$insertdata = array_combine($colarray, $getData);
+					
+					//addslashes to '
+					//$insertdata['review_text'] = addslashes($insertdata['review_text']);
 					
 					//fix created_time 
 					if(isset($insertdata['created_time_stamp']) && $insertdata['created_time_stamp']!=''){
@@ -50,10 +62,39 @@ $table_name = $wpdb->prefix . 'wpfb_reviews';
 					$timestampday = date("Y-m-d H:i:s", $timestamp);
 					$insertdata['created_time']=$timestampday;
 					$insertdata['created_time_stamp']=$timestamp;
+					
 					//fix pageid and reviewerid, maybe with a warning message
+					if($insertdata['pageid']==''){
+						$insertdata['pageid']='manually_added';
+					}
+					if($insertdata['pagename']==''){
+						$insertdata['pagename']='Manually Added';
+					}
+					if($insertdata['type']==''){
+						$insertdata['type']='Manual';
+					}
+					//fix review length if not set
+					if($insertdata['review_length']==''){
+						$review_text = $insertdata['review_text'];
+						$review_length = str_word_count($review_text);
+						if (extension_loaded('mbstring')) {
+							$review_length_char = mb_strlen($review_text);
+						} else {
+							$review_length_char = strlen($review_text);
+						}
+						if($review_length_char>0 && $review_length<1){
+							$review_length = 1;
+						}
+						$insertdata['review_length']=$review_length;
+						$insertdata['review_length_char']=$review_length_char;
+					}
+					
 					
 					//remove id so it will assign another on insert
 					unset($insertdata['id']);
+					
+					//print_r($insertdata);
+					//die();
 					
 					//check for duplicate data here and insert if not in db
 					$unixtimestamp = $insertdata['created_time_stamp'];
@@ -63,7 +104,8 @@ $table_name = $wpdb->prefix . 'wpfb_reviews';
 								if( empty( $checkrow ) ){
 										$reviewindb = 'no';
 										//insert to db here
-										$wpdb->insert( $table_name, $insertdata );
+										$numinsert = $wpdb->insert( $table_name, $insertdata );
+										$reviewsimported=$reviewsimported+$numinsert;
 								} else {
 									$skippedlines++;
 								}
@@ -71,7 +113,7 @@ $table_name = $wpdb->prefix . 'wpfb_reviews';
 				}
 	         }
 	         fclose($file);	
-			 $importmes = "<div>".$c." ".__('reviews imported', 'wp-review-slider-pro').", ".$skippedlines." ".__('reviews skipped because of duplicates found.', 'wp-review-slider-pro')."</div>";
+			 $importmes = "<div>".$reviewsimported." ".__('reviews imported', 'wp-review-slider-pro').", ".$skippedlines." ".__('reviews skipped because of duplicates found.', 'wp-review-slider-pro')."</div>";
 		 }
 		 
 	}
@@ -128,15 +170,14 @@ $rowsperpage = 20;
 	<h1><img src="<?php echo plugin_dir_url( __FILE__ ) . 'logo.png'; ?>"></h1>
 <?php 
 include("tabmenu.php");
-
-				
-				//query args for export and import
+$nonce = wp_create_nonce( 'my-nonce' );		
+//query args for export and import
 $url_tempdownbtn = admin_url( 'admin-post.php?action=printreviews.csv' );
 
 ?>
 <div class="wprevpro_margin10">
 	<a id="wprevpro_helpicon" class="wprevpro_btnicononly button dashicons-before dashicons-editor-help"></a>
-	<a id="wprevpro_removeallbtn" class="button dashicons-before dashicons-no"><?php _e('Remove Reviews', 'wp-review-slider-pro'); ?></a>
+	<a id="wprevpro_removeallbtn"  data-sec="<?php echo esc_attr( $nonce ); ?>" class="button dashicons-before dashicons-no"><?php _e('Remove Reviews', 'wp-review-slider-pro'); ?></a>
 	<a id="wprevpro_addnewreviewbtn" class="button dashicons-before dashicons-plus-alt"><?php _e('Manually Add Review', 'wp-review-slider-pro'); ?></a>
 	<a href="<?php echo $url_tempdownbtn;?>" class="button dashicons-before dashicons-download"><?php _e('Download CSV File of Reviews', 'wp-review-slider-pro'); ?></a>
 	<a id="wprevpro_importtemplates" class="button dashicons-before dashicons-upload"><?php _e('Import Reviews', 'wp-review-slider-pro'); ?></a>
@@ -145,7 +186,7 @@ $url_tempdownbtn = admin_url( 'admin-post.php?action=printreviews.csv' );
 </div>
 
 <div class="wprevpro_margin10" id="importform" style='display:none;'>
-	    <form  action="?page=wp_pro-reviews" method="post" name="upload_excel" enctype="multipart/form-data">
+	    <form  action="?page=wp_pro-reviews&_wpnonce=<?php echo $nonce; ?>" method="post" name="upload_excel" enctype="multipart/form-data">
 		<p><b>Use this form to import previously exported Reviews. Please make sure that your spreadsheet program has not shortened numbers by adding a E+. In Excel you need to change the format to Number with no decimal places.</b></p>
 		<p><b>Follow these steps if importing from a different plugin/app. These steps are not necessary if the reviews are from this plugin:</b><br>1) Use the "Manually 
 		Add Review" to add one of the reviews.<br>2) Now use the "Download CSV File" button to save it to your computer.<br>3) Use that CSV file as a template to paste your reviews in to. <br>4) Now you can upload the CSV.</p>
@@ -566,6 +607,12 @@ $url_tempdownbtn = admin_url( 'admin-post.php?action=printreviews.csv' );
 
 	//for removing reviews in bulk all, first make sure they want to remove
 	if(isset($_GET['opt'])){
+		//security
+		$nonce = $_REQUEST['_wpnonce'];
+		if ( ! wp_verify_nonce( $nonce, 'my-nonce' ) ) {
+			// This nonce is not valid.
+			die( __( 'Failed security check.', 'wp-review-slider-pro' ) ); 
+		}
 		if($_GET['opt']=="delall"){
 			$delete = $wpdb->query("TRUNCATE TABLE `".$table_name."`");
 			//remove total and averages

@@ -693,6 +693,26 @@
 				//update ajax
 				var useajax = fmisc_obj.useajax;
 				$( "#wprevpro_form_useajax" ).val(useajax);
+				
+				if(fmisc_obj.redirecturl){
+					$( "#wprevpro_form_redirecturl" ).val(fmisc_obj.redirecturl);
+				}
+
+				
+				$('.formsubmittype').hide();
+				$('#wprevpro_form_redirecturl').hide();
+				if($('#wprevpro_form_useajax').val()=="prd"){
+					$('#wprevpro_form_redirecturl').show();
+					//change description
+					$('.pageredirect').show();
+					
+				} else if($('#wprevpro_form_useajax').val()=="no"){
+					$('.pagereload').show();
+				} else if($('#wprevpro_form_useajax').val()=="yes"){
+					$('.pageajax').show();
+				}
+			
+				
 				//update autoapprove
 				var autoapprove = fmisc_obj.autoapprove;
 				if(autoapprove=='' || typeof autoapprove=='undefined'){
@@ -1093,7 +1113,7 @@
 		$("#newformform").on('change', 'input', function(){
 			//console.log($(this).attr('name'));
 			//console.log($(this).attr('type'));
-			//console.log($(this).val());
+			//console.log("here");
 			
 			var inputname = $(this).attr('name');
 			var inputtype = $(this).attr('type');
@@ -1174,6 +1194,19 @@
 					$(this).closest('tbody').find('#starornotmsg ').hide('slow');
 				}
 			}
+			//show hide page redirect settings
+			$('.formsubmittype').hide();
+			$('#wprevpro_form_redirecturl').hide();
+			if($('#wprevpro_form_useajax').val()=="prd"){
+				$('#wprevpro_form_redirecturl').show();
+				//change description
+				$('.pageredirect').show();
+			} else if($('#wprevpro_form_useajax').val()=="no"){
+				$('.pagereload').show();
+			} else if($('#wprevpro_form_useajax').val()=="yes"){
+				$('.pageajax').show();
+			}
+			
 			
 			updatetheformindb('no','no','yes');
 		});
@@ -1186,6 +1219,9 @@
 			if($('#wprevpro_template_title').val()==''){
 				alert("Please enter a title.");
 				$( "#wprevpro_template_title" ).focus();
+			} else if($('#wprevpro_form_useajax').val()=='prd' && $('#wprevpro_form_redirecturl').val()==''){
+				alert("Please enter a redirect URL.");
+				$( "#wprevpro_form_redirecturl" ).focus();
 			} else {
 				updatetheformindb('yes','no','no');
 			}
@@ -1194,6 +1230,8 @@
 		
 		function updatetheformindb(reloadpage='no',updateff='no', updatefprev='yes'){
 			console.log('updating form..');
+			
+			
 			//get all form values
 			var ftitle = $( "#wprevpro_template_title" ).val();
 			var ftid = $('#edittid').val();
@@ -1216,6 +1254,7 @@
 			fmiscobj.showonclicktext = $('#wprevpro_form_showonclick_txt').val();
 			fmiscobj.autopopup = $('#wprevpro_form_autopopup').val();
 			fmiscobj.useajax = $('#wprevpro_form_useajax').val();
+			fmiscobj.redirecturl = $('#wprevpro_form_redirecturl').val();
 			fmiscobj.autoapprove = $('#wprevpro_form_autoapprove').val();
 			fmiscobj.iconimage = $('#wprevpro_form_icon_image_url').val();
 			fmiscobj.iconlink = $('#wprevpro_form_icon_link_url').val();

@@ -13,7 +13,7 @@
  */
  
      // check user capabilities
-    if (!current_user_can('manage_options')) {
+if (!current_user_can('manage_options') && $this->wprev_canuserseepage('notifications')==false) {
         return;
     }
 
@@ -103,6 +103,35 @@
 			$dbmsg = '<div id="setting-error-wprevpro_message" class="updated settings-error notice is-dismissible"><p><strong>'.__('Settings Updated!', 'wp-review-slider-pro').'</strong></p><button type="button" class="notice-dismiss"><span class="screen-reader-text">'.__('Dismiss this notice.', 'wp-review-slider-pro').'</span></button></div>';
 		}
 	}
+
+	//----updating the admin pages visibility based on role or current user can
+	$pagedisplaynamearray = [1 => "Get Reviews",2 => "Review Funnels",3 => "Review List",4 => "Templates",5 => "Badges",6 => "Forms",7 => "Floats",8 => "Analytics",9 => "Tools",10 => "Forum",];
+	$pagenamearray = [1 => "getrevs",2 => "reviewfunnel",3 => "reviews",4 => "templates_posts",5 => "badges",6 => "forms",7 => "float",8 => "analytics",9 => "notifications",10 => "forum",];
+	
+	//echo $pagenamearray[5];
+	//print_r($pagenamearray);
+	//echo "<br><br>";
+	if (isset($_POST['wprevpro_adminpages'])){
+		$rolesadminjson = '';
+		$wprevrolesarray=Array();
+		$wprevroles_json ='';
+		
+		for ($x = 1; $x <= 10; $x++) {
+			if(isset($_POST['wprevroles'.$x])){
+				$wprevrolesarray[$pagenamearray[$x]] = $_POST['wprevroles'.$x];
+			}
+		}
+		if(count($wprevrolesarray)>0){
+			//print_r($wprevrolesarray);
+			$wprevroles_json = json_encode($wprevrolesarray);
+			//update the option in wordpress
+			update_option( 'wprev_rolepages', $wprevroles_json );
+		} else {
+			update_option( 'wprev_rolepages', '' );
+		}
+	}
+	
+	//echo get_option('wprev_rolepages');
 	
 	
 
@@ -473,27 +502,9 @@ if ( wrsp_fs()->can_use_premium_code() ) {
 
 
 	?>
-
+		<p>The plugin uses the wp_mail() function to send the emails. If they don't come through then try one of the SMTP email plugins.</p>
 </div>
-<?php
-/*
-//may need this, not sure, going to try the admin_url() function first when sending emails through forms and notifications.
-?>
-<div class="notifications_sections">
-	<h3><?php _e('WordPress Admin URL', 'wp-review-slider-pro'); ?></h3>
-	<p><?php _e('Allows you to get email notifications of new reviews based on certain rules. This is only for downloaded reviews. For submitted reviews use the setting on the review Form page.', 'wp-review-slider-pro'); ?></p>
 
-	<form name="updateadminurl" id="updateadminurl" action="?page=wp_pro-notifications" method="post">
-	
-	<input id="wprevpro_admin_url" data-custom="custom" type="text" name="wprevpro_admin_url" placeholder="" value="<?php echo get_option( 'wprevpro_admin_url', '' ); ?>">
-	<input type="submit" name="wprevpro_submitadmbinurlbtn" id="wprevpro_submitadmbinurlbtn" class="button button-primary" value="<?php _e('Save', 'wp-review-slider-pro'); ?>">
-	
-	</form>
-
-</div>
-<?php
-*/
-?>
 <div class="notifications_sections">
 
 <?php
@@ -506,8 +517,9 @@ if(is_array($pagestoload)){
 	<h3><?php _e('Specify Pages for JS and CSS', 'wp-review-slider-pro'); ?></h3>
 	<p><?php _e('Optional: Allows you to specify the Post/Page IDs where you would like the JS and CSS files for this plugin to get added. By default they are added to all pages so you can use the plugin on any page of your site. ', 'wp-review-slider-pro'); ?></p>
 
+<form name="specifycssjspages" id="specifycssjspages" action="?page=wp_pro-notifications" method="post">
 	<div class="wprevpro_margin10">
-		<form name="specifycssjspages" id="specifycssjspages" action="?page=wp_pro-notifications" method="post">
+		
 		<input id="wprevpro_jscsspages" data-custom="custom" type="text" name="wprevpro_jscsspages" value="<?php echo $pagestoload; ?>">
 		<p class="description">
 			Comma separated list of Post or Page IDs.
@@ -515,9 +527,13 @@ if(is_array($pagestoload)){
 			<p class="description">
 			<b>Warning:</b> If you enter a Post/Page ID and then try to use the plugin on a different page it will not work. Recommend that this is left blank.
 		</p>
+		</div>
+		<p class="submit">
 		<input type="submit" name="wprevpro_submitpostids" id="wprevpro_submitpostids" class="button button-primary" value="<?php _e('Save', 'wp-review-slider-pro'); ?>">
-		</form>
-	</div>
+		</p>
+		
+	
+	</form>
 </div>
 
 
@@ -540,12 +556,68 @@ if(is_array($pagestoload)){
 		// (sections are registered for "wp_pro-notifications", each field is registered to a specific section)
 		do_settings_sections('wp_pro-notifications');
 		// output save settings button
-		?></div><?php 
-		submit_button('Save Settings');
+		?><?php 
+		submit_button('Save');
 		?>
-	
 	</form>
-	<p>The plugin uses the wp_mail() function to send the emails. If they don't come through then try one of the SMTP email plugins.</p>
+	</div>
+	
+
+<div class="notifications_sections">
+
+<?php
+	 $rolenamesarray = $this->wprev_get_role_names();
+	 
+	 //get saved values
+	 if(get_option('wprev_rolepages')){
+		$savedrolesjson = get_option('wprev_rolepages');
+		$savedrolesarray = json_decode($savedrolesjson,true);
+	 } else {
+		$savedrolesarray = Array(); 
+	 }
+	// print_r($savedrolesarray);
+?>
+	<h3><?php _e('Show Admin Pages Based on Role', 'wp-review-slider-pro'); ?></h3>
+	<p><?php _e('Optional: The Admin role has access to all pages of the plugin and the Editor role has access to the Review List and Analytics pages. If you would like to open the plugin up to more roles, choose them below.', 'wp-review-slider-pro'); ?></p>
+
+	<form name="pageroles" id="pageroles" action="?page=wp_pro-notifications" method="post">
+		<div class="wprevpro_margin10">
+
+
+<?php
+	
+for ($x = 1; $x <= 10; $x++) {
+?>
+<div class="pagerow">
+<label class="rollabel" for="wprevpro_rolepages<?php echo $x;?>"><?php echo $pagedisplaynamearray[$x]; ?></label>
+	<select class="roleselect js-example-basic-multiple" id="wprevpro_rolepages<?php echo $x;?>" name="wprevroles<?php echo $x;?>[]" multiple="multiple">
+	<?php
+	foreach($rolenamesarray as $label => $val) {
+	  if($label!='administrator' && $label!='subscriber'){
+		 if (isset($savedrolesarray[$pagenamearray[$x]]) && in_array($label, $savedrolesarray[$pagenamearray[$x]])) {
+			 echo "<option selected='selected' value='$label'>$val</option>";
+		 } else {
+			echo "<option value='$label'>$val</option>"; 
+		 }
+	  }
+	}
+	?>
+	</select>
+</div>	
+
+<?php
+}	
+?>
+
+		</div>
+		<p class="submit">
+		<input type="submit" name="wprevpro_adminpages" id="wprevpro_adminpages" class="button button-primary" value="<?php _e('Save', 'wp-review-slider-pro'); ?>">
+		</p>
+	</form>
+</div>
+	
+	
+	
 	</div>
 	<div id="popup" class="popup-wrapper wprevpro_hide">
 	  <div class="popup-content">

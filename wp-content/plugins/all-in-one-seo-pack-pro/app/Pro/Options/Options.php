@@ -54,6 +54,7 @@ class Options extends CommonOptions\Options {
 				'toolsSettings'             => [ 'type' => 'boolean', 'default' => true ],
 				'featureManagerSettings'    => [ 'type' => 'boolean', 'default' => true ],
 				'pageAnalysis'              => [ 'type' => 'boolean', 'default' => true ],
+				'searchStatisticsSettings'  => [ 'type' => 'boolean', 'default' => true ],
 				'pageGeneralSettings'       => [ 'type' => 'boolean', 'default' => true ],
 				'pageAdvancedSettings'      => [ 'type' => 'boolean', 'default' => true ],
 				'pageSchemaSettings'        => [ 'type' => 'boolean', 'default' => true ],
@@ -79,6 +80,7 @@ class Options extends CommonOptions\Options {
 				'toolsSettings'             => [ 'type' => 'boolean', 'default' => false ],
 				'featureManagerSettings'    => [ 'type' => 'boolean', 'default' => false ],
 				'pageAnalysis'              => [ 'type' => 'boolean', 'default' => true ],
+				'searchStatisticsSettings'  => [ 'type' => 'boolean', 'default' => false ],
 				'pageGeneralSettings'       => [ 'type' => 'boolean', 'default' => true ],
 				'pageAdvancedSettings'      => [ 'type' => 'boolean', 'default' => true ],
 				'pageSchemaSettings'        => [ 'type' => 'boolean', 'default' => true ],
@@ -104,6 +106,7 @@ class Options extends CommonOptions\Options {
 				'toolsSettings'             => [ 'type' => 'boolean', 'default' => false ],
 				'featureManagerSettings'    => [ 'type' => 'boolean', 'default' => false ],
 				'pageAnalysis'              => [ 'type' => 'boolean', 'default' => true ],
+				'searchStatisticsSettings'  => [ 'type' => 'boolean', 'default' => false ],
 				'pageGeneralSettings'       => [ 'type' => 'boolean', 'default' => true ],
 				'pageAdvancedSettings'      => [ 'type' => 'boolean', 'default' => true ],
 				'pageSchemaSettings'        => [ 'type' => 'boolean', 'default' => true ],
@@ -129,6 +132,7 @@ class Options extends CommonOptions\Options {
 				'toolsSettings'             => [ 'type' => 'boolean', 'default' => false ],
 				'featureManagerSettings'    => [ 'type' => 'boolean', 'default' => false ],
 				'pageAnalysis'              => [ 'type' => 'boolean', 'default' => true ],
+				'searchStatisticsSettings'  => [ 'type' => 'boolean', 'default' => false ],
 				'pageGeneralSettings'       => [ 'type' => 'boolean', 'default' => true ],
 				'pageAdvancedSettings'      => [ 'type' => 'boolean', 'default' => true ],
 				'pageSchemaSettings'        => [ 'type' => 'boolean', 'default' => true ],
@@ -154,6 +158,7 @@ class Options extends CommonOptions\Options {
 				'toolsSettings'             => [ 'type' => 'boolean', 'default' => false ],
 				'featureManagerSettings'    => [ 'type' => 'boolean', 'default' => false ],
 				'pageAnalysis'              => [ 'type' => 'boolean', 'default' => true ],
+				'searchStatisticsSettings'  => [ 'type' => 'boolean', 'default' => true ],
 				'pageGeneralSettings'       => [ 'type' => 'boolean', 'default' => true ],
 				'pageAdvancedSettings'      => [ 'type' => 'boolean', 'default' => true ],
 				'pageSchemaSettings'        => [ 'type' => 'boolean', 'default' => true ],
@@ -179,6 +184,7 @@ class Options extends CommonOptions\Options {
 				'toolsSettings'             => [ 'type' => 'boolean', 'default' => false ],
 				'featureManagerSettings'    => [ 'type' => 'boolean', 'default' => false ],
 				'pageAnalysis'              => [ 'type' => 'boolean', 'default' => true ],
+				'searchStatisticsSettings'  => [ 'type' => 'boolean', 'default' => false ],
 				'pageGeneralSettings'       => [ 'type' => 'boolean', 'default' => true ],
 				'pageAdvancedSettings'      => [ 'type' => 'boolean', 'default' => true ],
 				'pageSchemaSettings'        => [ 'type' => 'boolean', 'default' => true ],
@@ -193,7 +199,8 @@ class Options extends CommonOptions\Options {
 		'advanced'         => [
 			'adminBarMenu'  => [ 'type' => 'boolean', 'default' => true ],
 			'usageTracking' => [ 'type' => 'boolean', 'default' => true ],
-			'autoUpdates'   => [ 'type' => 'string', 'default' => 'all' ]
+			'autoUpdates'   => [ 'type' => 'string', 'default' => 'all' ],
+			'openAiKey'     => [ 'type' => 'string', 'default' => '' ]
 		],
 		'sitemap'          => [
 			'video' => [

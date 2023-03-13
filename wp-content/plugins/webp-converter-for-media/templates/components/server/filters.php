@@ -5,6 +5,10 @@
  * @package Converter for Media
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use WebpConverter\Service\PathsGenerator;
 
 ?>
@@ -12,15 +16,15 @@ use WebpConverter\Service\PathsGenerator;
 <table>
 	<tbody>
 	<tr>
-		<td class="e">webpc_site_root</td>
+		<td class="e">webpc_site_url</td>
 		<td class="v">
-			<?php echo esc_html( PathsGenerator::get_wordpress_root_path() ); ?>
+			<?php echo esc_html( apply_filters( 'webpc_site_url', ( defined( 'WP_HOME' ) ) ? WP_HOME : get_site_url() ) ); ?>
 		</td>
 	</tr>
 	<tr>
-		<td class="e">webpc_site_url</td>
+		<td class="e">webpc_site_root</td>
 		<td class="v">
-			<?php echo esc_html( apply_filters( 'webpc_site_url', get_site_url() ) ); ?>
+			<?php echo esc_html( PathsGenerator::get_wordpress_root_path() ); ?>
 		</td>
 	</tr>
 	<tr>

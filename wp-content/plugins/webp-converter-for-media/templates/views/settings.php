@@ -15,10 +15,10 @@
  * @var string       $nonce_input_value        WordPress Nonce value.
  * @var bool         $token_valid_status       Status of access token.
  * @var bool         $token_active_status      Status of PRO version.
- * @var string       $api_paths_url            URL of REST API endpoint.
- * @var string       $api_paths_nonce          Authorization code of REST API endpoint.
- * @var string       $api_regenerate_url       URL of REST API endpoint.
- * @var string       $api_regenerate_nonce     Authorization code of REST API endpoint.
+ * @var string|null  $api_paths_url            URL of REST API endpoint.
+ * @var string|null  $api_paths_nonce          Authorization code of REST API endpoint.
+ * @var string|null  $api_regenerate_url       URL of REST API endpoint.
+ * @var string|null  $api_regenerate_nonce     Authorization code of REST API endpoint.
  * @var string       $api_stats_url            URL of REST API endpoint.
  * @var string       $api_stats_nonce          Authorization code of REST API endpoint.
  * @var string       $url_debug_page           URL of debug tag in settings page.
@@ -26,6 +26,10 @@
  *
  * @package Converter for Media
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 ?>
 <div class="wrap">
@@ -44,7 +48,6 @@
 					<?php elseif ( isset( $_POST[ $form_input_name ] ) ) : // phpcs:ignore ?>
 						<div class="webpcPage__alert">
 							<?php echo esc_html( __( 'Changes were successfully saved!', 'webp-converter-for-media' ) ); ?>
-							<?php echo esc_html( __( 'Please flush cache if you use caching plugin or caching via hosting.', 'webp-converter-for-media' ) ); ?>
 						</div>
 					<?php endif; ?>
 					<?php
@@ -53,7 +56,9 @@
 					if ( ( $form_options !== null ) && ( $form_input_value !== null ) ) {
 						require_once dirname( __DIR__ ) . '/components/widgets/options.php';
 					}
-					require_once dirname( __DIR__ ) . '/components/widgets/regenerate.php';
+					if ( ( $api_paths_url !== null ) && ( $api_regenerate_url !== null ) ) {
+						require_once dirname( __DIR__ ) . '/components/widgets/regenerate.php';
+					}
 					?>
 				</li>
 				<li class="webpcPage__column webpcPage__column--small">
@@ -71,8 +76,8 @@
 				<?php
 				echo wp_kses_post(
 					sprintf(
-					/* translators: %1$s: br tag, %2$s: icon heart */
-						__( 'Created with %1$s by %2$s - if you like our plugin, please %3$srate one%4$s%5$s', 'webp-converter-for-media' ),
+					/* translators: %1$s: icon heart, %2$s: author name, %3$s: open anchor tag, %4$s: close anchor tag */
+						__( 'Created with %1$s by %2$s - if you like our plugin, please, %3$srate one%4$s%5$s', 'webp-converter-for-media' ),
 						'<span class="webpcPage__footerIcon webpcPage__footerIcon--heart"></span>',
 						'<a href="https://url.mattplugins.com/converter-settings-footer-author-website" target="_blank">matt plugins</a>',
 						'<a href="https://url.mattplugins.com/converter-settings-footer-plugin-review" target="_blank">',

@@ -25,12 +25,12 @@ for ($x = 0; $x < count($rowarray); $x++) {
 		if(	$currentform[0]->template_type=="widget"){
 			$iswidget=true;
 			?>
-			<div class="wprevpro_t1_outer_div_widget w3_wprs-row-padding-small wprevprodiv">
+			<div class="wprevpro_t1_outer_div_widget w3_wprs-row-small wprevprodiv">
 			<?php
 			} else {
 			$iswidget=false;
 			?>
-			<div class="wprevpro_t1_outer_div w3_wprs-row-padding wprevprodiv">
+			<div class="wprevpro_t1_outer_div w3_wprs-row wprevprodiv">
 			<?php
 		}
 	}
@@ -85,7 +85,7 @@ for ($x = 0; $x < count($rowarray); $x++) {
 		$tempreviewername = $templateclass->wprevpro_get_reviewername($review,$template_misc_array);
 		
 		//link to author url if turned on in template, use reviewer_id from db and create url for different types
-		$profilelink = $templateclass->wprevpro_get_profilelink($review,$currentform,$userpic,$tempreviewername,$template_misc_array,$burl);
+		$profilelink = $templateclass->wprevpro_get_profilelink($review,$currentform[0],$userpic,$tempreviewername,$template_misc_array,$burl);
 		
 		//userpic html, this could change to nothing if userpic turned off.
 		//$userpichtml = $profilelink['userpichtml'];
@@ -164,7 +164,7 @@ for ($x = 0; $x < count($rowarray); $x++) {
 		}
 		
 		//starhtlm
-		$starhtmlarray = $templateclass->wprevpro_get_starhtml($review,$template_misc_array,$currentform,$starfile);
+		$starhtmlarray = $templateclass->wprevpro_get_starhtml($review,$template_misc_array,$currentform[0],$starfile);
 		$starhtml = $starhtmlarray[0];
 		$starhtml2 = $starhtmlarray[1];
 		
@@ -197,9 +197,11 @@ for ($x = 0; $x < count($rowarray); $x++) {
 		
 		//media
 		$media = $templateclass->wprevpro_get_media($review,$template_misc_array);
-		
 		//verifiedstarhtlm
-		$verifiedstarhtmlarray = $templateclass->wprevpro_get_verifiedstarhtml($review,$template_misc_array,$currentform);
+		$verifiedstarhtmlarray = $templateclass->wprevpro_get_verifiedstarhtml($review,$template_misc_array,$currentform[0]);
+		
+		//source pagename or form title
+		$sourcepagenamehtml = $templateclass->wprevpro_get_sourcepagename($review,$currentform[0],$template_misc_array);
 		
 		//load template from child theme if found
 		$custometheme= get_stylesheet_directory()."/wprevpro/template".$currentform[0]->style.".php";
@@ -209,11 +211,12 @@ for ($x = 0; $x < count($rowarray); $x++) {
 	?>
 		<div class="<?php echo $tempmasonrydiv; ?> outerrevdiv" >
 			<div class="indrevdiv wprevpro_t1_DIV_2 wprev_preview_bg1_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?> wprev_preview_bradius_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>">
-				<p class="wprevpro_t1_P_3 wprev_preview_tcolor1_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>">
-					<span class="wprevpro_star_imgs_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><?php echo $starhtml; ?><?php echo $verifiedstarhtmlarray[0]; ?></span><?php echo $title; ?><?php echo stripslashes($reviewtext); ?><?php echo $verifiedstarhtmlarray[1]; ?>
-				</p>
+				<div class="wprevpro_t1_P_3 wprev_preview_tcolor1_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>">
+					<span class="wprevpro_star_imgs_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><?php echo $starhtml; ?><?php echo $verifiedstarhtmlarray[0]; ?></span><?php echo $title; ?><?php echo $reviewtext; ?><?php echo $verifiedstarhtmlarray[1]; ?>
+				</div>
 				<?php echo $media; ?>
 				<?php echo $miscpichtml; ?>
+				<?php echo $sourcepagenamehtml; ?>
 				<?php echo $logo; ?>
 			</div><?php echo $userpichtml; ?> <div class="wprevpro_t1_SPAN_5 wprev_preview_tcolor2_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?>"><div class="wprevpro_t1_rname wprevname" ><?php echo $tempreviewername; ?></div><?php echo $companyhtml;?><div class="wprev_showdate_T<?php echo $currentform[0]->style; ?><?php if($iswidget){echo "_widget";} ?> wprevdate"><?php echo $datestring; ?></div> </div>
 		</div>

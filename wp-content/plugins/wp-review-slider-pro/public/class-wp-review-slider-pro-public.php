@@ -47,6 +47,15 @@ class WP_Review_Pro_Public {
 	 * @param      string    $plugintoken       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
+		/**
+	 * The token of the plugin.
+	 *
+	 * @since    11.6.0
+	 * @access   protected
+	 * @var      string    $_token   The token of the plugin.
+	 */
+	private $_token;	//must declare this now in php 8.2
+	
 	public function __construct( $plugintoken, $version ) {
 
 		$this->_token = $plugintoken;
@@ -1440,6 +1449,11 @@ class WP_Review_Pro_Public {
 								$emailstring = $emailstring . '<p><img src="'.$fileurl.'" width="100px" height="100px"></p>';
 							}
 						}
+						//add custom data $customdata
+						if($customdata!=''){
+							$emailstring = $emailstring . __('<p>Custom Data: '.sanitize_text_field($customdata).'</p>', 'wp-review-slider-pro');
+						}
+						
 						
 						$reviewlisturl = $siteurl.'admin.php?page=wp_pro-reviews&revfilter=submitted';
 						$loginreviewlisturl = esc_url( wp_login_url( $reviewlisturl ) );
@@ -1482,19 +1496,24 @@ class WP_Review_Pro_Public {
 			}
 
 			if($isajax==false){
-				//return to same page that was used to submit, if success then hide form and display message, if not show error message.
-				// wp_safe_redirect( home_url() );
-				//_wp_http_referer
-				$camefrom = esc_url(sanitize_text_field($postvariablearray['_wp_http_referer']));
-				$queryarray = array(
-							'wprevfs' => $error,
-							'raid' => $randomid,
-						);
-				$camefrom =  add_query_arg( $queryarray, $camefrom);
 				
-				//testing
-				//echo $wprev_form_errors_array[$randomid];
-				wp_safe_redirect(  $camefrom  );
+				//are we sending back to same page or redirecting. 
+				if(isset($form_misc_array['useajax']) && $form_misc_array['useajax']=='prd' && isset($form_misc_array['redirecturl']) && $form_misc_array['redirecturl']!='' && filter_var($form_misc_array['redirecturl'], FILTER_VALIDATE_URL)){
+					//redirecting the user.
+					$camefrom = $form_misc_array['redirecturl'];
+					wp_redirect($camefrom);
+				} else {
+
+					//return to same page that was used to submit, if success then hide form and display message, if not show error message.
+					$camefrom = esc_url(sanitize_text_field($postvariablearray['_wp_http_referer']));
+					$queryarray = array(
+								'wprevfs' => $error,
+								'raid' => $randomid,
+							);
+					$camefrom =  add_query_arg( $queryarray, $camefrom);
+					wp_safe_redirect($camefrom);
+				}
+
 			} else {
 				
 				$wprev_form_errors_array['error']=$error;
@@ -1505,12 +1524,8 @@ class WP_Review_Pro_Public {
 				$wprev_form_errors_array['successmsg']=$sucmsg;
 				return $wprev_form_errors_array;
 			}
-
-//die();
 			
 			exit();
-			
-			//pro feature is to redirect user to url of choice.
 			
 	}	
 	
@@ -1919,6 +1934,7 @@ class WP_Review_Pro_Public {
 		$textsort ='';
 		$textrating ='';
 		$textlang ='';
+		$textrtype ='';
 		$filterbar='';	//will either say lastslide or yes
 		if(isset($_POST['filterbar'])){
 			$filterbar = sanitize_text_field($_POST['filterbar']);
@@ -1934,6 +1950,9 @@ class WP_Review_Pro_Public {
 		}
 		if(isset($_POST['textlang'])){
 			$textlang = sanitize_text_field($_POST['textlang']);
+		}
+		if(isset($_POST['textrtype'])){
+			$textrtype = sanitize_text_field($_POST['textrtype']);
 		}
 		
 		//for pagination, clickedpnum is either a number or dotshigh or dotshigh
@@ -1986,7 +2005,7 @@ class WP_Review_Pro_Public {
 		//if this is a slick slider with header filter set then get all matches 
 		$sliusingfilter = false;
 		if($currentform[0]->createslider == "sli"){
-			if($textsearch!='' || $textsort!='' || $textrating!='' || $textlang!=''){
+			if($textsearch!='' || $textsort!='' || $textrating!='' || $textlang!='' || $textrtype!=''){
 				if($filterbar!='lastslide'){
 					$tempreviewsperpage= $currentform[0]->display_num*$currentform[0]->display_num_rows*$currentform[0]->numslides;
 					$notinstring='';
@@ -2003,7 +2022,7 @@ class WP_Review_Pro_Public {
 		require_once("partials/getreviews_class.php");
 		$reviewsclass = new GetReviews_Functions();
 		
-		$totalreviewsarray = $reviewsclass->wppro_queryreviews($currentform,$offeststart,$tempreviewsperpage,$notinstring,$shortcodepageid,$shortcodelang,$cpostid,$textsearch,$textsort,$textrating,$textlang,$shortcodetag);
+		$totalreviewsarray = $reviewsclass->wppro_queryreviews($currentform,$offeststart,$tempreviewsperpage,$notinstring,$shortcodepageid,$shortcodelang,$cpostid,$textsearch,$textsort,$textrating,$textlang,$shortcodetag,'','','',$textrtype);
 		$totalreviews = $totalreviewsarray['reviews'];
 		
 		$totalreviewsnum = count($totalreviews);

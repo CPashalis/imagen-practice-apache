@@ -11,7 +11,7 @@ class GetReviews_Functions {
 	 * @since   1.0.0
 	 * @return  void
 	 */
-	public function wppro_queryreviews($currentform,$startoffset=0,$totaltoget=0,$notinstring='',$shortcodepageid='',$shortcodelang='',$cpostid='', $textsearch='', $textsort='', $textrating='', $textlang='',$shortcodetag='',$sc_strhasone='',$sc_strhasall='',$sc_strnot=''){
+	public function wppro_queryreviews($currentform,$startoffset=0,$totaltoget=0,$notinstring='',$shortcodepageid='',$shortcodelang='',$cpostid='', $textsearch='', $textsort='', $textrating='', $textlang='',$shortcodetag='',$sc_strhasone='',$sc_strhasall='',$sc_strnot='',$textrtype=''){
 		global $wpdb;
 				
 		//table limit changes if we are calling this from load more button click
@@ -261,6 +261,13 @@ class GetReviews_Functions {
 			}
 			}
 		}
+		//rtype filter on front end header bar.
+		$publicrtypefilter='';
+		if($textrtype!='' && $textrtype!='unset'){
+			$publicrtypefilter = "AND type = '".$textrtype."'";
+		}
+		
+		
 		//rpage filter-----
 		$rpagefilter = "";
 		$shortcodepageidarray = explode(",",$shortcodepageid);
@@ -606,8 +613,11 @@ class GetReviews_Functions {
 		if(!isset($currentform[0]->load_more)){
 			$currentform[0]->load_more='';
 		}
+		if(!isset($template_misc_array['header_rtypes'])){
+			$template_misc_array['header_rtypes']='';
+		}
 		
-
+		//if we are filtering by selected reviews only.
 		if($onlyselected){
 			$query = "SELECT * FROM ".$table_name." WHERE id IN (";
 			//loop array and add to query
@@ -622,29 +632,29 @@ class GetReviews_Functions {
 				}
 				$n++;
 			}
-			$querylimit = $query.") ".$notinsearchstring."".$textsearchquery."".$ratingquerypublic."".$publiclangfilter." ORDER BY ".$sorttable." ".$sortdir." LIMIT ".$tablelimit." ";
-			$querynolimit = $query.") ".$textsearchquery."".$ratingquerypublic."".$publiclangfilter." ORDER BY ".$sorttable." ".$sortdir."";
+			$querylimit = $query.") ".$notinsearchstring."".$textsearchquery."".$ratingquerypublic."".$publiclangfilter."".$publicrtypefilter." ORDER BY ".$sorttable." ".$sortdir." LIMIT ".$tablelimit." ";
+			$querynolimit = $query.") ".$textsearchquery."".$ratingquerypublic."".$publiclangfilter."".$publicrtypefilter." ORDER BY ".$sorttable." ".$sortdir."";
 			
 			$totalreviews = $wpdb->get_results($querylimit);
 			$totalreviewsarray['dbcall'] = $wpdb->last_query;
 			//run another query if we need total and average.
-			if($currentform[0]->google_snippet_add=='yes' || $currentform[0]->load_more=='yes' ||  $template_misc_array['header_text']!=''){
+			if($currentform[0]->google_snippet_add=='yes' || $currentform[0]->load_more=='yes' ||  $template_misc_array['header_text']!='' || $template_misc_array['header_rtypes']=='yes'){
 				//find total and average in db
 				$nolimitreviews = $wpdb->get_results($querynolimit,ARRAY_A);
 			}
 		} else {
 			$totalreviews = $wpdb->get_results(
 				$wpdb->prepare("SELECT * FROM ".$table_name."
-				WHERE id>%d AND ".$lengthquery." AND hide != %s ".$rtypefilter." ".$rpagefilter." ".$rpostidfilter." ".$rstringfilter." ".$rstringfilternot." ".$rcatidfilter." ".$tagfilter." ".$langfilter." ".$shortlangfilter." ".$shortcodetagfilter." ".$randlimitfilter."".$ratingquery."".$notinsearchstring."".$textsearchquery."".$ratingquerypublic."".$publiclangfilter."
+				WHERE id>%d AND ".$lengthquery." AND hide != %s ".$rtypefilter." ".$rpagefilter." ".$rpostidfilter." ".$rstringfilter." ".$rstringfilternot." ".$rcatidfilter." ".$tagfilter." ".$langfilter." ".$shortlangfilter." ".$shortcodetagfilter." ".$randlimitfilter."".$ratingquery."".$notinsearchstring."".$textsearchquery."".$ratingquerypublic."".$publiclangfilter."".$publicrtypefilter."
 				ORDER BY ".$sorttable." ".$sortdir." LIMIT ".$tablelimit." ", "0","$min_words","$max_words","yes")
 			);
 			$totalreviewsarray['dbcall'] = $wpdb->last_query;
 			//run another query if we need total and average.
-			if($currentform[0]->google_snippet_add=='yes' || $currentform[0]->load_more=='yes' ||  $template_misc_array['header_text']!=''){
+			if($currentform[0]->google_snippet_add=='yes' || $currentform[0]->load_more=='yes' ||  $template_misc_array['header_text']!='' || $template_misc_array['header_rtypes']=='yes'){
 				$notinsearchstring ='';
 				$nolimitreviews = $wpdb->get_results(
 				$wpdb->prepare("SELECT * FROM ".$table_name."
-				WHERE id>%d AND ".$lengthquery." AND hide != %s ".$rtypefilter." ".$rpagefilter." ".$rpostidfilter." ".$rstringfilter." ".$rstringfilternot." ".$rcatidfilter." ".$tagfilter." ".$langfilter." ".$shortlangfilter." ".$shortcodetagfilter." ".$randlimitfilter."".$ratingquery."".$notinsearchstring."".$textsearchquery."".$ratingquerypublic."".$publiclangfilter."
+				WHERE id>%d AND ".$lengthquery." AND hide != %s ".$rtypefilter." ".$rpagefilter." ".$rpostidfilter." ".$rstringfilter." ".$rstringfilternot." ".$rcatidfilter." ".$tagfilter." ".$langfilter." ".$shortlangfilter." ".$shortcodetagfilter." ".$randlimitfilter."".$ratingquery."".$notinsearchstring."".$textsearchquery."".$ratingquerypublic."".$publiclangfilter."".$publicrtypefilter."
 				ORDER BY ".$sorttable." ".$sortdir." ", "0","$min_words","$max_words","yes"),ARRAY_A);
 			}
 		}
@@ -693,12 +703,16 @@ class GetReviews_Functions {
 		$totalreviewsarray['reviews']=$totalreviews;
 		$totalreviewsarray['totalcount']='';
 		$totalreviewsarray['totalavg']='';
-	$tempnum ='';
+		$tempnum ='';
 		//print_r($nolimitreviews);
+		$reviewtypesarray = Array();
+		
 		if(is_array($nolimitreviews)){
 			$reviewratingsarray = Array();
 			//loop allrevs to find total number of reviews and average of all of them.
 			foreach ($nolimitreviews as $review) {
+				$reviewtypesarray[]= $review['type'];
+				
 				if($review['rating']>0){
 					$reviewratingsarray[] = intval($review['rating']);
 					$tempnum = intval($review['rating']);
@@ -725,6 +739,8 @@ class GetReviews_Functions {
 					$temprating[5][]=1;
 				}
 			}
+			
+			
 			if(isset($temprating[1])){
 				$totalreviewsarray['numr1'] = array_sum($temprating[1]);
 			} else {
@@ -762,7 +778,9 @@ class GetReviews_Functions {
 			}
 			$totalreviewsarray['totalavg'] = round($reviewratingsarrayavg,1);
 		}
-
+		$totalreviewsarray['reviewtypesarray'] = array_unique($reviewtypesarray);
+		
+		//print_r(array_unique($reviewtypesarray));
 		//print_r($totalreviewsarray);
 		
 			//echo "<br><br>";
@@ -1108,6 +1126,11 @@ class GetReviews_Functions {
 					
 					$misc_style = $misc_style .'div#wprev-slider-'.$formid.'.wprev-slick-slider {margin-left: '.intval($template_misc_array['template_margin_lr']).'px;}';
 					$misc_style = $misc_style .'div#wprev-slider-'.$formid.'.wprev-slick-slider {margin-right: '.intval($template_misc_array['template_margin_lr']).'px;}';
+					
+					$misc_style = $misc_style .'div.wprev-no-slider {margin-left: '.intval($template_misc_array['template_margin_lr']).'px;margin-right: '.intval($template_misc_array['template_margin_lr']).'px;}';
+					
+					$misc_style = $misc_style .'div.wprev_search_sort_bar {margin-left: '.intval($template_misc_array['template_margin_lr']+15).'px;margin-right: '.intval($template_misc_array['template_margin_lr']+15).'px;}';
+					
 					
 					$misc_style = $misc_style .'}';
 				}
